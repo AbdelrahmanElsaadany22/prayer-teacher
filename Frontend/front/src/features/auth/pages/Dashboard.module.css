@@ -1,0 +1,351 @@
+.page {
+  width: min(960px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 56px 0 80px;
+}
+
+.header {
+  margin-bottom: 2.5rem;
+}
+
+.eyebrow {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--accent);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 0 0 0.4rem;
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  letter-spacing: -0.03em;
+  color: var(--text);
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+/* ── Section title ──────────────────────────────────────────── */
+.sectionTitle {
+  margin: 2.5rem 0 1rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* ── Stats cards grid ───────────────────────────────────────── */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.statCard {
+  padding: 1.4rem 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.statLabel {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  margin-bottom: 0.5rem;
+}
+
+.statValue {
+  display: block;
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--accent);
+  line-height: 1;
+}
+
+.statSub {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 0.76rem;
+  color: var(--muted);
+}
+
+/* ── Insight cards (most mistaken prayer / move) ────────────── */
+.insightGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.insightCard {
+  padding: 1.25rem 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.insightIcon {
+  font-size: 1.4rem;
+}
+
+.insightLabel {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+}
+
+.insightValue {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--danger);
+}
+
+/* ── Accuracy chart ─────────────────────────────────────────── */
+.chartCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.5rem;
+}
+
+.chartTitle {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 1.25rem;
+}
+
+/* ── Per-prayer table ───────────────────────────────────────── */
+.prayerTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.prayerTable th {
+  text-align: left;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0 0.75rem 0.75rem;
+}
+
+.prayerTable th:last-child,
+.prayerTable td:last-child {
+  text-align: right;
+}
+
+.prayerTable td {
+  padding: 0.75rem;
+  font-size: 0.88rem;
+  color: var(--text);
+  border-top: 1px solid var(--border);
+}
+
+.prayerTable tr:hover td {
+  background: var(--surface-light);
+}
+
+.prayerName {
+  font-weight: 600;
+}
+
+.accuracyBar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.barTrack {
+  flex: 1;
+  height: 6px;
+  background: var(--surface-light);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.4s ease;
+}
+
+.barFill.high { background: #3fb950; }
+.barFill.mid  { background: var(--accent); }
+.barFill.low  { background: var(--danger); }
+
+.barLabel {
+  font-size: 0.82rem;
+  font-weight: 700;
+  min-width: 36px;
+  text-align: right;
+}
+
+.barLabel.high { color: #3fb950; }
+.barLabel.mid  { color: var(--accent); }
+.barLabel.low  { color: var(--danger); }
+
+/* ── Session list ───────────────────────────────────────────── */
+.sessionList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.sessionRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.9rem 1.25rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  transition: border-color 0.2s;
+}
+
+.sessionRow:hover {
+  border-color: rgba(212, 174, 92, 0.3);
+}
+
+.sessionIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--surface-light);
+  border: 1px solid var(--border);
+  display: grid;
+  place-items: center;
+  font-family: 'Noto Naskh Arabic', serif;
+  font-size: 1rem;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.sessionInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.sessionName {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.sessionMeta {
+  font-size: 0.74rem;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.sessionStats {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.accuracy {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.accuracy.high { color: #3fb950; }
+.accuracy.mid  { color: var(--accent); }
+.accuracy.low  { color: var(--danger); }
+
+.sessionMistakes {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.sessionDate {
+  font-size: 0.72rem;
+  color: var(--muted);
+  flex-shrink: 0;
+  min-width: 60px;
+  text-align: right;
+}
+
+/* ── CTA ────────────────────────────────────────────────────── */
+.cta {
+  margin-top: 2.5rem;
+}
+
+/* ── States ─────────────────────────────────────────────────── */
+.empty {
+  padding: 3rem;
+  text-align: center;
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  border-radius: 14px;
+  font-size: 0.9rem;
+}
+
+.loader {
+  display: grid;
+  place-items: center;
+  min-height: 200px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 640px) {
+  .statsGrid { grid-template-columns: 1fr 1fr; }
+  .insightGrid { grid-template-columns: 1fr; }
+  .sessionStats { display: none; }
+  .sessionDate { display: none; }
+}
+
+/* ── Pagination controls (Recent Sessions) ── */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.pageBtn {
+  padding: 8px 18px;
+  border: 1px solid var(--accent-dark);
+  border-radius: 8px;
+  color: var(--accent);
+  background: transparent;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 150ms ease, opacity 150ms ease;
+}
+
+.pageBtn:hover:not(:disabled) {
+  background: rgba(212, 174, 92, 0.12);
+}
+
+.pageBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pageInfo {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+}

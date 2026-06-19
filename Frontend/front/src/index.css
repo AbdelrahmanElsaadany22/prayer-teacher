@@ -1,0 +1,457 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Naskh+Arabic:wght@500;600;700&family=Amiri:wght@400;700&family=Reem+Kufi:wght@500;600;700&display=swap');
+
+:root {
+  font-family: 'Inter', system-ui, sans-serif;
+  color: #f4f0e7;
+  background: #0d1512;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  --background: #0d1512;
+  --surface: #15201b;
+  --surface-light: #1b2922;
+  --border: #304238;
+  --text: #f4f0e7;
+  --muted: #a9b4ad;
+  --accent: #d4ae5c;
+  --accent-dark: #b18a39;
+  --danger: #ff8c85;
+  /* Display font for headings & brand — Reem Kufi reads well in both scripts. */
+  --display-font: 'Reem Kufi', 'Inter', system-ui, sans-serif;
+  /* Subtle 8-point-star (najmah) geometric tile, drawn in faint gold. */
+  --pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cg fill='none' stroke='%23d4ae5c' stroke-opacity='0.05' stroke-width='1'%3E%3Crect x='16' y='16' width='32' height='32'/%3E%3Crect x='16' y='16' width='32' height='32' transform='rotate(45 32 32)'/%3E%3Ccircle cx='32' cy='32' r='3'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Arabic typography: switch the whole UI to an Arabic face in RTL mode. */
+:root:lang(ar),
+[dir='rtl'] {
+  font-family: 'Noto Naskh Arabic', 'Amiri', 'Inter', system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background:
+    var(--pattern),
+    radial-gradient(circle at 15% 0%, rgba(212, 174, 92, 0.12), transparent 30%),
+    radial-gradient(circle at 85% 100%, rgba(212, 174, 92, 0.06), transparent 35%),
+    var(--background);
+  background-attachment: fixed;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--display-font);
+}
+
+/* ── Islamic-style ornaments ─────────────────────────────────────────────── */
+
+/* Gold flourish flanking the small uppercase eyebrow labels. */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.eyebrow::before,
+.eyebrow::after {
+  content: '';
+  width: 26px;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--accent),
+    transparent
+  );
+}
+
+/* Language switch button in the header. */
+.lang-toggle {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid rgba(212, 174, 92, 0.45);
+  border-radius: 50%;
+  color: var(--accent);
+  background: transparent;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 150ms ease, color 150ms ease;
+}
+
+.lang-toggle:hover {
+  background: rgba(212, 174, 92, 0.12);
+  color: var(--text);
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+a {
+  color: inherit;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.app-shell {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 100vh;
+}
+
+.site-header,
+.site-footer {
+  width: min(1120px, calc(100% - 40px));
+  margin: 0 auto;
+}
+
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 76px;
+  border-bottom: 1px solid var(--border);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  font-family: var(--display-font);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+}
+
+.brand-mark {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid rgba(212, 174, 92, 0.55);
+  border-radius: 50%;
+  color: var(--accent);
+  font-family: 'Noto Naskh Arabic', serif;
+  font-size: 1.25rem;
+}
+
+.site-header nav {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.site-header nav a,
+.nav-button {
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.site-header nav a:hover,
+.site-header nav a.active,
+.nav-button:hover {
+  color: var(--text);
+}
+
+.site-header .nav-signup {
+  padding: 9px 15px;
+  border: 1px solid var(--accent-dark);
+  border-radius: 8px;
+  color: var(--accent);
+}
+
+.nav-button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.nav-user {
+  color: var(--accent);
+  font-size: 0.85rem;
+}
+
+main {
+  display: grid;
+}
+
+.auth-page {
+  display: grid;
+  place-items: center;
+  padding: 56px 20px;
+}
+
+.auth-card {
+  width: min(100%, 460px);
+  padding: 36px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: rgba(21, 32, 27, 0.92);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.24);
+}
+
+.auth-heading {
+  margin-bottom: 28px;
+}
+
+.eyebrow {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--accent);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.auth-heading h1,
+.home-page h1,
+.dashboard-page h1 {
+  margin: 0;
+  color: var(--text);
+  letter-spacing: -0.035em;
+}
+
+.auth-heading h1 {
+  font-size: 2rem;
+}
+
+.auth-heading p,
+.home-page p,
+.dashboard-page p {
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.auth-heading p {
+  margin: 10px 0 0;
+  font-size: 0.92rem;
+}
+
+.auth-card form {
+  display: grid;
+  gap: 18px;
+}
+
+.auth-field {
+  display: grid;
+  gap: 7px;
+}
+
+.auth-field label {
+  color: #d9dfda;
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.auth-input-wrapper {
+  position: relative;
+}
+
+.auth-input-wrapper input {
+  width: 100%;
+  height: 48px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  outline: none;
+  color: var(--text);
+  background: #101914;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.auth-input-wrapper input[type='password'],
+.auth-input-wrapper input[type='text'] {
+  padding-inline-end: 64px;
+}
+
+.auth-input-wrapper input:focus {
+  border-color: var(--accent-dark);
+  box-shadow: 0 0 0 3px rgba(212, 174, 92, 0.12);
+}
+
+.auth-input-wrapper input[aria-invalid='true'] {
+  border-color: rgba(255, 140, 133, 0.7);
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  inset-inline-end: 12px;
+  padding: 4px;
+  border: 0;
+  color: var(--accent);
+  background: transparent;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+.field-error {
+  margin: 0;
+  color: var(--danger);
+  font-size: 0.76rem;
+}
+
+.form-error {
+  padding: 11px 13px;
+  border: 1px solid rgba(255, 140, 133, 0.3);
+  border-radius: 8px;
+  color: var(--danger);
+  background: rgba(255, 140, 133, 0.08);
+  font-size: 0.82rem;
+}
+
+.auth-submit,
+.primary-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  border: 0;
+  border-radius: 9px;
+  color: #17140d;
+  background: var(--accent);
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 150ms ease, transform 150ms ease;
+}
+
+.auth-submit:hover:not(:disabled),
+.primary-link:hover {
+  background: #e1bd6d;
+  transform: translateY(-1px);
+}
+
+.auth-submit:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.auth-switch {
+  margin: 24px 0 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+  text-align: center;
+}
+
+.auth-switch a {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.home-page,
+.dashboard-page {
+  width: min(900px, calc(100% - 40px));
+  margin: auto;
+  padding: 90px 0;
+}
+
+.home-page {
+  text-align: center;
+}
+
+.home-page h1 {
+  max-width: 800px;
+  margin: 0 auto;
+  font-size: clamp(2.5rem, 7vw, 5rem);
+  line-height: 1.02;
+}
+
+.home-page p {
+  max-width: 650px;
+  margin: 24px auto 30px;
+}
+
+.primary-link {
+  min-width: 150px;
+  padding: 0 22px;
+}
+
+.dashboard-page {
+  align-self: start;
+}
+
+.dashboard-page h1 {
+  font-size: clamp(2.2rem, 5vw, 4rem);
+}
+
+.dashboard-page p {
+  max-width: 650px;
+}
+
+.page-loader {
+  display: grid;
+  min-height: 55vh;
+  place-items: center;
+  color: var(--muted);
+}
+
+.site-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 24px 0;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+@media (max-width: 640px) {
+  .site-header,
+  .site-footer {
+    width: min(100% - 28px, 1120px);
+  }
+
+  .site-header {
+    min-height: 68px;
+  }
+
+  .brand > span:last-child,
+  .nav-user {
+    display: none;
+  }
+
+  .site-header nav {
+    gap: 12px;
+  }
+
+  .auth-page {
+    align-items: start;
+    padding: 32px 14px;
+  }
+
+  .auth-card {
+    padding: 26px 20px;
+  }
+
+  .site-footer {
+    flex-direction: column;
+    text-align: center;
+  }
+}
