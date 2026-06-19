@@ -6,7 +6,7 @@ import { LanguageProvider } from './shared/i18n/LanguageProvider';
 import './index.css';
 import { router } from './router.tsx';
 
-#hi
+// hi
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
