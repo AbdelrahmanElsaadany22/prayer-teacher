@@ -1,24 +1,41 @@
-import { ConnectedSocket, MessageBody, OnGatewayConnection, SubscribeMessage, WebSocketGateway, WsException } from '@nestjs/websockets';
+import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer, WsException } from '@nestjs/websockets';
 import { ChatService } from './chat.service';
 import { Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
+import { Server } from 'http';
 
 
 @WebSocketGateway()
-export class ChatGateway implements OnGatewayConnection{
+export class ChatGateway implements OnGatewayConnection,OnGatewayDisconnect{
   constructor(private chatService:ChatService,
     private jwtService:JwtService
   ){}
+  @WebSocketServer()
+  server!:Server
+  private onlineUsers=new Map<string,string>;
   async handleConnection(socket:Socket) {
     try {
       const token=socket.handshake.auth.token
       const payload=await this.jwtService.verifyAsync(token)
       socket.data.user=payload
       console.log("Connected User:",socket.data.user)
+      //key and value
+      this.onlineUsers.set(payload.id,socket.id)
+      this.server.emit("userOnline",{userId:payload.id})
     } catch (error) {
       socket.disconnect()
     }
   }
+
+
+  async handleDisconnect(socket:Socket) {
+    const userId =socket.data.user?.id;
+    if(userId){
+      this.onlineUsers.delete(userId)
+      this.server.emit("userOffline",{userId:userId})}
+  }
+
+
   @SubscribeMessage('joinRoom')
   joinRoom(
     @ConnectedSocket() currentSocket:Socket
@@ -63,4 +80,9 @@ export class ChatGateway implements OnGatewayConnection{
     return await this.chatService.getMessages(userId,data.friendId)
   }
 
+  //check if one user online
+  @SubscribeMessage("checkOnline")
+  checkOnline(
+  @MessageBody()data:any){
+    return {online:this.onlineUsers.has(data.userId)}}
 }
