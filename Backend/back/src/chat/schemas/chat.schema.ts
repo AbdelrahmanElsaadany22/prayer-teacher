@@ -23,6 +23,11 @@ receiver!:string;
 @Prop()
 message!:string;
 
+//to check if seen or not
+@Prop({
+ default:false
+})
+seen!:boolean;
 }
 
 

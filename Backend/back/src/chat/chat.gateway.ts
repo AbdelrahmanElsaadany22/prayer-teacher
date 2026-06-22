@@ -1,8 +1,8 @@
 import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer, WsException } from '@nestjs/websockets';
 import { ChatService } from './chat.service';
-import { Socket } from 'socket.io';
+import { Server,Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
-import { Server } from 'http';
+
 
 
 @WebSocketGateway()
@@ -85,4 +85,17 @@ export class ChatGateway implements OnGatewayConnection,OnGatewayDisconnect{
   checkOnline(
   @MessageBody()data:any){
     return {online:this.onlineUsers.has(data.userId)}}
+
+
+    //seen wla la2
+    @SubscribeMessage("markSeen")
+    async markseen(
+      @ConnectedSocket() currentSocket:Socket,
+      @MessageBody() data:any
+    ){
+      const userId =currentSocket.data.user.id;
+      await this.chatService.markMessageSeen(userId,data.friendId)
+      const room=[userId,data.friendId].sort().join("_")
+      this.server.to(room).emit("messagesSeen",{seenBy:userId})
+    }
 }
