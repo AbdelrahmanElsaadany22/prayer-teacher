@@ -15,7 +15,7 @@ export class UsersService {
   create(data: CreateUserData): Promise<UserDocument> {
     return this.userModel.create(data);
   }
-
+  
   findByEmail(email: string): Promise<UserDocument | null> {
     return this.userModel.findOne({ email }).exec();
   }
