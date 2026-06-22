@@ -20,14 +20,29 @@
   --pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cg fill='none' stroke='%23d4ae5c' stroke-opacity='0.04' stroke-width='1'%3E%3Crect x='16' y='16' width='32' height='32'/%3E%3Crect x='16' y='16' width='32' height='32' transform='rotate(45 32 32)'/%3E%3Ccircle cx='32' cy='32' r='3'/%3E%3C/g%3E%3C/svg%3E");
 }
 
-/* Arabic typography: switch the whole UI to an Arabic face in RTL mode. */
+/* Arabic typography */
 :root:lang(ar),
 [dir='rtl'] {
   font-family: 'Noto Naskh Arabic', 'Amiri', 'Jost', system-ui, sans-serif;
 }
 
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
+}
+
+/* Keyboard focus ring */
+*:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Text selection */
+::selection {
+  background: rgba(212, 174, 92, 0.22);
+  color: var(--text);
 }
 
 body {
@@ -47,56 +62,6 @@ input {
   font: inherit;
 }
 
-h1,
-h2,
-h3 {
-  font-family: var(--display-font);
-}
-
-/* ── Islamic-style ornaments ─────────────────────────────────────────────── */
-
-/* Gold flourish flanking the small uppercase eyebrow labels. */
-.eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.eyebrow::before,
-.eyebrow::after {
-  content: '';
-  width: 26px;
-  height: 1px;
-  background: linear-gradient(
-    to right,
-    transparent,
-    var(--accent),
-    transparent
-  );
-}
-
-/* Language switch button in the header. */
-.lang-toggle {
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  padding: 0;
-  border: 1px solid rgba(212, 174, 92, 0.45);
-  border-radius: 50%;
-  color: var(--accent);
-  background: transparent;
-  font-weight: 700;
-  font-size: 0.85rem;
-  cursor: pointer;
-  transition: background 150ms ease, color 150ms ease;
-}
-
-.lang-toggle:hover {
-  background: rgba(212, 174, 92, 0.12);
-  color: var(--text);
-}
-
 button,
 a {
   -webkit-tap-highlight-color: transparent;
@@ -105,6 +70,87 @@ a {
 a {
   color: inherit;
 }
+
+h1,
+h2,
+h3 {
+  font-family: var(--display-font);
+}
+
+/* ── Eyebrow label ───────────────────────────────────────────────────────── */
+
+/* Base: gold uppercase pill used everywhere */
+.eyebrow {
+  display: block;
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* Home-hero variant: flanking gold lines  ─── TEXT ─── */
+.home-page .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.home-page .eyebrow::before,
+.home-page .eyebrow::after {
+  content: '';
+  width: 26px;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--accent), transparent);
+  flex-shrink: 0;
+}
+
+/* Auth-card variant: just a small top label */
+.auth-heading .eyebrow {
+  margin-bottom: 10px;
+}
+
+/* ── Language segmented pill ─────────────────────────────────────────────── */
+
+.lang-pill {
+  display: flex;
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 3px;
+  gap: 2px;
+}
+
+.lang-opt {
+  display: grid;
+  place-items: center;
+  min-width: 34px;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 5px;
+  font-family: 'Jost', system-ui, sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 150ms ease, color 150ms ease;
+  background: transparent;
+  color: var(--muted);
+}
+
+.lang-opt--active {
+  background: var(--accent);
+  color: #17140d;
+}
+
+.lang-opt:not(.lang-opt--active):hover {
+  color: var(--text);
+}
+
+/* ── App shell ───────────────────────────────────────────────────────────── */
 
 #root {
   min-height: 100vh;
@@ -115,6 +161,8 @@ a {
   grid-template-rows: auto 1fr auto;
   min-height: 100vh;
 }
+
+/* ── Site header ─────────────────────────────────────────────────────────── */
 
 .site-header,
 .site-footer {
@@ -161,16 +209,34 @@ a {
 
 .site-header nav a,
 .nav-button {
+  position: relative;
   color: var(--muted);
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   font-weight: 600;
+  letter-spacing: 0.02em;
   text-decoration: none;
+  transition: color 150ms ease;
 }
 
 .site-header nav a:hover,
-.site-header nav a.active,
 .nav-button:hover {
   color: var(--text);
+}
+
+/* Active nav link — gold underline indicator */
+.site-header nav a.active {
+  color: var(--text);
+}
+
+.site-header nav a.active::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  inset-inline-start: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 1px;
 }
 
 .site-header .nav-signup {
@@ -179,6 +245,17 @@ a {
   border-radius: 6px;
   color: var(--accent);
   letter-spacing: 0.04em;
+  transition: background 150ms ease, color 150ms ease;
+}
+
+.site-header .nav-signup:hover {
+  background: rgba(212, 174, 92, 0.08);
+  color: var(--text);
+}
+
+/* Remove active underline from the bordered signup button */
+.site-header .nav-signup.active::after {
+  display: none;
 }
 
 .nav-button {
@@ -196,6 +273,8 @@ a {
 main {
   display: grid;
 }
+
+/* ── Auth pages ──────────────────────────────────────────────────────────── */
 
 .auth-page {
   display: grid;
@@ -216,54 +295,41 @@ main {
   margin-bottom: 28px;
 }
 
-.eyebrow {
-  display: block;
-  margin-bottom: 10px;
-  color: var(--accent);
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.auth-heading h1,
-.home-page h1,
-.dashboard-page h1 {
+.auth-heading h1 {
   margin: 0;
+  font-size: 2rem;
   color: var(--text);
   letter-spacing: -0.035em;
 }
 
-.auth-heading h1 {
-  font-size: 2rem;
-}
-
-.auth-heading p,
-.home-page p,
-.dashboard-page p {
-  color: var(--muted);
-  line-height: 1.7;
-}
-
 .auth-heading p {
   margin: 10px 0 0;
+  color: var(--muted);
   font-size: 0.92rem;
+  line-height: 1.7;
 }
 
 .auth-card form {
   display: grid;
-  gap: 18px;
+  gap: 16px;
+}
+
+/* Full-width submit inside the auth form */
+.auth-card form .auth-submit {
+  width: 100%;
+  margin-top: 4px;
 }
 
 .auth-field {
   display: grid;
-  gap: 7px;
+  gap: 6px;
 }
 
 .auth-field label {
-  color: #d9dfda;
-  font-size: 0.84rem;
+  color: var(--muted);
+  font-size: 0.82rem;
   font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 .auth-input-wrapper {
@@ -284,7 +350,7 @@ main {
 
 .auth-input-wrapper input[type='password'],
 .auth-input-wrapper input[type='text'] {
-  padding-inline-end: 64px;
+  padding-inline-end: 50px;
 }
 
 .auth-input-wrapper input:focus {
@@ -296,18 +362,27 @@ main {
   border-color: rgba(255, 140, 133, 0.7);
 }
 
+/* Eye icon toggle for password fields */
 .password-toggle {
   position: absolute;
   top: 50%;
-  inset-inline-end: 12px;
-  padding: 4px;
+  inset-inline-end: 11px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
   border: 0;
-  color: var(--accent);
+  border-radius: 4px;
+  color: var(--muted);
   background: transparent;
-  font-size: 0.75rem;
-  font-weight: 700;
   cursor: pointer;
   transform: translateY(-50%);
+  transition: color 150ms ease;
+}
+
+.password-toggle:hover {
+  color: var(--accent);
 }
 
 .field-error {
@@ -317,13 +392,16 @@ main {
 }
 
 .form-error {
-  padding: 11px 13px;
+  padding: 10px 13px;
   border: 1px solid rgba(255, 140, 133, 0.3);
   border-radius: 8px;
   color: var(--danger);
   background: rgba(255, 140, 133, 0.08);
   font-size: 0.82rem;
+  line-height: 1.5;
 }
+
+/* ── Primary button / link ───────────────────────────────────────────────── */
 
 .auth-submit,
 .primary-link {
@@ -338,24 +416,26 @@ main {
   font-family: 'Jost', system-ui, sans-serif;
   font-weight: 700;
   letter-spacing: 0.07em;
+  text-transform: uppercase;
   text-decoration: none;
   cursor: pointer;
-  transition: background 150ms ease, transform 150ms ease;
+  transition: background 150ms ease, transform 150ms ease, box-shadow 150ms ease;
 }
 
 .auth-submit:hover:not(:disabled),
 .primary-link:hover {
-  background: #e1bd6d;
+  background: #e0bc6a;
   transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(212, 174, 92, 0.25);
 }
 
 .auth-submit:disabled {
   cursor: wait;
-  opacity: 0.65;
+  opacity: 0.6;
 }
 
 .auth-switch {
-  margin: 24px 0 0;
+  margin: 22px 0 0;
   color: var(--muted);
   font-size: 0.86rem;
   text-align: center;
@@ -364,7 +444,15 @@ main {
 .auth-switch a {
   color: var(--accent);
   font-weight: 700;
+  text-decoration: none;
+  transition: color 150ms ease;
 }
+
+.auth-switch a:hover {
+  color: #e0bc6a;
+}
+
+/* ── Home / Dashboard page containers ───────────────────────────────────── */
 
 .home-page,
 .dashboard-page {
@@ -382,16 +470,20 @@ main {
   margin: 0 auto;
   font-size: clamp(2.5rem, 7vw, 5rem);
   line-height: 1.02;
+  color: var(--text);
+  letter-spacing: -0.035em;
 }
 
 .home-page p {
   max-width: 650px;
   margin: 24px auto 30px;
+  color: var(--muted);
+  line-height: 1.7;
 }
 
 .primary-link {
   min-width: 150px;
-  padding: 0 22px;
+  padding: 0 24px;
 }
 
 .dashboard-page {
@@ -400,11 +492,17 @@ main {
 
 .dashboard-page h1 {
   font-size: clamp(2.2rem, 5vw, 4rem);
+  color: var(--text);
+  letter-spacing: -0.035em;
 }
 
 .dashboard-page p {
   max-width: 650px;
+  color: var(--muted);
+  line-height: 1.7;
 }
+
+/* ── Utility ─────────────────────────────────────────────────────────────── */
 
 .page-loader {
   display: grid;
@@ -412,6 +510,8 @@ main {
   place-items: center;
   color: var(--muted);
 }
+
+/* ── Footer ──────────────────────────────────────────────────────────────── */
 
 .site-footer {
   display: flex;
@@ -423,6 +523,8 @@ main {
   font-size: 0.78rem;
 }
 
+/* ── Mobile ──────────────────────────────────────────────────────────────── */
+
 @media (max-width: 640px) {
   .site-header,
   .site-footer {
@@ -430,7 +532,7 @@ main {
   }
 
   .site-header {
-    min-height: 68px;
+    min-height: 64px;
   }
 
   .brand > span:last-child,
@@ -439,7 +541,7 @@ main {
   }
 
   .site-header nav {
-    gap: 12px;
+    gap: 10px;
   }
 
   .auth-page {

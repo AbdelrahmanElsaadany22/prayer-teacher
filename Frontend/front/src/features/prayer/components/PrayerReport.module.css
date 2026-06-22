@@ -151,19 +151,22 @@
 
 .restartBtn {
   background: var(--accent);
-  color: #0d0d0d;
+  color: #17140d;
   border: none;
   border-radius: 8px;
   padding: 0.85rem 2.5rem;
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   cursor: pointer;
-  transition: opacity 0.2s, transform 0.15s;
+  transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
 }
 
 .restartBtn:hover {
-  opacity: 0.9;
+  background: #e0bc6a;
   transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(212, 174, 92, 0.25);
 }
 
 @media (max-width: 640px) {
