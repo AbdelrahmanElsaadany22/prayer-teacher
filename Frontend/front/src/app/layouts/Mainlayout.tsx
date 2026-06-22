@@ -17,7 +17,7 @@ export default function MainLayout() {
     <div className="app-shell">
       <header className="site-header">
         <Link className="brand" to="/">
-          <span className="brand-mark">ص</span>
+          <img src="/logo.png" alt="Estaقِm logo" className="brand-logo" />
           <span>{t('brand.name')}</span>
         </Link>
 
