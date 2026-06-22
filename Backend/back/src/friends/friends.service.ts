@@ -26,9 +26,11 @@ export class FriendsService {
     }
 
     //2
-    const ifFound=await this.friendRequestModel.find({
-      sender:senderId,
-      receiver:receiverId
+    const ifFound=await this.friendRequestModel.findOne({
+       $or:[
+    { sender: senderId, receiver: receiverId },
+    { sender: receiverId, receiver: senderId }
+  ]
     })
     if(ifFound){
       throw new BadRequestException("The Friend Request Already Sent!")
