@@ -43,5 +43,14 @@ export class ChatService {
                     sender:friendId,
                     receiver:userId}
  ]}).sort({createdAt:1}).limit(50)
+}
+
+    async markMessageSeen(userId:string,friendId:string){
+        return await this.messageModel.updateMany({
+            sender:friendId,receiver:userId,seen:false
+        },
+        {$set:{seen:true}}
+    )
     }
+
 }
