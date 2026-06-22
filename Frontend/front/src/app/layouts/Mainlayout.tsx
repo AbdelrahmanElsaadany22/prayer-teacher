@@ -1,11 +1,12 @@
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../features/auth/hooks/useAuth';
 import { useI18n } from '../../shared/i18n/LanguageProvider';
+import { LANGUAGES } from '../../shared/i18n/translations';
 
 export default function MainLayout() {
   const navigate = useNavigate();
   const { isAuthenticated, logout, user } = useAuth();
-  const { t, lang, toggleLang } = useI18n();
+  const { t, lang, setLang } = useI18n();
 
   function handleLogout() {
     logout();
@@ -16,7 +17,7 @@ export default function MainLayout() {
     <div className="app-shell">
       <header className="site-header">
         <Link className="brand" to="/">
-          <span className="brand-mark">ص</span>
+          <img src="/logo.png" alt="Estaقِm logo" className="brand-logo" />
           <span>{t('brand.name')}</span>
         </Link>
 
@@ -38,15 +39,19 @@ export default function MainLayout() {
             </>
           )}
 
-          <button
-            className="lang-toggle"
-            type="button"
-            onClick={toggleLang}
-            aria-label="Switch language"
-            title={lang === 'ar' ? 'English' : 'العربية'}
-          >
-            {lang === 'ar' ? 'EN' : 'ع'}
-          </button>
+          <div className="lang-pill" role="group" aria-label="Select language">
+            {LANGUAGES.map(({ code, label }) => (
+              <button
+                key={code}
+                className={`lang-opt${lang === code ? ' lang-opt--active' : ''}`}
+                type="button"
+                onClick={() => setLang(code)}
+                aria-pressed={lang === code}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </nav>
       </header>
 

@@ -26,12 +26,12 @@ export function localizePrayerName(name: string, lang: Lang): string {
 export const translations: Record<Lang, Dict> = {
   en: {
     // ── Brand / shell ──
-    'brand.name': 'Salah Coach',
+    'brand.name': 'Estaقِm',
     'nav.dashboard': 'Dashboard',
     'nav.logout': 'Log out',
     'nav.login': 'Log in',
     'nav.signup': 'Sign up',
-    'footer.brand': 'Salah Coach',
+    'footer.brand': 'Estaقِm',
     'footer.privacy': 'Your camera data stays on your device.',
 
     // ── Home ──
@@ -48,7 +48,7 @@ export const translations: Record<Lang, Dict> = {
     'login.subtitle': 'Continue tracking your prayer practice and improvements.',
     'login.submit': 'Log in',
     'login.submitting': 'Logging in...',
-    'login.switch': 'New to Salah Coach?',
+    'login.switch': 'New to Estaقِm?',
     'login.switchLink': 'Create an account',
 
     // ── Signup ──
@@ -103,7 +103,7 @@ export const translations: Record<Lang, Dict> = {
 
     // ── Prayer setup ──
     'setup.logo': 'Prayer',
-    'setup.sub': 'Salah Coach — Real-Time Guidance',
+    'setup.sub': 'Estaقِm — Real-Time Guidance',
     'setup.rakas': "{n} rak'as",
     'setup.begin': 'Begin Prayer',
     'setup.tips':
@@ -133,12 +133,12 @@ export const translations: Record<Lang, Dict> = {
 
   ar: {
     // ── Brand / shell ──
-    'brand.name': 'مُعلِّم الصلاة',
+    'brand.name': 'إِسْتَقِمْ',
     'nav.dashboard': 'لوحة المتابعة',
     'nav.logout': 'تسجيل الخروج',
     'nav.login': 'تسجيل الدخول',
     'nav.signup': 'إنشاء حساب',
-    'footer.brand': 'مُعلِّم الصلاة',
+    'footer.brand': 'إِسْتَقِمْ',
     'footer.privacy': 'بيانات الكاميرا بتاعتك بتفضل على جهازك.',
 
     // ── Home ──
@@ -155,7 +155,7 @@ export const translations: Record<Lang, Dict> = {
     'login.subtitle': 'كمّل متابعة أدائك في الصلاة وتطوّرك.',
     'login.submit': 'تسجيل الدخول',
     'login.submitting': 'جارٍ الدخول...',
-    'login.switch': 'جديد على مُعلِّم الصلاة؟',
+    'login.switch': 'جديد على إِسْتَقِمْ؟',
     'login.switchLink': 'أنشئ حساباً',
 
     // ── Signup ──

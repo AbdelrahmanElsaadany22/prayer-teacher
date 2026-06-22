@@ -34,11 +34,13 @@
 /* ── Section title ──────────────────────────────────────────── */
 .sectionTitle {
   margin: 2.5rem 0 1rem;
-  font-size: 0.85rem;
-  font-weight: 700;
+  padding-bottom: 0.65rem;
+  font-size: 0.72rem;
+  font-weight: 600;
   color: var(--muted);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.14em;
+  border-bottom: 1px solid var(--border);
 }
 
 /* ── Stats cards grid ───────────────────────────────────────── */
@@ -52,7 +54,7 @@
   padding: 1.4rem 1.5rem;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: 10px;
 }
 
 .statLabel {
@@ -91,7 +93,7 @@
   padding: 1.25rem 1.5rem;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: 10px;
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
@@ -119,7 +121,7 @@
 .chartCard {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: 10px;
   padding: 1.5rem;
 }
 
@@ -215,7 +217,7 @@
   padding: 0.9rem 1.25rem;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 10px;
   transition: border-color 0.2s;
 }
 
@@ -295,7 +297,7 @@
   color: var(--muted);
   background: var(--surface);
   border: 1px dashed var(--border);
-  border-radius: 14px;
+  border-radius: 10px;
   font-size: 0.9rem;
 }
 
@@ -326,11 +328,12 @@
 .pageBtn {
   padding: 8px 18px;
   border: 1px solid var(--accent-dark);
-  border-radius: 8px;
+  border-radius: 6px;
   color: var(--accent);
   background: transparent;
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
+  letter-spacing: 0.05em;
   cursor: pointer;
   transition: background 150ms ease, opacity 150ms ease;
 }
