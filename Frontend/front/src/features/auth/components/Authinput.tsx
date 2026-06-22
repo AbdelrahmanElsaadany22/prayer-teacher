@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { HTMLInputAutoCompleteAttribute } from 'react';
 import type { UseFormRegisterReturn } from 'react-hook-form';
+
+const MASK = '✦';
 
 type AuthInputProps = {
   label: string;
@@ -18,30 +20,91 @@ export default function AuthInput({
   register,
 }: AuthInputProps) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [displayValue, setDisplayValue] = useState('');
+  const realValue = useRef('');
   const inputId = `auth-${register.name}`;
   const isPassword = type === 'password';
+
+  function handlePasswordChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const raw = e.target.value;
+    const sel = e.target.selectionStart;
+
+    if (isPasswordVisible) {
+      realValue.current = raw;
+      setDisplayValue(raw);
+    } else {
+      const prevLen = realValue.current.length;
+      const newLen = raw.length;
+
+      if (newLen < prevLen) {
+        // Deletion — use cursor position to know where characters were removed
+        const deleteAt = sel ?? newLen;
+        const deleteCount = prevLen - newLen;
+        realValue.current =
+          realValue.current.slice(0, deleteAt) +
+          realValue.current.slice(deleteAt + deleteCount);
+      } else if (newLen > prevLen) {
+        // Insertion — non-MASK chars are the newly typed characters
+        const insertAt = sel != null ? sel - (newLen - prevLen) : prevLen;
+        const newChars = raw.replace(new RegExp(MASK, 'g'), '');
+        realValue.current =
+          realValue.current.slice(0, insertAt) +
+          newChars +
+          realValue.current.slice(insertAt);
+      }
+
+      setDisplayValue(MASK.repeat(realValue.current.length));
+    }
+
+    // Notify react-hook-form with the real value
+    register.onChange({ target: { name: register.name, value: realValue.current } });
+  }
+
+  function toggleVisibility() {
+    const next = !isPasswordVisible;
+    setIsPasswordVisible(next);
+    setDisplayValue(next ? realValue.current : MASK.repeat(realValue.current.length));
+  }
 
   return (
     <div className="auth-field">
       <label htmlFor={inputId}>{label}</label>
       <div className="auth-input-wrapper">
-        <input
-          id={inputId}
-          type={isPassword && isPasswordVisible ? 'text' : type}
-          autoComplete={autoComplete}
-          aria-invalid={Boolean(error)}
-          aria-describedby={error ? `${inputId}-error` : undefined}
-          {...register}
-        />
+        {isPassword ? (
+          <input
+            id={inputId}
+            type="text"
+            autoComplete={autoComplete}
+            autoCapitalize="off"
+            autoCorrect="off"
+            spellCheck={false}
+            value={displayValue}
+            onChange={handlePasswordChange}
+            onBlur={register.onBlur}
+            name={register.name}
+            ref={register.ref}
+            aria-invalid={Boolean(error)}
+            aria-describedby={error ? `${inputId}-error` : undefined}
+          />
+        ) : (
+          <input
+            id={inputId}
+            type={type}
+            autoComplete={autoComplete}
+            aria-invalid={Boolean(error)}
+            aria-describedby={error ? `${inputId}-error` : undefined}
+            {...register}
+          />
+        )}
+
         {isPassword && (
           <button
             className="password-toggle"
             type="button"
-            onClick={() => setIsPasswordVisible((v) => !v)}
+            onClick={toggleVisibility}
             aria-label={isPasswordVisible ? 'Hide password' : 'Show password'}
           >
             {isPasswordVisible ? (
-              /* eye-off */
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" strokeWidth="2"
                 strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -52,7 +115,6 @@ export default function AuthInput({
                 <line x1="1" y1="1" x2="23" y2="23" />
               </svg>
             ) : (
-              /* eye */
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" strokeWidth="2"
                 strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -63,6 +125,7 @@ export default function AuthInput({
           </button>
         )}
       </div>
+
       {error && (
         <p className="field-error" id={`${inputId}-error`}>
           {error}
