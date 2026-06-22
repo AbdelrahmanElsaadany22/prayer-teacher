@@ -1,31 +1,29 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Naskh+Arabic:wght@500;600;700&family=Amiri:wght@400;700&family=Reem+Kufi:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Noto+Naskh+Arabic:wght@500;600;700&family=Amiri:wght@400;700&family=Reem+Kufi:wght@500;600;700&display=swap');
 
 :root {
-  font-family: 'Inter', system-ui, sans-serif;
-  color: #f4f0e7;
-  background: #0d1512;
+  font-family: 'Jost', system-ui, sans-serif;
+  color: #e8dcc8;
+  background: #140a04;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
-  --background: #0d1512;
-  --surface: #15201b;
-  --surface-light: #1b2922;
-  --border: #304238;
-  --text: #f4f0e7;
-  --muted: #a9b4ad;
+  --background: #140a04;
+  --surface: #1d1108;
+  --surface-light: #251608;
+  --border: #3d2b18;
+  --text: #e8dcc8;
+  --muted: #9b8b78;
   --accent: #d4ae5c;
   --accent-dark: #b18a39;
   --danger: #ff8c85;
-  /* Display font for headings & brand — Reem Kufi reads well in both scripts. */
-  --display-font: 'Reem Kufi', 'Inter', system-ui, sans-serif;
-  /* Subtle 8-point-star (najmah) geometric tile, drawn in faint gold. */
-  --pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cg fill='none' stroke='%23d4ae5c' stroke-opacity='0.05' stroke-width='1'%3E%3Crect x='16' y='16' width='32' height='32'/%3E%3Crect x='16' y='16' width='32' height='32' transform='rotate(45 32 32)'/%3E%3Ccircle cx='32' cy='32' r='3'/%3E%3C/g%3E%3C/svg%3E");
+  --display-font: 'Reem Kufi', 'Jost', system-ui, sans-serif;
+  --pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cg fill='none' stroke='%23d4ae5c' stroke-opacity='0.04' stroke-width='1'%3E%3Crect x='16' y='16' width='32' height='32'/%3E%3Crect x='16' y='16' width='32' height='32' transform='rotate(45 32 32)'/%3E%3Ccircle cx='32' cy='32' r='3'/%3E%3C/g%3E%3C/svg%3E");
 }
 
 /* Arabic typography: switch the whole UI to an Arabic face in RTL mode. */
 :root:lang(ar),
 [dir='rtl'] {
-  font-family: 'Noto Naskh Arabic', 'Amiri', 'Inter', system-ui, sans-serif;
+  font-family: 'Noto Naskh Arabic', 'Amiri', 'Jost', system-ui, sans-serif;
 }
 
 * {
@@ -38,8 +36,8 @@ body {
   min-height: 100vh;
   background:
     var(--pattern),
-    radial-gradient(circle at 15% 0%, rgba(212, 174, 92, 0.12), transparent 30%),
-    radial-gradient(circle at 85% 100%, rgba(212, 174, 92, 0.06), transparent 35%),
+    radial-gradient(ellipse 60% 40% at 50% 0%, rgba(180, 110, 30, 0.09), transparent 60%),
+    radial-gradient(circle at 85% 100%, rgba(212, 174, 92, 0.04), transparent 35%),
     var(--background);
   background-attachment: fixed;
 }
@@ -176,10 +174,11 @@ a {
 }
 
 .site-header .nav-signup {
-  padding: 9px 15px;
+  padding: 8px 15px;
   border: 1px solid var(--accent-dark);
-  border-radius: 8px;
+  border-radius: 6px;
   color: var(--accent);
+  letter-spacing: 0.04em;
 }
 
 .nav-button {
@@ -208,9 +207,9 @@ main {
   width: min(100%, 460px);
   padding: 36px;
   border: 1px solid var(--border);
-  border-radius: 18px;
-  background: rgba(21, 32, 27, 0.92);
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.24);
+  border-radius: 12px;
+  background: rgba(29, 17, 8, 0.96);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.4);
 }
 
 .auth-heading {
@@ -276,10 +275,10 @@ main {
   height: 48px;
   padding: 0 14px;
   border: 1px solid var(--border);
-  border-radius: 9px;
+  border-radius: 8px;
   outline: none;
   color: var(--text);
-  background: #101914;
+  background: #0e0804;
   transition: border-color 150ms ease, box-shadow 150ms ease;
 }
 
@@ -333,10 +332,12 @@ main {
   justify-content: center;
   min-height: 48px;
   border: 0;
-  border-radius: 9px;
+  border-radius: 8px;
   color: #17140d;
   background: var(--accent);
+  font-family: 'Jost', system-ui, sans-serif;
   font-weight: 700;
+  letter-spacing: 0.07em;
   text-decoration: none;
   cursor: pointer;
   transition: background 150ms ease, transform 150ms ease;
