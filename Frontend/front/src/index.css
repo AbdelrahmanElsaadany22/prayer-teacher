@@ -1,7 +1,19 @@
-@import url('https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Noto+Naskh+Arabic:wght@500;600;700&family=Amiri:wght@400;700&family=Reem+Kufi:wght@500;600;700&display=swap');
+/* ── Local fonts ─────────────────────────────────────────────────────────── */
+
+@font-face { font-family: 'ThmanyahSans'; src: url('/fonts/thmanyahsans/thmanyahsans-Light.woff2') format('woff2'); font-weight: 300; font-display: swap; }
+@font-face { font-family: 'ThmanyahSans'; src: url('/fonts/thmanyahsans/thmanyahsans-Regular.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'ThmanyahSans'; src: url('/fonts/thmanyahsans/thmanyahsans-Medium.woff2') format('woff2'); font-weight: 500; font-display: swap; }
+@font-face { font-family: 'ThmanyahSans'; src: url('/fonts/thmanyahsans/thmanyahsans-Bold.woff2') format('woff2'); font-weight: 700; font-display: swap; }
+@font-face { font-family: 'ThmanyahSans'; src: url('/fonts/thmanyahsans/thmanyahsans-Black.woff2') format('woff2'); font-weight: 900; font-display: swap; }
+
+@font-face { font-family: 'ThmanyahDisplay'; src: url('/fonts/thmanyahserifdisplay/thmanyahserifdisplay-Light.woff2') format('woff2'); font-weight: 300; font-display: swap; }
+@font-face { font-family: 'ThmanyahDisplay'; src: url('/fonts/thmanyahserifdisplay/thmanyahserifdisplay-Regular.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'ThmanyahDisplay'; src: url('/fonts/thmanyahserifdisplay/thmanyahserifdisplay-Medium.woff2') format('woff2'); font-weight: 500; font-display: swap; }
+@font-face { font-family: 'ThmanyahDisplay'; src: url('/fonts/thmanyahserifdisplay/thmanyahserifdisplay-Bold.woff2') format('woff2'); font-weight: 700; font-display: swap; }
+@font-face { font-family: 'ThmanyahDisplay'; src: url('/fonts/thmanyahserifdisplay/thmanyahserifdisplay-Black.woff2') format('woff2'); font-weight: 900; font-display: swap; }
 
 :root {
-  font-family: 'Jost', system-ui, sans-serif;
+  font-family: 'ThmanyahSans', system-ui, sans-serif;
   color: #e8dcc8;
   background: #140a04;
   font-synthesis: none;
@@ -16,14 +28,8 @@
   --accent: #d4ae5c;
   --accent-dark: #b18a39;
   --danger: #ff8c85;
-  --display-font: 'Reem Kufi', 'Jost', system-ui, sans-serif;
+  --display-font: 'ThmanyahDisplay', system-ui, serif;
   --pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cg fill='none' stroke='%23d4ae5c' stroke-opacity='0.04' stroke-width='1'%3E%3Crect x='16' y='16' width='32' height='32'/%3E%3Crect x='16' y='16' width='32' height='32' transform='rotate(45 32 32)'/%3E%3Ccircle cx='32' cy='32' r='3'/%3E%3C/g%3E%3C/svg%3E");
-}
-
-/* Arabic typography */
-:root:lang(ar),
-[dir='rtl'] {
-  font-family: 'Noto Naskh Arabic', 'Amiri', 'Jost', system-ui, sans-serif;
 }
 
 *,
@@ -56,6 +62,31 @@ body {
     var(--background);
   background-attachment: fixed;
 }
+
+/* ── Scrollbar ───────────────────────────────────────────────────────────── */
+
+
+			::-webkit-scrollbar {
+			  width: 10px;
+			}
+
+			::-webkit-scrollbar-track {
+			  border: 0px solid var(--background);
+			  border-width: 0px 3px 0px 3px;
+			  border-radius: 0px;
+			  background-color: var(--background);
+			}
+
+			::-webkit-scrollbar-thumb {
+			  background: var(--border);
+			  border: 0px solid var(--border);
+			  border-width: 0px 3px 0px 3px;
+			  border-radius: 0px;
+			}
+
+			::-webkit-scrollbar-thumb:hover {
+			  background: var(--accent);
+			}
 
 button,
 input {
@@ -130,7 +161,7 @@ h3 {
   padding: 5px 10px;
   border: none;
   border-radius: 5px;
-  font-family: 'Jost', system-ui, sans-serif;
+  font-family: 'ThmanyahSans', system-ui, sans-serif;
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -408,7 +439,7 @@ main {
   border-radius: 8px;
   color: #17140d;
   background: var(--accent);
-  font-family: 'Jost', system-ui, sans-serif;
+  font-family: 'ThmanyahSans', system-ui, sans-serif;
   font-weight: 700;
   letter-spacing: 0.07em;
   text-transform: uppercase;
@@ -447,6 +478,82 @@ main {
   color: #e0bc6a;
 }
 
+/* ── 404 page ────────────────────────────────────────────────────────────── */
+
+.not-found-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 100vh;
+  padding: 60px 24px;
+  gap: 0;
+}
+
+.not-found-code {
+  font-family: var(--display-font);
+  font-size: clamp(5rem, 18vw, 9rem);
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  background: linear-gradient(160deg, #e8c97a 0%, var(--accent) 45%, var(--accent-dark) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 28px;
+}
+
+.not-found-rule {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: min(280px, 100%);
+  margin-bottom: 22px;
+}
+
+.not-found-rule span:first-child,
+.not-found-rule span:last-child {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--border));
+}
+
+.not-found-rule span:last-child {
+  background: linear-gradient(to left, transparent, var(--border));
+}
+
+.not-found-diamond {
+  color: var(--accent);
+  font-size: 0.45rem;
+  flex: none;
+  opacity: 0.7;
+}
+
+.not-found-page .eyebrow {
+  margin-bottom: 14px;
+}
+
+.not-found-page h1 {
+  font-size: clamp(1.6rem, 4.5vw, 2.4rem);
+  color: var(--text);
+  margin: 0 0 12px;
+  letter-spacing: -0.02em;
+}
+
+.not-found-page > p {
+  max-width: 400px;
+  color: var(--muted);
+  line-height: 1.7;
+  font-size: 0.95rem;
+  margin: 0 0 36px;
+}
+
+.not-found-cta {
+  padding: 0 32px;
+  font-size: 0.82rem;
+}
+
 /* ── Home / Dashboard page containers ───────────────────────────────────── */
 
 .home-page,
@@ -463,8 +570,8 @@ main {
 .home-page h1 {
   max-width: 800px;
   margin: 0 auto;
-  font-size: clamp(2.5rem, 7vw, 5rem);
-  line-height: 1.02;
+  font-size: clamp(2.2rem, 6vw, 4rem);
+  line-height: 1.5;
   color: var(--text);
   letter-spacing: -0.035em;
 }

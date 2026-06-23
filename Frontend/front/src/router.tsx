@@ -1,6 +1,8 @@
 import { createBrowserRouter } from 'react-router-dom';
 import MainLayout from './app/layouts/Mainlayout';
+import AuthLayout from './app/layouts/AuthLayout';
 import Home from './app/pages/Home';
+import NotFound from './app/pages/NotFound';
 import GuestRoute from './features/auth/components/GuestRoute';
 import ProtectedRoute from './features/auth/components/ProtectedRoute';
 import Dashboard from './features/auth/pages/Dashboard';
@@ -17,6 +19,24 @@ export const router = createBrowserRouter([
         element: <Home />,
       },
       {
+        element: <ProtectedRoute />,
+        children: [
+          {
+            path: '/dashboard',
+            element: <Dashboard />,
+          },
+          {
+            path: '/prayer',
+            element: <PrayerSession />,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    element: <AuthLayout />,
+    children: [
+      {
         element: <GuestRoute />,
         children: [
           {
@@ -30,17 +50,8 @@ export const router = createBrowserRouter([
         ],
       },
       {
-        element: <ProtectedRoute />,
-        children: [
-          {
-            path: '/dashboard',
-            element: <Dashboard />,
-          },
-          {
-            path: '/prayer',
-            element: <PrayerSession />,
-          },
-        ],
+        path: '*',
+        element: <NotFound />,
       },
     ],
   },
