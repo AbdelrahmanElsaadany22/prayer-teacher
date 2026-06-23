@@ -99,6 +99,10 @@
   gap: 0.4rem;
 }
 
+.insightIcon {
+  font-size: 1.4rem;
+}
+
 .insightLabel {
   font-size: 0.72rem;
   font-weight: 700;

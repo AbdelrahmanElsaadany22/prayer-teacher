@@ -129,12 +129,6 @@ export const translations: Record<Lang, Dict> = {
     'report.rakaShort': "Rak'a {n}",
     'report.detectedAt': 'Detected: {pose} at ~{time}s',
     'report.prayAgain': 'Pray Again',
-
-    // ── 404 ──
-    'notFound.eyebrow': 'Page not found',
-    'notFound.title': 'Lost your way?',
-    'notFound.subtitle': "The page you're looking for doesn't exist or may have been moved.",
-    'notFound.cta': 'Back to home',
   },
 
   ar: {
@@ -242,11 +236,5 @@ export const translations: Record<Lang, Dict> = {
     'report.rakaShort': 'ركعة {n}',
     'report.detectedAt': 'اتكشف: {pose} عند ~{time} ث',
     'report.prayAgain': 'صلِّ مرة أخرى',
-
-    // ── 404 ──
-    'notFound.eyebrow': 'الصفحة غير موجودة',
-    'notFound.title': 'ضُعْتَ في الطريق؟',
-    'notFound.subtitle': 'الصفحة اللي بتدور عليها مش موجودة أو اتنقلت.',
-    'notFound.cta': 'ارجع للرئيسية',
   },
 };
