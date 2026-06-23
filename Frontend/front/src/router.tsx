@@ -1,5 +1,6 @@
 import { createBrowserRouter } from 'react-router-dom';
 import MainLayout from './app/layouts/Mainlayout';
+import AuthLayout from './app/layouts/AuthLayout';
 import Home from './app/pages/Home';
 import GuestRoute from './features/auth/components/GuestRoute';
 import ProtectedRoute from './features/auth/components/ProtectedRoute';
@@ -17,19 +18,6 @@ export const router = createBrowserRouter([
         element: <Home />,
       },
       {
-        element: <GuestRoute />,
-        children: [
-          {
-            path: '/login',
-            element: <Login />,
-          },
-          {
-            path: '/signup',
-            element: <Signup />,
-          },
-        ],
-      },
-      {
         element: <ProtectedRoute />,
         children: [
           {
@@ -39,6 +27,24 @@ export const router = createBrowserRouter([
           {
             path: '/prayer',
             element: <PrayerSession />,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    element: <AuthLayout />,
+    children: [
+      {
+        element: <GuestRoute />,
+        children: [
+          {
+            path: '/login',
+            element: <Login />,
+          },
+          {
+            path: '/signup',
+            element: <Signup />,
           },
         ],
       },
