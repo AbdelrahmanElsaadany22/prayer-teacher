@@ -4,11 +4,20 @@ import { ChatGateway } from './chat.gateway';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Message, MessageSchema } from './schemas/chat.schema';
 import { JwtModule } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import { User, UserSchema } from '../users/schemas/user.schema';
 
 @Module({
   imports:[
-    JwtModule,
+    JwtModule.registerAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        secret: config.getOrThrow<string>('JWT_SECRET'),
+        signOptions: {
+          expiresIn: '1d',
+        },
+      }),
+    }),
     MongooseModule.forFeature([
       {
         name:Message.name,

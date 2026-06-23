@@ -27,4 +27,18 @@ export class UsersService {
   findById(id: string): Promise<UserDocument | null> {
     return this.userModel.findById(id).exec();
   }
+
+  searchByName(query: string, excludeId?: string): Promise<UserDocument[]> {
+    const trimmed = query.trim();
+    if (!trimmed) return Promise.resolve([]);
+    // escape regex special chars so user input is treated literally
+    const escaped = trimmed.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const filter: Record<string, unknown> = {
+      name: { $regex: escaped, $options: 'i' },
+    };
+    if (excludeId) {
+      filter._id = { $ne: excludeId };
+    }
+    return this.userModel.find(filter).limit(10).exec();
+  }
 }

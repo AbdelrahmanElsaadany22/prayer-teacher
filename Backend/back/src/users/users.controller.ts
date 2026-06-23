@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Query, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { UsersService } from './users.service';
 
@@ -9,11 +9,17 @@ export class UsersController {
         private readonly userService:UsersService
     ){}
 
-    
+
     @Get('/current')
     @UseGuards(AuthGuard('jwt'))
      getCurrentUser(@Req() req){
         return this.userService.findById(req.user.id)
+    }
+
+    @Get('/search')
+    @UseGuards(AuthGuard('jwt'))
+    searchUsers(@Query('q') q: string, @Req() req){
+        return this.userService.searchByName(q ?? '', req.user.id)
     }
     @Get('/profile/:userId')
     getUserProfile(

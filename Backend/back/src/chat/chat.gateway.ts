@@ -17,11 +17,11 @@ export class ChatGateway implements OnGatewayConnection,OnGatewayDisconnect{
     try {
       const token=socket.handshake.auth.token
       const payload=await this.jwtService.verifyAsync(token)
-      socket.data.user=payload
+      socket.data.user={ ...payload, id: payload.sub }
       console.log("Connected User:",socket.data.user)
       //key and value
-      this.onlineUsers.set(payload.id,socket.id)
-      this.server.emit("userOnline",{userId:payload.id})
+      this.onlineUsers.set(socket.data.user.id,socket.id)
+      this.server.emit("userOnline",{userId:socket.data.user.id})
     } catch (error) {
       socket.disconnect()
     }
