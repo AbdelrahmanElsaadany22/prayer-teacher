@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { PrayerModule } from './prayer/prayer/prayer.module';
 import { FriendsModule } from './friends/friends.module';
 import { ChatModule } from './chat/chat.module';
+import { NotificationModule } from './notification/notification.module';
 
 
 
@@ -20,6 +21,7 @@ import { ChatModule } from './chat/chat.module';
     PrayerModule,
     FriendsModule,
     ChatModule,
+    NotificationModule,
   ],
   controllers: [],
 })
