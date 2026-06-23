@@ -69,7 +69,7 @@ export default function AuthInput({
   return (
     <div className="auth-field">
       <label htmlFor={inputId}>{label}</label>
-      <div className="auth-input-wrapper">
+      <div className="auth-input-wrapper" dir={isPassword || type === 'email' ? 'ltr' : undefined}>
         {isPassword ? (
           <input
             id={inputId}
