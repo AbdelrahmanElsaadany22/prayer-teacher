@@ -77,14 +77,12 @@ export default function Dashboard() {
           <p className={css.sectionTitle}>{t('dash.insights')}</p>
           <div className={css.insightGrid}>
             <div className={css.insightCard}>
-              <span className={css.insightIcon}>🕌</span>
               <span className={css.insightLabel}>{t('dash.mostMistakenPrayer')}</span>
               <span className={css.insightValue}>
                 {stats.mostMistakenPrayer ? localizePrayerName(stats.mostMistakenPrayer, lang) : '—'}
               </span>
             </div>
             <div className={css.insightCard}>
-              <span className={css.insightIcon}>⚠️</span>
               <span className={css.insightLabel}>{t('dash.mostMistakenMove')}</span>
               <span className={css.insightValue}>{stats.mostMistakenMove ?? '—'}</span>
             </div>

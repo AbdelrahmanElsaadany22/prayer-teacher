@@ -63,6 +63,31 @@ body {
   background-attachment: fixed;
 }
 
+/* ── Scrollbar ───────────────────────────────────────────────────────────── */
+
+
+			::-webkit-scrollbar {
+			  width: 10px;
+			}
+
+			::-webkit-scrollbar-track {
+			  border: 0px solid var(--background);
+			  border-width: 0px 3px 0px 3px;
+			  border-radius: 0px;
+			  background-color: var(--background);
+			}
+
+			::-webkit-scrollbar-thumb {
+			  background: var(--border);
+			  border: 0px solid var(--border);
+			  border-width: 0px 3px 0px 3px;
+			  border-radius: 0px;
+			}
+
+			::-webkit-scrollbar-thumb:hover {
+			  background: var(--accent);
+			}
+
 button,
 input {
   font: inherit;
