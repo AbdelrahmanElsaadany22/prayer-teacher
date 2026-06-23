@@ -4,13 +4,15 @@ import { friendRequest } from './schemas/friendRequest.schema';
 import { Model } from 'mongoose';
 import { Status } from './schemas/friendRequest.schema';
 import { User } from '../users/schemas/user.schema';
+import { NotificationGateway } from '../notification/notification.gateway';
 @Injectable()
 export class FriendsService {
     constructor(
         @InjectModel(friendRequest.name)
         private readonly friendRequestModel: Model<friendRequest>,
         @InjectModel(User.name)
-        private readonly userModel:Model<User>
+        private readonly userModel:Model<User>,
+        private notificationGateway:NotificationGateway
   ) {}
     
 
@@ -47,10 +49,13 @@ export class FriendsService {
     if(alreadyFriends){
       throw new BadRequestException("You Are Already Friends") 
     }
-    return await this.friendRequestModel.create({
-        sender: senderId,
-        receiver: receiverId
-    })
+    const request =await this.friendRequestModel.create({sender:senderId,receiver:receiverId})
+
+    this.notificationGateway.sendToUser(receiverId,"newNotification",{
+  type:"FRIEND_REQUEST",
+  message:"New Friend Request",
+  sender:senderId})
+  return request;
   }
 
 
@@ -93,6 +98,11 @@ export class FriendsService {
       }}
     )
 
+    //نبلّغ اللي بعت الطلب إنه اتقبل
+    this.notificationGateway.sendToUser(request.sender.toString(),"newNotification",{
+      type:"FRIEND_REQUEST_ACCEPTED",
+      message:"Your friend request was accepted",
+      sender:userId})
 
     return {
   message:"friend request accepted"
@@ -130,6 +140,13 @@ async rejectRequest(
 
      request.status=Status.REJECTED
      await request.save();
+
+ //نبلّغ اللي بعت الطلب إنه اترفض
+ this.notificationGateway.sendToUser(request.sender.toString(),"newNotification",{
+   type:"FRIEND_REQUEST_REJECTED",
+   message:"Your friend request was declined",
+   sender:userId})
+
  return {
   message:"friend request rejected"
  }
