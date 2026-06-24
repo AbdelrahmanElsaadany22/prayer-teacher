@@ -9,6 +9,7 @@ import Signup from './features/auth/pages/Signup';
 import { PrayerSession } from './features/prayer';
 import FriendsPage from './features/friends/pages/FriendsPage';
 import ChatPage from './features/chat/pages/ChatPage';
+import UserProfilePage from './features/users/pages/UserProfilePage';
 
 export const router = createBrowserRouter([
   {
@@ -45,6 +46,10 @@ export const router = createBrowserRouter([
           {
             path: '/friends',
             element: <FriendsPage />,
+          },
+          {
+            path: '/users/:userId',
+            element: <UserProfilePage />,
           },
           {
             path: '/chat/:friendId',

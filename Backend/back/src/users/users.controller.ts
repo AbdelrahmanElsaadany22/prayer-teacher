@@ -27,4 +27,14 @@ export class UsersController {
     ){
         return this.userService.findById(userId)
     }
+
+    // Public profile + prayer stats, used when you open a user from the search.
+    @Get('/profile/:userId/stats')
+    @UseGuards(AuthGuard('jwt'))
+    getUserProfileWithStats(
+        @Param('userId') userId: string,
+        @Req() req
+    ){
+        return this.userService.getProfileWithStats(userId, req.user.id)
+    }
 }

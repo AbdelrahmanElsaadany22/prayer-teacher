@@ -1,6 +1,7 @@
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../features/auth/hooks/useAuth';
 import NotificationBell from '../../features/notifications/components/NotificationBell';
+import UserSearch from '../../features/users/components/UserSearch';
 import { useI18n } from '../../shared/i18n/LanguageProvider';
 import { LANGUAGES } from '../../shared/i18n/translations';
 
@@ -25,6 +26,7 @@ export default function MainLayout() {
         <nav aria-label="Main navigation">
           {isAuthenticated ? (
             <>
+              <UserSearch />
               <NavLink to="/dashboard">{t('nav.dashboard')}</NavLink>
               <NavLink to="/friends">{t('nav.friends')}</NavLink>
               <NotificationBell />

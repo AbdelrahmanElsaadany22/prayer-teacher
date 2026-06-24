@@ -21,6 +21,11 @@ export async function rejectFriendRequest(requestId: string) {
   return res.data;
 }
 
+export async function cancelFriendRequest(requestId: string) {
+  const res = await api.delete(`/friend-request/cancel/${requestId}`);
+  return res.data;
+}
+
 export async function getUserProfile(userId: string): Promise<FriendProfile> {
   const res = await api.get<FriendProfile>(`/user/profile/${userId}`);
   return res.data;
