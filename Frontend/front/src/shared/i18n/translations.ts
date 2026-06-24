@@ -28,6 +28,7 @@ export const translations: Record<Lang, Dict> = {
     // ── Brand / shell ──
     'brand.name': 'Estaقِm',
     'nav.dashboard': 'Dashboard',
+    'nav.friends': 'Friends',
     'nav.logout': 'Log out',
     'nav.login': 'Log in',
     'nav.signup': 'Sign up',
@@ -135,6 +136,7 @@ export const translations: Record<Lang, Dict> = {
     // ── Brand / shell ──
     'brand.name': 'إِسْتَقِمْ',
     'nav.dashboard': 'لوحة المتابعة',
+    'nav.friends': 'الأصدقاء',
     'nav.logout': 'تسجيل الخروج',
     'nav.login': 'تسجيل الدخول',
     'nav.signup': 'إنشاء حساب',

@@ -62,7 +62,7 @@ export function NotificationsProvider({ children }: PropsWithChildren) {
         setActivity((prev) => [
           {
             id: `${payload.type}_${payload.sender}_${Date.now()}`,
-            type: payload.type,
+            type: accepted ? 'FRIEND_REQUEST_ACCEPTED' : 'FRIEND_REQUEST_REJECTED',
             text: `${name} ${accepted ? 'accepted' : 'declined'} your friend request`,
             createdAt: new Date().toISOString(),
           },

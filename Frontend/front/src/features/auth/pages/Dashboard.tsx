@@ -103,7 +103,7 @@ export default function Dashboard() {
                   contentStyle={{ background: '#15201b', border: '1px solid #304238', borderRadius: 8 }}
                   labelStyle={{ color: '#a9b4ad', fontSize: 11 }}
                   itemStyle={{ color: '#d4ae5c', fontWeight: 700 }}
-                  formatter={(v: number) => [`${v}%`, t('dash.accuracy')]}
+                  formatter={(v) => [`${v}%`, t('dash.accuracy')]}
                 />
                 <ReferenceLine y={75} stroke="#3fb950" strokeDasharray="4 4" strokeOpacity={0.4} />
                 <Line

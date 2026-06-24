@@ -7,6 +7,8 @@ import Dashboard from './features/auth/pages/Dashboard';
 import Login from './features/auth/pages/Login';
 import Signup from './features/auth/pages/Signup';
 import { PrayerSession } from './features/prayer';
+import FriendsPage from './features/friends/pages/FriendsPage';
+import ChatPage from './features/chat/pages/ChatPage';
 
 export const router = createBrowserRouter([
   {
@@ -39,6 +41,14 @@ export const router = createBrowserRouter([
           {
             path: '/prayer',
             element: <PrayerSession />,
+          },
+          {
+            path: '/friends',
+            element: <FriendsPage />,
+          },
+          {
+            path: '/chat/:friendId',
+            element: <ChatPage />,
           },
         ],
       },

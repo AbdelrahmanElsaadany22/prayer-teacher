@@ -1,5 +1,4 @@
 import { useRef, useCallback } from 'react';
-import { CONFIG } from '../constants/prayerConfig';
 
 export function useVideoStream() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
