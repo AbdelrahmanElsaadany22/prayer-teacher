@@ -1,22 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useI18n } from '../../../shared/i18n/LanguageProvider';
 import { searchUsers } from '../api/users.api';
 import type { UserSearchResult } from '../types/users.types';
 import css from './UserSearch.module.css';
 
-/**
- * Navbar search box. Debounces lookups by name and shows a dropdown of matches;
- * clicking a match opens that user's public profile page.
- */
 export default function UserSearch() {
   const navigate = useNavigate();
+  const { t } = useI18n();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<UserSearchResult[]>([]);
   const [searching, setSearching] = useState(false);
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Debounced search by name.
   useEffect(() => {
     const term = query.trim();
     if (!term) {
@@ -37,7 +34,6 @@ export default function UserSearch() {
     return () => clearTimeout(handle);
   }, [query]);
 
-  // Close the dropdown when clicking outside the component.
   useEffect(() => {
     function onClick(e: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
@@ -60,22 +56,19 @@ export default function UserSearch() {
       <input
         className={css.input}
         value={query}
-        onChange={(e) => {
-          setQuery(e.target.value);
-          setOpen(true);
-        }}
+        onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
         onFocus={() => setOpen(true)}
-        placeholder="Search users…"
+        placeholder={t('search.placeholder')}
         autoComplete="off"
-        aria-label="Search users by name"
+        aria-label={t('search.ariaLabel')}
       />
 
       {open && query.trim() && (
         <div className={css.dropdown}>
-          {searching && <p className={css.hint}>Searching…</p>}
+          {searching && <p className={css.hint}>{t('search.searching')}</p>}
 
           {!searching && results.length === 0 && (
-            <p className={css.hint}>No users found.</p>
+            <p className={css.hint}>{t('search.noResults')}</p>
           )}
 
           {results.map((u) => (

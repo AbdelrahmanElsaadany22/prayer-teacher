@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { getApiErrorMessage } from '../../../shared/api/axios';
+import { useI18n } from '../../../shared/i18n/LanguageProvider';
 import { cancelFriendRequest, sendFriendRequest } from '../../friends/api/friends.api';
 import { useNotifications } from '../../notifications/context/NotificationsContext';
 import { getUserProfileWithStats } from '../api/users.api';
@@ -9,16 +10,13 @@ import css from './UserProfilePage.module.css';
 
 export default function UserProfilePage() {
   const { userId } = useParams<{ userId: string }>();
-  // Accept/reject + the live event signal come from the shared notifications
-  // context, so this page stays in sync with the navbar bell in real time.
   const { accept, reject, eventTick } = useNotifications();
+  const { t } = useI18n();
 
   const [profile, setProfile] = useState<UserProfileWithStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [actionMsg, setActionMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(
-    null,
-  );
+  const [actionMsg, setActionMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
 
   const loadProfile = useCallback(async () => {
     if (!userId) return;
@@ -36,22 +34,12 @@ export default function UserProfilePage() {
     setError(null);
     setActionMsg(null);
     getUserProfileWithStats(userId)
-      .then((data) => {
-        if (active) setProfile(data);
-      })
-      .catch((err) => {
-        if (active) setError(getApiErrorMessage(err));
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-    return () => {
-      active = false;
-    };
+      .then((data) => { if (active) setProfile(data); })
+      .catch((err) => { if (active) setError(getApiErrorMessage(err)); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
   }, [userId]);
 
-  // A notification event fired (request accepted/declined/arrived) — re-pull the
-  // relationship so the button reflects reality without a manual reload.
   useEffect(() => {
     if (eventTick > 0) void loadProfile();
   }, [eventTick, loadProfile]);
@@ -61,10 +49,8 @@ export default function UserProfilePage() {
     setActionMsg(null);
     try {
       await sendFriendRequest(userId);
-      // Optimistic flip for instant feedback, then re-pull so we also get the
-      // request id (needed for the cancel button).
       setProfile((p) => (p ? { ...p, relationship: 'outgoing_pending' } : p));
-      setActionMsg({ type: 'ok', text: 'Friend request sent!' });
+      setActionMsg({ type: 'ok', text: t('profile.requestSentMsg') });
       await loadProfile();
     } catch (err) {
       setActionMsg({ type: 'err', text: getApiErrorMessage(err) });
@@ -77,7 +63,7 @@ export default function UserProfilePage() {
     try {
       await cancelFriendRequest(profile.requestId);
       setProfile((p) => (p ? { ...p, relationship: 'none', requestId: null } : p));
-      setActionMsg({ type: 'ok', text: 'Friend request cancelled' });
+      setActionMsg({ type: 'ok', text: t('profile.requestCancelledMsg') });
     } catch (err) {
       setActionMsg({ type: 'err', text: getApiErrorMessage(err) });
     }
@@ -87,7 +73,7 @@ export default function UserProfilePage() {
     if (!profile?.requestId) return;
     await accept(profile.requestId);
     setProfile((p) => (p ? { ...p, relationship: 'friends', requestId: null } : p));
-    setActionMsg({ type: 'ok', text: 'You are now friends!' });
+    setActionMsg({ type: 'ok', text: t('profile.nowFriendsMsg') });
   }
 
   async function handleReject() {
@@ -102,13 +88,13 @@ export default function UserProfilePage() {
       case 'self':
         return null;
       case 'friends':
-        return <span className={css.statusPill}>Already friends ✓</span>;
+        return <span className={css.statusPill}>{t('profile.alreadyFriends')}</span>;
       case 'outgoing_pending':
         return (
           <div className={css.actionRow}>
-            <span className={css.statusPill}>Request sent ✓</span>
+            <span className={css.statusPill}>{t('profile.requestSent')}</span>
             <button type="button" className={css.ghostBtn} onClick={handleCancel}>
-              Cancel
+              {t('profile.cancel')}
             </button>
           </div>
         );
@@ -116,17 +102,17 @@ export default function UserProfilePage() {
         return (
           <div className={css.actionRow}>
             <button type="button" className={css.primaryBtn} onClick={handleAccept}>
-              Accept request
+              {t('profile.acceptRequest')}
             </button>
             <button type="button" className={css.ghostBtn} onClick={handleReject}>
-              Reject
+              {t('profile.reject')}
             </button>
           </div>
         );
       default:
         return (
           <button type="button" className={css.primaryBtn} onClick={handleSend}>
-            Add friend
+            {t('profile.addFriend')}
           </button>
         );
     }
@@ -134,7 +120,7 @@ export default function UserProfilePage() {
 
   return (
     <div className={css.page}>
-      {loading && <div className={css.loader}>Loading…</div>}
+      {loading && <div className={css.loader}>{t('profile.loading')}</div>}
       {error && <div className={css.errorBanner}>{error}</div>}
 
       {!loading && !error && profile && (
@@ -154,22 +140,22 @@ export default function UserProfilePage() {
             </p>
           )}
 
-          <p className={css.sectionTitle}>Prayer Stats</p>
+          <p className={css.sectionTitle}>{t('profile.prayerStats')}</p>
           <div className={css.statsGrid}>
             <div className={css.statCard}>
-              <span className={css.statLabel}>Total Prayers</span>
+              <span className={css.statLabel}>{t('profile.totalPrayers')}</span>
               <span className={css.statValue}>{profile.totalPrayers}</span>
-              <span className={css.statSub}>Sessions logged</span>
+              <span className={css.statSub}>{t('profile.sessionsLogged')}</span>
             </div>
             <div className={css.statCard}>
-              <span className={css.statLabel}>Accuracy</span>
+              <span className={css.statLabel}>{t('profile.accuracy')}</span>
               <span className={css.statValue}>{profile.accuracy}%</span>
-              <span className={css.statSub}>Average across sessions</span>
+              <span className={css.statSub}>{t('profile.avgAcrossSessions')}</span>
             </div>
           </div>
 
           <Link to="/friends" className={css.backLink}>
-            ← Back to Friends
+            {t('profile.backToFriends')}
           </Link>
         </>
       )}

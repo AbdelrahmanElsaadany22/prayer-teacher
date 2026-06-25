@@ -2,16 +2,14 @@ import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useFriends } from '../hooks/useFriends';
 import { useNotifications } from '../../notifications/context/NotificationsContext';
+import { useI18n } from '../../../shared/i18n/LanguageProvider';
 import css from './FriendsPage.module.css';
 
 export default function FriendsPage() {
   const { friends, loading, error, refresh } = useFriends();
-  // Pending requests + their actions live in the shared notifications context,
-  // so this page and the navbar bell always stay in sync.
   const { requests, accept, reject, eventTick } = useNotifications();
+  const { t } = useI18n();
 
-  // Re-sync the friends list whenever a notification event fires (a request was
-  // accepted/declined, or a new one arrived) — keeps the page live without a reload.
   useEffect(() => {
     if (eventTick > 0) void refresh();
   }, [eventTick, refresh]);
@@ -19,21 +17,20 @@ export default function FriendsPage() {
   return (
     <div className={css.page}>
       <div className={css.header}>
-        <span className={css.eyebrow}>Social</span>
-        <h1 className={css.title}>Friends</h1>
+        <span className={css.eyebrow}>{t('friends.eyebrow')}</span>
+        <h1 className={css.title}>{t('friends.title')}</h1>
       </div>
 
-      {loading && <div className={css.loader}>Loading...</div>}
+      {loading && <div className={css.loader}>{t('friends.loading')}</div>}
       {error && <div className={css.errorBanner}>{error}</div>}
 
-      {/* ── Incoming requests ── */}
       <p className={css.sectionTitle}>
-        Incoming Requests
+        {t('friends.incomingRequests')}
         {requests.length > 0 && <span className={css.badge}>{requests.length}</span>}
       </p>
 
       {!loading && requests.length === 0 && (
-        <div className={css.empty}>No pending requests</div>
+        <div className={css.empty}>{t('friends.noPendingRequests')}</div>
       )}
 
       <div className={css.list}>
@@ -46,23 +43,20 @@ export default function FriendsPage() {
             </div>
             <div className={css.rowActions}>
               <button type="button" className={css.acceptBtn} onClick={() => accept(req._id)}>
-                Accept
+                {t('friends.accept')}
               </button>
               <button type="button" className={css.rejectBtn} onClick={() => reject(req._id)}>
-                Reject
+                {t('friends.reject')}
               </button>
             </div>
           </div>
         ))}
       </div>
 
-      {/* ── Friends list ── */}
-      <p className={css.sectionTitle}>Your Friends</p>
+      <p className={css.sectionTitle}>{t('friends.yourFriends')}</p>
 
       {!loading && friends.length === 0 && (
-        <div className={css.empty}>
-          You have no friends yet — search for people from the bar above!
-        </div>
+        <div className={css.empty}>{t('friends.noFriends')}</div>
       )}
 
       <div className={css.list}>
@@ -74,7 +68,7 @@ export default function FriendsPage() {
               <span className={css.sub}>{friend.email}</span>
             </div>
             <Link to={`/chat/${friend._id}`} className={css.chatBtn}>
-              Chat
+              {t('friends.chat')}
             </Link>
           </div>
         ))}

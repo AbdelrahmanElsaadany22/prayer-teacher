@@ -12,13 +12,6 @@ import { createNotificationSocket } from '../socket/notificationSocket';
 import type { ActivityItem, NotificationPayload } from '../types/notification.types';
 import { NotificationsContext } from './NotificationsContext';
 
-/**
- * Owns the single app-wide notification socket and the shared notification state.
- *
- * Pending friend requests come from the API (the source of truth — they carry the
- * request id + populated sender). Accepted/declined events arrive only over the
- * socket and are kept as transient in-memory `activity` items.
- */
 export function NotificationsProvider({ children }: PropsWithChildren) {
   const { user } = useAuth();
   const currentUserId = user?.id;
@@ -63,7 +56,7 @@ export function NotificationsProvider({ children }: PropsWithChildren) {
           {
             id: `${payload.type}_${payload.sender}_${Date.now()}`,
             type: accepted ? 'FRIEND_REQUEST_ACCEPTED' : 'FRIEND_REQUEST_REJECTED',
-            text: `${name} ${accepted ? 'accepted' : 'declined'} your friend request`,
+            senderName: name,
             createdAt: new Date().toISOString(),
           },
           ...prev,

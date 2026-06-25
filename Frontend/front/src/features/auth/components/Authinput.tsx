@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import type { HTMLInputAutoCompleteAttribute } from 'react';
 import type { UseFormRegisterReturn } from 'react-hook-form';
+import { useI18n } from '../../../shared/i18n/LanguageProvider';
 
 const MASK = '✦';
 
@@ -19,6 +20,7 @@ export default function AuthInput({
   error,
   register,
 }: AuthInputProps) {
+  const { t } = useI18n();
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [displayValue, setDisplayValue] = useState('');
   const realValue = useRef('');
@@ -37,14 +39,12 @@ export default function AuthInput({
       const newLen = raw.length;
 
       if (newLen < prevLen) {
-        // Deletion — use cursor position to know where characters were removed
         const deleteAt = sel ?? newLen;
         const deleteCount = prevLen - newLen;
         realValue.current =
           realValue.current.slice(0, deleteAt) +
           realValue.current.slice(deleteAt + deleteCount);
       } else if (newLen > prevLen) {
-        // Insertion — non-MASK chars are the newly typed characters
         const insertAt = sel != null ? sel - (newLen - prevLen) : prevLen;
         const newChars = raw.replace(new RegExp(MASK, 'g'), '');
         realValue.current =
@@ -56,7 +56,6 @@ export default function AuthInput({
       setDisplayValue(MASK.repeat(realValue.current.length));
     }
 
-    // Notify react-hook-form with the real value
     register.onChange({ target: { name: register.name, value: realValue.current } });
   }
 
@@ -74,6 +73,7 @@ export default function AuthInput({
           <input
             id={inputId}
             type="text"
+            dir="ltr"
             autoComplete={autoComplete}
             autoCapitalize="off"
             autoCorrect="off"
@@ -90,6 +90,7 @@ export default function AuthInput({
           <input
             id={inputId}
             type={type}
+            dir={type === 'email' ? 'ltr' : undefined}
             autoComplete={autoComplete}
             aria-invalid={Boolean(error)}
             aria-describedby={error ? `${inputId}-error` : undefined}
@@ -102,7 +103,7 @@ export default function AuthInput({
             className="password-toggle"
             type="button"
             onClick={toggleVisibility}
-            aria-label={isPasswordVisible ? 'Hide password' : 'Show password'}
+            aria-label={isPasswordVisible ? t('auth.hidePassword') : t('auth.showPassword')}
           >
             {isPasswordVisible ? (
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
