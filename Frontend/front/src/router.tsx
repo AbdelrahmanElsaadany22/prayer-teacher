@@ -1,6 +1,8 @@
 import { createBrowserRouter } from 'react-router-dom';
 import MainLayout from './app/layouts/Mainlayout';
+import AuthLayout from './app/layouts/AuthLayout';
 import Home from './app/pages/Home';
+import NotFound from './app/pages/NotFound';
 import GuestRoute from './features/auth/components/GuestRoute';
 import ProtectedRoute from './features/auth/components/ProtectedRoute';
 import Dashboard from './features/auth/pages/Dashboard';
@@ -18,19 +20,6 @@ export const router = createBrowserRouter([
       {
         path: '/',
         element: <Home />,
-      },
-      {
-        element: <GuestRoute />,
-        children: [
-          {
-            path: '/login',
-            element: <Login />,
-          },
-          {
-            path: '/signup',
-            element: <Signup />,
-          },
-        ],
       },
       {
         element: <ProtectedRoute />,
@@ -56,6 +45,28 @@ export const router = createBrowserRouter([
             element: <ChatPage />,
           },
         ],
+      },
+    ],
+  },
+  {
+    element: <AuthLayout />,
+    children: [
+      {
+        element: <GuestRoute />,
+        children: [
+          {
+            path: '/login',
+            element: <Login />,
+          },
+          {
+            path: '/signup',
+            element: <Signup />,
+          },
+        ],
+      },
+      {
+        path: '*',
+        element: <NotFound />,
       },
     ],
   },
