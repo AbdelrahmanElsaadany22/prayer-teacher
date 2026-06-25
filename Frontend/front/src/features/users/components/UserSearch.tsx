@@ -5,6 +5,8 @@ import { searchUsers } from '../api/users.api';
 import type { UserSearchResult } from '../types/users.types';
 import css from './UserSearch.module.css';
 
+const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
+
 export default function UserSearch() {
   const navigate = useNavigate();
   const { t } = useI18n();
@@ -78,7 +80,13 @@ export default function UserSearch() {
               className={css.result}
               onClick={() => openProfile(u._id)}
             >
-              <span className={css.avatar}>{u.name?.[0]?.toUpperCase() ?? '?'}</span>
+              <span className={css.avatar}>
+                {u.profilePicture ? (
+                  <img src={`${API_BASE}/uploads/${u.profilePicture}`} alt={u.name} />
+                ) : (
+                  u.name?.[0]?.toUpperCase() ?? '?'
+                )}
+              </span>
               <span className={css.info}>
                 <span className={css.name}>{u.name}</span>
                 <span className={css.email}>{u.email}</span>

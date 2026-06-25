@@ -6,6 +6,8 @@ import type { FriendProfile } from '../../friends/types/friends.types';
 import { useChat } from '../hooks/useChat';
 import css from './ChatPage.module.css';
 
+const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
+
 export default function ChatPage() {
   const { friendId } = useParams<{ friendId: string }>();
   const { user } = useAuth();
@@ -40,7 +42,11 @@ export default function ChatPage() {
         </Link>
         <div className={css.friendMeta}>
           <div className={css.friendAvatar}>
-            {friend?.name?.[0]?.toUpperCase() ?? '?'}
+            {friend?.profilePicture ? (
+              <img src={`${API_BASE}/uploads/${friend.profilePicture}`} alt={friend.name} />
+            ) : (
+              friend?.name?.[0]?.toUpperCase() ?? '?'
+            )}
           </div>
           <div className={css.friendInfo}>
             <span className={css.friendName}>{friend?.name ?? '…'}</span>

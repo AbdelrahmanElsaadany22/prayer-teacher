@@ -14,6 +14,7 @@ export type FriendProfile = {
   _id: string;
   name: string;
   email: string;
+  profilePicture?: string | null;
 };
 
 export type UserFull = {

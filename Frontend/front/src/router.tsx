@@ -12,6 +12,7 @@ import { PrayerSession } from './features/prayer';
 import FriendsPage from './features/friends/pages/FriendsPage';
 import ChatPage from './features/chat/pages/ChatPage';
 import UserProfilePage from './features/users/pages/UserProfilePage';
+import MyProfilePage from './features/users/pages/MyProfilePage';
 
 export const router = createBrowserRouter([
   {
@@ -24,26 +25,12 @@ export const router = createBrowserRouter([
       {
         element: <ProtectedRoute />,
         children: [
-          {
-            path: '/dashboard',
-            element: <Dashboard />,
-          },
-          {
-            path: '/prayer',
-            element: <PrayerSession />,
-          },
-          {
-            path: '/friends',
-            element: <FriendsPage />,
-          },
-          {
-            path: '/users/:userId',
-            element: <UserProfilePage />,
-          },
-          {
-            path: '/chat/:friendId',
-            element: <ChatPage />,
-          },
+          { path: '/dashboard', element: <Dashboard /> },
+          { path: '/prayer', element: <PrayerSession /> },
+          { path: '/friends', element: <FriendsPage /> },
+          { path: '/profile', element: <MyProfilePage /> },
+          { path: '/users/:userId', element: <UserProfilePage /> },
+          { path: '/chat/:friendId', element: <ChatPage /> },
         ],
       },
     ],
@@ -54,20 +41,11 @@ export const router = createBrowserRouter([
       {
         element: <GuestRoute />,
         children: [
-          {
-            path: '/login',
-            element: <Login />,
-          },
-          {
-            path: '/signup',
-            element: <Signup />,
-          },
+          { path: '/login', element: <Login /> },
+          { path: '/signup', element: <Signup /> },
         ],
       },
-      {
-        path: '*',
-        element: <NotFound />,
-      },
+      { path: '*', element: <NotFound /> },
     ],
   },
 ]);

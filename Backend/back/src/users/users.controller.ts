@@ -1,47 +1,81 @@
-import { Controller, Get, Param, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Query,
+  Req,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '@nestjs/passport';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 import { UsersService } from './users.service';
-
 
 @Controller('user')
 export class UsersController {
-    constructor(
-        private readonly userService:UsersService
-    ){}
+  constructor(private readonly userService: UsersService) {}
 
+  @Get('/current')
+  @UseGuards(AuthGuard('jwt'))
+  getCurrentUser(@Req() req) {
+    return this.userService.findById(req.user.id);
+  }
 
-    @Get('/current')
-    @UseGuards(AuthGuard('jwt'))
-     getCurrentUser(@Req() req){
-        return this.userService.findById(req.user.id)
-    }
+  @Get('/search')
+  @UseGuards(AuthGuard('jwt'))
+  searchUsers(@Query('q') q: string, @Req() req) {
+    return this.userService.searchByName(q ?? '', req.user.id);
+  }
 
-    @Get('/search')
-    @UseGuards(AuthGuard('jwt'))
-    searchUsers(@Query('q') q: string, @Req() req){
-        return this.userService.searchByName(q ?? '', req.user.id)
-    }
+  @Get('/comparison')
+  @UseGuards(AuthGuard('jwt'))
+  getFriendsComparison(@Req() req) {
+    return this.userService.getFriendsComparison(req.user.id);
+  }
 
-    // Dashboard comparison: the viewer's stats next to each of their friends'.
-    @Get('/comparison')
-    @UseGuards(AuthGuard('jwt'))
-    getFriendsComparison(@Req() req){
-        return this.userService.getFriendsComparison(req.user.id)
-    }
-    @Get('/profile/:userId')
-    getUserProfile(
-        @Param('userId') userId
-    ){
-        return this.userService.findById(userId)
-    }
+  @Get('/profile/:userId')
+  getUserProfile(@Param('userId') userId: string) {
+    return this.userService.findById(userId);
+  }
 
-    // Public profile + prayer stats, used when you open a user from the search.
-    @Get('/profile/:userId/stats')
-    @UseGuards(AuthGuard('jwt'))
-    getUserProfileWithStats(
-        @Param('userId') userId: string,
-        @Req() req
-    ){
-        return this.userService.getProfileWithStats(userId, req.user.id)
-    }
+  @Get('/profile/:userId/stats')
+  @UseGuards(AuthGuard('jwt'))
+  getUserProfileWithStats(@Param('userId') userId: string, @Req() req) {
+    return this.userService.getProfileWithStats(userId, req.user.id);
+  }
+
+  @Patch('/profile-picture')
+  @UseGuards(AuthGuard('jwt'))
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req: any, file, cb) => {
+          const ext = extname(file.originalname);
+          cb(null, `${req.user.id}${ext}`);
+        },
+      }),
+      limits: { fileSize: 5 * 1024 * 1024 },
+      fileFilter: (_req, file, cb) => {
+        if (!file.mimetype.match(/^image\/(jpeg|jpg|png|webp|gif)$/)) {
+          cb(new BadRequestException('Only image files are allowed'), false);
+        } else {
+          cb(null, true);
+        }
+      },
+    }),
+  )
+  async uploadProfilePicture(
+    @Req() req,
+    @UploadedFile() file: { filename: string; mimetype: string; size: number },
+  ) {
+    if (!file) throw new BadRequestException('No file uploaded');
+    await this.userService.updateProfilePicture(req.user.id, file.filename);
+    return { filename: file.filename };
+  }
 }

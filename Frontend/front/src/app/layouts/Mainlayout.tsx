@@ -30,7 +30,9 @@ export default function MainLayout() {
               <NavLink to="/dashboard">{t('nav.dashboard')}</NavLink>
               <NavLink to="/friends">{t('nav.friends')}</NavLink>
               <NotificationBell />
-              <span className="nav-user">{user?.name}</span>
+              <NavLink to="/profile" className="nav-user">
+                {user?.name}
+              </NavLink>
               <button className="nav-button" type="button" onClick={handleLogout}>
                 {t('nav.logout')}
               </button>

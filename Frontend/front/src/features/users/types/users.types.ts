@@ -2,9 +2,9 @@ export type UserSearchResult = {
   _id: string;
   name: string;
   email: string;
+  profilePicture?: string | null;
 };
 
-/** How the signed-in viewer relates to the profile they're looking at. */
 export type Relationship =
   | 'self'
   | 'friends'
@@ -16,12 +16,19 @@ export type UserProfileWithStats = {
   _id: string;
   name: string;
   email: string;
-  /** How many prayer sessions this user has logged. */
+  profilePicture?: string | null;
   totalPrayers: number;
-  /** Average accuracy across every session, as a percentage. */
   accuracy: number;
-  /** Viewer ↔ profile relationship, so the button survives a reload. */
   relationship: Relationship;
-  /** Set only when `relationship === 'incoming_pending'`. */
   requestId: string | null;
+};
+
+export type FriendComparison = {
+  userId: string;
+  name: string;
+  isSelf: boolean;
+  totalPrayers: number;
+  avgAccuracy: number;
+  totalMistakes: number;
+  avgMistakes: number;
 };

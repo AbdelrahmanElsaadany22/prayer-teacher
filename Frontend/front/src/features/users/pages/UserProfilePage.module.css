@@ -41,6 +41,13 @@
   font-size: 1.8rem;
   color: var(--accent);
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .identity {

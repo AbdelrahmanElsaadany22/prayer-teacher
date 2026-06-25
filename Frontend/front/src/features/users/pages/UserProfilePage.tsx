@@ -2,11 +2,13 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { getApiErrorMessage } from '../../../shared/api/axios';
 import { useI18n } from '../../../shared/i18n/LanguageProvider';
-import { cancelFriendRequest, sendFriendRequest } from '../../friends/api/friends.api';
+import { cancelFriendRequest, removeFriend, sendFriendRequest } from '../../friends/api/friends.api';
 import { useNotifications } from '../../notifications/context/NotificationsContext';
 import { getUserProfileWithStats } from '../api/users.api';
 import type { UserProfileWithStats } from '../types/users.types';
 import css from './UserProfilePage.module.css';
+
+const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
 
 export default function UserProfilePage() {
   const { userId } = useParams<{ userId: string }>();
@@ -82,17 +84,36 @@ export default function UserProfilePage() {
     setProfile((p) => (p ? { ...p, relationship: 'none', requestId: null } : p));
   }
 
+  async function handleRemoveFriend() {
+    if (!userId) return;
+    setActionMsg(null);
+    try {
+      await removeFriend(userId);
+      setProfile((p) => (p ? { ...p, relationship: 'none' } : p));
+      setActionMsg({ type: 'ok', text: t('profile.removedMsg') });
+    } catch (err) {
+      setActionMsg({ type: 'err', text: getApiErrorMessage(err) });
+    }
+  }
+
   function renderAction() {
     if (!profile) return null;
     switch (profile.relationship) {
       case 'self':
         return null;
       case 'friends':
-        return <span className={css.statusPill}>{t('profile.alreadyFriends')}</span>;
+        return (
+          <div className={css.actionRow}>
+            <span className={css.statusPill}>{t('profile.alreadyFriends')} ✓</span>
+            <button type="button" className={css.ghostBtn} onClick={handleRemoveFriend}>
+              {t('profile.removeFriend')}
+            </button>
+          </div>
+        );
       case 'outgoing_pending':
         return (
           <div className={css.actionRow}>
-            <span className={css.statusPill}>{t('profile.requestSent')}</span>
+            <span className={css.statusPill}>{t('profile.requestSent')} ✓</span>
             <button type="button" className={css.ghostBtn} onClick={handleCancel}>
               {t('profile.cancel')}
             </button>
@@ -118,6 +139,8 @@ export default function UserProfilePage() {
     }
   }
 
+  const avatarSrc = profile?.profilePicture ? `${API_BASE}/uploads/${profile.profilePicture}` : null;
+
   return (
     <div className={css.page}>
       {loading && <div className={css.loader}>{t('profile.loading')}</div>}
@@ -126,7 +149,9 @@ export default function UserProfilePage() {
       {!loading && !error && profile && (
         <>
           <div className={css.card}>
-            <div className={css.avatar}>{profile.name?.[0]?.toUpperCase() ?? '?'}</div>
+            <div className={css.avatar}>
+              {avatarSrc ? <img src={avatarSrc} alt={profile.name} /> : profile.name?.[0]?.toUpperCase() ?? '?'}
+            </div>
             <div className={css.identity}>
               <h1 className={css.name}>{profile.name}</h1>
               <span className={css.email}>{profile.email}</span>

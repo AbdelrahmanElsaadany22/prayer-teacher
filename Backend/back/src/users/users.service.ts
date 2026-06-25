@@ -13,7 +13,6 @@ import {
 
 export type CreateUserData = Pick<User, 'name' | 'email' | 'password'>;
 
-// How the viewer relates to the profile they're looking at — drives the button.
 export type Relationship =
   | 'self'
   | 'friends'
@@ -25,15 +24,13 @@ export type UserProfileWithStats = {
   _id: Types.ObjectId;
   name: string;
   email: string;
+  profilePicture?: string | null;
   totalPrayers: number;
   accuracy: number;
   relationship: Relationship;
-  // Set for both pending states, so the viewer can cancel (outgoing) or
-  // accept/reject (incoming) the request in place.
   requestId: string | null;
 };
 
-// Per-prayer rollup for one user, used by the dashboard comparison filters.
 export type PrayerBreakdown = {
   prayerName: string;
   count: number;
@@ -41,8 +38,6 @@ export type PrayerBreakdown = {
   totalMistakes: number;
 };
 
-// One row in the friends-comparison table: the viewer plus each of their
-// friends, with the aggregated stats the dashboard can filter/sort on.
 export type FriendComparison = {
   userId: string;
   name: string;
@@ -70,7 +65,7 @@ export class UsersService {
   create(data: CreateUserData): Promise<UserDocument> {
     return this.userModel.create(data);
   }
-  
+
   findByEmail(email: string): Promise<UserDocument | null> {
     return this.userModel.findOne({ email }).exec();
   }
@@ -83,9 +78,15 @@ export class UsersService {
     return this.userModel.findById(id).exec();
   }
 
-  // Public profile for the search → click flow: basic user info plus the
-  // aggregated prayer stats (how many prayers they logged and their average
-  // accuracy across every session).
+  async updateProfilePicture(
+    userId: string,
+    filename: string,
+  ): Promise<UserDocument | null> {
+    return this.userModel
+      .findByIdAndUpdate(userId, { profilePicture: filename }, { new: true })
+      .exec();
+  }
+
   async getProfileWithStats(
     userId: string,
     viewerId?: string,
@@ -122,17 +123,14 @@ export class UsersService {
       _id: user._id,
       name: user.name,
       email: user.email,
+      profilePicture: user.profilePicture,
       relationship,
       requestId,
       totalPrayers: stats?.totalPrayers ?? 0,
-      // Round the average accuracy to one decimal place for a clean percentage.
       accuracy: stats ? Math.round((stats.avgAccuracy ?? 0) * 10) / 10 : 0,
     };
   }
 
-  // Side-by-side comparison between the viewer and every one of their friends.
-  // Returns one row per user with aggregated prayer stats; the dashboard picks
-  // which metric (accuracy, count, duration, mistakes, per-prayer…) to surface.
   async getFriendsComparison(viewerId: string): Promise<FriendComparison[]> {
     if (!Types.ObjectId.isValid(viewerId)) {
       throw new NotFoundException('User not found');
@@ -143,21 +141,17 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
 
-    // The viewer first, then their friends — keeps "you" at the top of the list.
     const userIds = [
       viewer._id,
       ...viewer.friends.map((id) => new Types.ObjectId(id)),
     ];
 
-    // Names for every user we're comparing, keyed by id.
     const users = await this.userModel
       .find({ _id: { $in: userIds } })
       .select('name')
       .exec();
     const nameById = new Map(users.map((u) => [u._id.toString(), u.name]));
 
-    // Overall stats per user. Durations are stored as "mm:ss"/"hh:mm:ss"
-    // strings, so we parse them into seconds inside the pipeline before averaging.
     const overall = await this.sessionModel.aggregate<{
       _id: Types.ObjectId;
       totalPrayers: number;
@@ -219,7 +213,6 @@ export class UsersService {
     ]);
     const overallById = new Map(overall.map((o) => [o._id.toString(), o]));
 
-    // Per-prayer breakdown per user, used by the "who errs most in X" filter.
     const perPrayerRows = await this.sessionModel.aggregate<{
       _id: { userId: Types.ObjectId; prayerName: string };
       count: number;
@@ -254,7 +247,6 @@ export class UsersService {
       const uid = id.toString();
       const o = overallById.get(uid);
       const perPrayer = perPrayerByUser.get(uid) ?? [];
-      // Prayer this user makes the most mistakes in (ties broken by first seen).
       const mostMistakenPrayer =
         perPrayer.length > 0
           ? [...perPrayer].sort((a, b) => b.totalMistakes - a.totalMistakes)[0]
@@ -278,8 +270,6 @@ export class UsersService {
     });
   }
 
-  // Works out how the viewer relates to the profile owner so the UI can show the
-  // right button even after a reload (no local-only "sent" state needed).
   private async resolveRelationship(
     profileUser: UserDocument,
     viewerId?: string,
@@ -312,8 +302,6 @@ export class UsersService {
       return { relationship: 'none', requestId: null };
     }
 
-    // I sent it → I can cancel it. They sent it → I can accept/reject in place.
-    // Either way the viewer needs the id to act on the request.
     if (pending.sender.toString() === viewerId) {
       return { relationship: 'outgoing_pending', requestId: pending._id.toString() };
     }
@@ -323,7 +311,6 @@ export class UsersService {
   searchByName(query: string, excludeId?: string): Promise<UserDocument[]> {
     const trimmed = query.trim();
     if (!trimmed) return Promise.resolve([]);
-    // escape regex special chars so user input is treated literally
     const escaped = trimmed.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const filter: Record<string, unknown> = {
       name: { $regex: escaped, $options: 'i' },
@@ -335,7 +322,6 @@ export class UsersService {
   }
 }
 
-// Rounds to one decimal place for clean percentages/averages in the UI.
 function round1(n: number): number {
   return Math.round(n * 10) / 10;
 }
