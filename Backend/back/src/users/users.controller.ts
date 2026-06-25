@@ -21,6 +21,13 @@ export class UsersController {
     searchUsers(@Query('q') q: string, @Req() req){
         return this.userService.searchByName(q ?? '', req.user.id)
     }
+
+    // Dashboard comparison: the viewer's stats next to each of their friends'.
+    @Get('/comparison')
+    @UseGuards(AuthGuard('jwt'))
+    getFriendsComparison(@Req() req){
+        return this.userService.getFriendsComparison(req.user.id)
+    }
     @Get('/profile/:userId')
     getUserProfile(
         @Param('userId') userId

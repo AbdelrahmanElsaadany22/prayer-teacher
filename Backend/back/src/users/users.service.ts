@@ -33,6 +33,29 @@ export type UserProfileWithStats = {
   requestId: string | null;
 };
 
+// Per-prayer rollup for one user, used by the dashboard comparison filters.
+export type PrayerBreakdown = {
+  prayerName: string;
+  count: number;
+  avgAccuracy: number;
+  totalMistakes: number;
+};
+
+// One row in the friends-comparison table: the viewer plus each of their
+// friends, with the aggregated stats the dashboard can filter/sort on.
+export type FriendComparison = {
+  userId: string;
+  name: string;
+  isSelf: boolean;
+  totalPrayers: number;
+  avgAccuracy: number;
+  avgDurationSec: number;
+  totalMistakes: number;
+  avgMistakes: number;
+  mostMistakenPrayer: string | null;
+  perPrayer: PrayerBreakdown[];
+};
+
 @Injectable()
 export class UsersService {
   constructor(
@@ -107,6 +130,154 @@ export class UsersService {
     };
   }
 
+  // Side-by-side comparison between the viewer and every one of their friends.
+  // Returns one row per user with aggregated prayer stats; the dashboard picks
+  // which metric (accuracy, count, duration, mistakes, per-prayer…) to surface.
+  async getFriendsComparison(viewerId: string): Promise<FriendComparison[]> {
+    if (!Types.ObjectId.isValid(viewerId)) {
+      throw new NotFoundException('User not found');
+    }
+
+    const viewer = await this.userModel.findById(viewerId).exec();
+    if (!viewer) {
+      throw new NotFoundException('User not found');
+    }
+
+    // The viewer first, then their friends — keeps "you" at the top of the list.
+    const userIds = [
+      viewer._id,
+      ...viewer.friends.map((id) => new Types.ObjectId(id)),
+    ];
+
+    // Names for every user we're comparing, keyed by id.
+    const users = await this.userModel
+      .find({ _id: { $in: userIds } })
+      .select('name')
+      .exec();
+    const nameById = new Map(users.map((u) => [u._id.toString(), u.name]));
+
+    // Overall stats per user. Durations are stored as "mm:ss"/"hh:mm:ss"
+    // strings, so we parse them into seconds inside the pipeline before averaging.
+    const overall = await this.sessionModel.aggregate<{
+      _id: Types.ObjectId;
+      totalPrayers: number;
+      avgAccuracy: number;
+      avgDurationSec: number;
+      totalMistakes: number;
+    }>([
+      { $match: { userId: { $in: userIds } } },
+      {
+        $addFields: {
+          _parts: {
+            $map: {
+              input: { $split: ['$duration', ':'] },
+              as: 'p',
+              in: { $convert: { input: '$$p', to: 'int', onError: 0, onNull: 0 } },
+            },
+          },
+        },
+      },
+      {
+        $addFields: {
+          _durSec: {
+            $switch: {
+              branches: [
+                {
+                  case: { $eq: [{ $size: '$_parts' }, 3] },
+                  then: {
+                    $add: [
+                      { $multiply: [{ $arrayElemAt: ['$_parts', 0] }, 3600] },
+                      { $multiply: [{ $arrayElemAt: ['$_parts', 1] }, 60] },
+                      { $arrayElemAt: ['$_parts', 2] },
+                    ],
+                  },
+                },
+                {
+                  case: { $eq: [{ $size: '$_parts' }, 2] },
+                  then: {
+                    $add: [
+                      { $multiply: [{ $arrayElemAt: ['$_parts', 0] }, 60] },
+                      { $arrayElemAt: ['$_parts', 1] },
+                    ],
+                  },
+                },
+              ],
+              default: 0,
+            },
+          },
+        },
+      },
+      {
+        $group: {
+          _id: '$userId',
+          totalPrayers: { $sum: 1 },
+          avgAccuracy: { $avg: '$accuracy' },
+          avgDurationSec: { $avg: '$_durSec' },
+          totalMistakes: { $sum: '$mistakes' },
+        },
+      },
+    ]);
+    const overallById = new Map(overall.map((o) => [o._id.toString(), o]));
+
+    // Per-prayer breakdown per user, used by the "who errs most in X" filter.
+    const perPrayerRows = await this.sessionModel.aggregate<{
+      _id: { userId: Types.ObjectId; prayerName: string };
+      count: number;
+      avgAccuracy: number;
+      totalMistakes: number;
+    }>([
+      { $match: { userId: { $in: userIds } } },
+      {
+        $group: {
+          _id: { userId: '$userId', prayerName: '$prayerName' },
+          count: { $sum: 1 },
+          avgAccuracy: { $avg: '$accuracy' },
+          totalMistakes: { $sum: '$mistakes' },
+        },
+      },
+    ]);
+
+    const perPrayerByUser = new Map<string, PrayerBreakdown[]>();
+    for (const row of perPrayerRows) {
+      const uid = row._id.userId.toString();
+      const list = perPrayerByUser.get(uid) ?? [];
+      list.push({
+        prayerName: row._id.prayerName,
+        count: row.count,
+        avgAccuracy: round1(row.avgAccuracy),
+        totalMistakes: row.totalMistakes,
+      });
+      perPrayerByUser.set(uid, list);
+    }
+
+    return userIds.map((id) => {
+      const uid = id.toString();
+      const o = overallById.get(uid);
+      const perPrayer = perPrayerByUser.get(uid) ?? [];
+      // Prayer this user makes the most mistakes in (ties broken by first seen).
+      const mostMistakenPrayer =
+        perPrayer.length > 0
+          ? [...perPrayer].sort((a, b) => b.totalMistakes - a.totalMistakes)[0]
+              .prayerName
+          : null;
+      const totalPrayers = o?.totalPrayers ?? 0;
+
+      return {
+        userId: uid,
+        name: nameById.get(uid) ?? 'Unknown',
+        isSelf: uid === viewer._id.toString(),
+        totalPrayers,
+        avgAccuracy: round1(o?.avgAccuracy ?? 0),
+        avgDurationSec: Math.round(o?.avgDurationSec ?? 0),
+        totalMistakes: o?.totalMistakes ?? 0,
+        avgMistakes:
+          totalPrayers > 0 ? round1((o?.totalMistakes ?? 0) / totalPrayers) : 0,
+        mostMistakenPrayer,
+        perPrayer,
+      };
+    });
+  }
+
   // Works out how the viewer relates to the profile owner so the UI can show the
   // right button even after a reload (no local-only "sent" state needed).
   private async resolveRelationship(
@@ -162,4 +333,9 @@ export class UsersService {
     }
     return this.userModel.find(filter).limit(10).exec();
   }
+}
+
+// Rounds to one decimal place for clean percentages/averages in the UI.
+function round1(n: number): number {
+  return Math.round(n * 10) / 10;
 }
