@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Message } from './schemas/chat.schema';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { User } from '../users/schemas/user.schema';
 
 @Injectable()
@@ -51,6 +51,29 @@ export class ChatService {
         },
         {$set:{seen:true}}
     )
+    }
+
+    //عدد الرسايل غير المقروءة لكل صديق سايبلي رسالة
+    async getUnreadCounts(userId:string){
+        const result =await this.messageModel.aggregate<{ _id: Types.ObjectId; count: number }>([
+            {
+                $match:{
+                    receiver:new Types.ObjectId(userId),
+                    seen:false
+                }
+            },
+            {
+                $group:{
+                    _id:"$sender",
+                    count:{$sum:1}
+                }
+            }
+        ])
+        //نرجّعها على شكل { friendId: count } علشان الفرونت يقرأها بسهولة
+        return result.reduce<Record<string, number>>((acc,item)=>{
+            acc[item._id.toString()]=item.count
+            return acc
+        },{})
     }
 
 }
