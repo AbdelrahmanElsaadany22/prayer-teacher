@@ -134,7 +134,7 @@ export default function FriendsPage() {
             </div>
             {leaderboard.map((entry, i) => (
               <div key={entry.userId} className={`${css.lbRow}${entry.isSelf ? ` ${css.lbSelf}` : ''}`}>
-                <span className={css.lbRank}>{i + 1}</span>
+                <span className={css.lbRank} data-rank={i + 1}>{i + 1}</span>
                 <span className={css.lbName}>
                   {entry.name}
                   {entry.isSelf && <span className={css.youBadge}>{t('friends.youLabel')}</span>}

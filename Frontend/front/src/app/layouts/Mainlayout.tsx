@@ -5,6 +5,8 @@ import UserSearch from '../../features/users/components/UserSearch';
 import { useI18n } from '../../shared/i18n/LanguageProvider';
 import { LANGUAGES } from '../../shared/i18n/translations';
 
+const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
+
 export default function MainLayout() {
   const navigate = useNavigate();
   const { isAuthenticated, logout, user } = useAuth();
@@ -15,11 +17,13 @@ export default function MainLayout() {
     navigate('/login', { replace: true });
   }
 
+  const initial = user?.name?.[0]?.toUpperCase() ?? '?';
+
   return (
     <div className="app-shell">
       <header className="site-header">
         <Link className="brand" to="/">
-          <img src="/logo.png" alt="Estaقِm logo" className="brand-logo" />
+          <img src="/logo.png" alt="logo" className="brand-logo" />
           <span>{t('brand.name')}</span>
         </Link>
 
@@ -30,8 +34,11 @@ export default function MainLayout() {
               <NavLink to="/dashboard">{t('nav.dashboard')}</NavLink>
               <NavLink to="/friends">{t('nav.friends')}</NavLink>
               <NotificationBell />
-              <NavLink to="/profile" className="nav-user">
-                {user?.name}
+              <NavLink to="/profile" className="nav-user-pill">
+                <span className="nav-avatar">
+                  {initial}
+                </span>
+                <span>{user?.name}</span>
               </NavLink>
               <button className="nav-button" type="button" onClick={handleLogout}>
                 {t('nav.logout')}

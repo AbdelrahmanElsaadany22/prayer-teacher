@@ -3,102 +3,121 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: calc(100vh - 76px);
+  min-height: calc(100vh - 72px);
   padding: 2rem;
-  background: radial-gradient(
-    ellipse 80% 50% at 50% 0%,
-    rgba(212, 174, 92, 0.1) 0%,
-    transparent 70%
-  );
+  animation: fadeInUp 0.35s ease both;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .logo {
   font-family: 'Noto Naskh Arabic', serif;
-  font-size: clamp(2rem, 6vw, 4rem);
+  font-size: clamp(2.2rem, 6vw, 4.2rem);
   color: var(--accent);
   line-height: 1.2;
   margin-bottom: 0.25rem;
+  text-shadow: 0 0 40px rgba(212, 174, 92, 0.25);
 }
 
 .sub {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: var(--muted);
   margin-bottom: 3rem;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 1rem;
-  max-width: 700px;
+  grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+  gap: 0.9rem;
+  max-width: 720px;
   width: 100%;
   margin-bottom: 2.5rem;
 }
 
 .card {
-  background: var(--surface-light);
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 1.5rem 1rem;
+  border-radius: var(--radius-lg);
+  padding: 1.6rem 1rem;
   cursor: pointer;
   text-align: center;
-  transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+  transition: border-color 0.2s, transform 0.18s, box-shadow 0.2s, background 0.2s;
   user-select: none;
 }
 
 .card:hover {
-  transform: translateY(-2px);
-  border-color: rgba(212, 174, 92, 0.5);
+  transform: translateY(-3px);
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-md);
+  background: var(--surface-light);
 }
 
 .card.selected {
   border-color: var(--accent);
-  background: rgba(212, 174, 92, 0.08);
-  box-shadow: 0 0 20px rgba(212, 174, 92, 0.2);
+  background: rgba(212, 174, 92, 0.07);
+  box-shadow: 0 0 0 1px var(--accent), var(--shadow-accent);
+  transform: translateY(-2px);
 }
 
 .cardAr {
   font-family: 'Noto Naskh Arabic', serif;
-  font-size: 1.6rem;
+  font-size: 1.7rem;
   color: var(--accent);
+  margin-bottom: 0.25rem;
 }
 
 .cardEn {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: var(--muted);
-  margin-top: 0.25rem;
+  margin-top: 0.1rem;
 }
 
 .cardRk {
-  font-size: 0.75rem;
-  color: var(--text);
-  margin-top: 0.4rem;
+  margin-top: 0.5rem;
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  padding: 2px 10px;
+  background: var(--surface-light);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  display: inline-block;
+}
+
+.card.selected .cardRk {
+  background: rgba(212, 174, 92, 0.1);
+  border-color: rgba(212, 174, 92, 0.25);
+  color: var(--accent);
 }
 
 .startBtn {
   background: var(--accent);
   color: #0d0d0d;
   border: none;
-  border-radius: 8px;
-  padding: 0.85rem 2.5rem;
-  font-size: 0.95rem;
+  border-radius: var(--radius-sm);
+  padding: 0.9rem 3rem;
+  font-size: 0.88rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: opacity 0.2s, transform 0.15s;
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s, opacity 0.2s;
 }
 
 .startBtn:disabled {
-  opacity: 0.35;
+  opacity: 0.3;
   cursor: not-allowed;
+  transform: none;
 }
 
 .startBtn:not(:disabled):hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
+  background: #e0bc6a;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-accent);
 }
 
 .tips {
@@ -106,6 +125,11 @@
   font-size: 0.78rem;
   color: var(--muted);
   text-align: center;
-  max-width: 500px;
-  line-height: 1.6;
+  max-width: 480px;
+  line-height: 1.65;
+  opacity: 0.8;
+}
+
+@media (max-width: 480px) {
+  .grid { grid-template-columns: repeat(2, 1fr); }
 }

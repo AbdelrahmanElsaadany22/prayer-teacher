@@ -1,26 +1,31 @@
 .page {
-  width: min(960px, calc(100% - 40px));
+  width: min(980px, calc(100% - 40px));
   margin: 0 auto;
-  padding: 56px 0 80px;
+  padding: 52px 0 80px;
+  animation: fadeInUp 0.3s ease both;
 }
 
-.header {
-  margin-bottom: 2.5rem;
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
+
+/* ── Header ── */
+.header { margin-bottom: 2.5rem; }
 
 .eyebrow {
   display: block;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   color: var(--accent);
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 
 .title {
-  margin: 0 0 0.4rem;
-  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  margin: 0 0 0.35rem;
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
   letter-spacing: -0.03em;
   color: var(--text);
 }
@@ -28,61 +33,90 @@
 .subtitle {
   margin: 0;
   color: var(--muted);
-  font-size: 0.95rem;
+  font-size: 0.92rem;
 }
 
-/* ── Section title ──────────────────────────────────────────── */
+/* ── Section title ── */
 .sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   margin: 2.5rem 0 1rem;
-  padding-bottom: 0.65rem;
-  font-size: 0.72rem;
-  font-weight: 600;
+  font-size: 0.7rem;
+  font-weight: 700;
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.14em;
-  border-bottom: 1px solid var(--border);
 }
 
-/* ── Stats cards grid ───────────────────────────────────────── */
+.sectionTitle::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ── Stats grid ── */
 .statsGrid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 1rem;
 }
 
 .statCard {
-  padding: 1.4rem 1.5rem;
+  position: relative;
+  padding: 1.4rem 1.5rem 1.4rem 1.75rem;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+
+.statCard::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--accent);
+  border-radius: 0 2px 2px 0;
+}
+
+.statCard:hover {
+  border-color: var(--border-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .statLabel {
   display: block;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 700;
   color: var(--muted);
   text-transform: uppercase;
-  letter-spacing: 0.09em;
-  margin-bottom: 0.5rem;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.6rem;
 }
 
 .statValue {
   display: block;
-  font-size: 2.2rem;
+  font-size: 2.4rem;
   font-weight: 800;
   color: var(--accent);
   line-height: 1;
+  letter-spacing: -0.02em;
 }
 
 .statSub {
   display: block;
-  margin-top: 0.3rem;
-  font-size: 0.76rem;
+  margin-top: 0.35rem;
+  font-size: 0.74rem;
   color: var(--muted);
 }
 
-/* ── Insight cards (most mistaken prayer / move) ────────────── */
+/* ── Insight cards ── */
 .insightGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -93,22 +127,21 @@
   padding: 1.25rem 1.5rem;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.5rem;
+  transition: border-color 0.2s;
 }
 
-.insightIcon {
-  font-size: 1.4rem;
-}
+.insightCard:hover { border-color: var(--border-hover); }
 
 .insightLabel {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 700;
   color: var(--muted);
   text-transform: uppercase;
-  letter-spacing: 0.09em;
+  letter-spacing: 0.1em;
 }
 
 .insightValue {
@@ -117,22 +150,23 @@
   color: var(--danger);
 }
 
-/* ── Accuracy chart ─────────────────────────────────────────── */
+/* ── Chart card ── */
 .chartCard {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   padding: 1.5rem;
 }
 
 .chartTitle {
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 700;
-  color: var(--text);
-  margin: 0 0 1.25rem;
+  color: var(--text-secondary);
+  margin: 0 0 1.5rem;
+  letter-spacing: 0.02em;
 }
 
-/* ── Per-prayer table ───────────────────────────────────────── */
+/* ── Per-prayer table ── */
 .prayerTable {
   width: 100%;
   border-collapse: collapse;
@@ -140,18 +174,16 @@
 
 .prayerTable th {
   text-align: left;
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 700;
   color: var(--muted);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding: 0 0.75rem 0.75rem;
+  letter-spacing: 0.1em;
+  padding: 0 0.75rem 0.8rem;
 }
 
 .prayerTable th:last-child,
-.prayerTable td:last-child {
-  text-align: right;
-}
+.prayerTable td:last-child { text-align: right; }
 
 .prayerTable td {
   padding: 0.75rem;
@@ -160,13 +192,9 @@
   border-top: 1px solid var(--border);
 }
 
-.prayerTable tr:hover td {
-  background: var(--surface-light);
-}
+.prayerTable tr:hover td { background: var(--surface-light); }
 
-.prayerName {
-  font-weight: 600;
-}
+.prayerName { font-weight: 600; }
 
 .accuracyBar {
   display: flex;
@@ -176,7 +204,7 @@
 
 .barTrack {
   flex: 1;
-  height: 6px;
+  height: 5px;
   background: var(--surface-light);
   border-radius: 99px;
   overflow: hidden;
@@ -185,52 +213,53 @@
 .barFill {
   height: 100%;
   border-radius: 99px;
-  transition: width 0.4s ease;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.barFill.high { background: #3fb950; }
+.barFill.high { background: var(--success); }
 .barFill.mid  { background: var(--accent); }
 .barFill.low  { background: var(--danger); }
 
 .barLabel {
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 700;
-  min-width: 36px;
+  min-width: 40px;
   text-align: right;
 }
 
-.barLabel.high { color: #3fb950; }
+.barLabel.high { color: var(--success); }
 .barLabel.mid  { color: var(--accent); }
 .barLabel.low  { color: var(--danger); }
 
-/* ── Session list ───────────────────────────────────────────── */
+/* ── Session list ── */
 .sessionList {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 0.5rem;
 }
 
 .sessionRow {
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 0.9rem 1.25rem;
+  padding: 0.85rem 1.25rem;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  transition: border-color 0.2s;
+  border-radius: var(--radius-md);
+  transition: border-color 0.15s, background 0.15s;
 }
 
 .sessionRow:hover {
-  border-color: rgba(212, 174, 92, 0.3);
+  border-color: var(--border-hover);
+  background: var(--surface-light);
 }
 
 .sessionIcon {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: var(--surface-light);
-  border: 1px solid var(--border);
+  background: var(--accent-glow);
+  border: 1px solid rgba(212, 174, 92, 0.25);
   display: grid;
   place-items: center;
   font-family: 'Noto Naskh Arabic', serif;
@@ -264,16 +293,16 @@
 }
 
 .accuracy {
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   font-weight: 700;
 }
 
-.accuracy.high { color: #3fb950; }
+.accuracy.high { color: var(--success); }
 .accuracy.mid  { color: var(--accent); }
 .accuracy.low  { color: var(--danger); }
 
 .sessionMistakes {
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   color: var(--muted);
 }
 
@@ -285,20 +314,23 @@
   text-align: right;
 }
 
-/* ── CTA ────────────────────────────────────────────────────── */
+/* ── CTA ── */
 .cta {
   margin-top: 2.5rem;
+  display: flex;
+  justify-content: flex-start;
 }
 
-/* ── States ─────────────────────────────────────────────────── */
+/* ── States ── */
 .empty {
   padding: 3rem;
   text-align: center;
   color: var(--muted);
   background: var(--surface);
   border: 1px dashed var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   font-size: 0.9rem;
+  line-height: 1.7;
 }
 
 .loader {
@@ -309,41 +341,35 @@
   font-size: 0.9rem;
 }
 
-@media (max-width: 640px) {
-  .statsGrid { grid-template-columns: 1fr 1fr; }
-  .insightGrid { grid-template-columns: 1fr; }
-  .sessionStats { display: none; }
-  .sessionDate { display: none; }
-}
-
-/* ── Pagination controls (Recent Sessions) ── */
+/* ── Pagination ── */
 .pagination {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 16px;
-  margin-top: 18px;
+  gap: 12px;
+  margin-top: 1.25rem;
 }
 
 .pageBtn {
-  padding: 8px 18px;
-  border: 1px solid var(--accent-dark);
-  border-radius: 6px;
-  color: var(--accent);
-  background: transparent;
+  padding: 7px 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  background: var(--surface);
   font-weight: 600;
   font-size: 0.82rem;
-  letter-spacing: 0.05em;
   cursor: pointer;
-  transition: background 150ms ease, opacity 150ms ease;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
 }
 
 .pageBtn:hover:not(:disabled) {
-  background: rgba(212, 174, 92, 0.12);
+  border-color: var(--accent-dark);
+  color: var(--accent);
+  background: var(--accent-glow);
 }
 
 .pageBtn:disabled {
-  opacity: 0.4;
+  opacity: 0.35;
   cursor: not-allowed;
 }
 
@@ -351,4 +377,16 @@
   color: var(--muted);
   font-size: 0.82rem;
   font-weight: 600;
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .statsGrid { grid-template-columns: 1fr 1fr; }
+  .insightGrid { grid-template-columns: 1fr; }
+  .sessionStats { display: none; }
+  .sessionDate { display: none; }
+}
+
+@media (max-width: 420px) {
+  .statsGrid { grid-template-columns: 1fr; }
 }
