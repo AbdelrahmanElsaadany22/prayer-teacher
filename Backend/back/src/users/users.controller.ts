@@ -12,13 +12,16 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '@nestjs/passport';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
+import { memoryStorage } from 'multer';
 import { UsersService } from './users.service';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 @Controller('user')
 export class UsersController {
-  constructor(private readonly userService: UsersService) {}
+  constructor(
+    private readonly userService: UsersService,
+    private readonly cloudinaryService: CloudinaryService,
+  ) {}
 
   @Get('/current')
   @UseGuards(AuthGuard('jwt'))
@@ -53,13 +56,7 @@ export class UsersController {
   @UseGuards(AuthGuard('jwt'))
   @UseInterceptors(
     FileInterceptor('file', {
-      storage: diskStorage({
-        destination: './uploads',
-        filename: (req: any, file, cb) => {
-          const ext = extname(file.originalname);
-          cb(null, `${req.user.id}${ext}`);
-        },
-      }),
+      storage: memoryStorage(),
       limits: { fileSize: 5 * 1024 * 1024 },
       fileFilter: (_req, file, cb) => {
         if (!file.mimetype.match(/^image\/(jpeg|jpg|png|webp|gif)$/)) {
@@ -72,10 +69,11 @@ export class UsersController {
   )
   async uploadProfilePicture(
     @Req() req,
-    @UploadedFile() file: { filename: string; mimetype: string; size: number },
+    @UploadedFile() file: Express.Multer.File,
   ) {
     if (!file) throw new BadRequestException('No file uploaded');
-    await this.userService.updateProfilePicture(req.user.id, file.filename);
-    return { filename: file.filename };
+    const url = await this.cloudinaryService.uploadImage(file);
+    await this.userService.updateProfilePicture(req.user.id, url);
+    return { url };
   }
 }

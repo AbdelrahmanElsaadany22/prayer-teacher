@@ -11,9 +11,11 @@ import {
   friendRequest,
   friendRequestSchema,
 } from '../friends/schemas/friendRequest.schema';
+import { CloudinaryModule } from '../cloudinary/cloudinary.module';
 
 @Module({
   imports: [
+    CloudinaryModule,
     MongooseModule.forFeature([
       {
         name: User.name,
