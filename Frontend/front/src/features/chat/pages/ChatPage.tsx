@@ -41,101 +41,110 @@ export default function ChatPage() {
     inputRef.current?.focus();
   }, []);
 
+  function handleSend() {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    sendMessage(trimmed);
+    setText('');
+    inputRef.current?.focus();
+  }
+
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === 'Enter') {
       e.preventDefault();
-      const trimmed = text.trim();
-      if (!trimmed) return;
-      sendMessage(trimmed);
-      setText('');
+      handleSend();
     }
   }
 
   const isRtl = lang === 'ar';
   const friendPic = avatarUrl(friend?.profilePicture);
-  const myInitial = user?.name?.[0]?.toUpperCase() ?? '?';
   const friendInitial = friend?.name?.[0]?.toUpperCase() ?? '?';
 
   return (
-    <div className={css.wrapper}>
-      <div className={css.shell} dir={isRtl ? 'rtl' : 'ltr'}>
-        <div className={css.chatBox}>
+    <div className={css.shell} dir={isRtl ? 'rtl' : 'ltr'}>
+      <div className={css.chatBox}>
 
-          {/* ── Header ── */}
-          <div className={css.chatHeader}>
-            <Link to="/friends" className={css.back}>
-              {isRtl ? '→' : '←'}
-            </Link>
-            <div className={css.friendAv}>
-              {friendPic
-                ? <img src={friendPic} alt={friend?.name} />
-                : friendInitial}
-            </div>
-            <div className={css.friendInfo}>
-              <span className={css.friendName}>{friend?.name ?? '…'}</span>
-              <span className={`${css.status} ${isOnline ? css.online : css.offline}`}>
-                {isOnline ? t('chat.online') : t('chat.offline')}
-              </span>
-            </div>
+        {/* ── Header ── */}
+        <div className={css.chatHeader}>
+          <Link to="/friends" className={css.back}>
+            {isRtl ? '→' : '←'}
+          </Link>
+          <div className={css.friendAv}>
+            {friendPic
+              ? <img src={friendPic} alt={friend?.name} />
+              : friendInitial}
           </div>
+          <div className={css.friendInfo}>
+            <span className={css.friendName}>{friend?.name ?? '…'}</span>
+            <span className={`${css.status} ${isOnline ? css.online : css.offline}`}>
+              {isOnline ? t('chat.online') : t('chat.offline')}
+            </span>
+          </div>
+        </div>
 
-          {/* ── Messages ── */}
-          <div className={css.msgs} ref={msgsRef}>
-            {loading && (
-              <div className={css.stateMsg}>{t('chat.loading')}</div>
-            )}
-            {!loading && messages.length === 0 && (
-              <div className={css.stateMsg}>{t('chat.empty')}</div>
-            )}
-            {messages.map((msg) => {
-              const isMine = msg.sender === user!.id;
-              const pic    = isMine ? myPic : friendPic;
-              const init   = isMine ? myInitial : friendInitial;
-              const name   = isMine ? user?.name : friend?.name;
-              return (
-                <div
-                  key={msg._id}
-                  className={`${css.msgRow} ${isMine ? css.mine : ''}`}
-                >
+        {/* ── Messages ── */}
+        <div className={css.msgs} ref={msgsRef}>
+          {loading && (
+            <div className={css.stateMsg}>{t('chat.loading')}</div>
+          )}
+          {!loading && messages.length === 0 && (
+            <div className={css.stateMsg}>{t('chat.empty')}</div>
+          )}
+          {messages.map((msg) => {
+            const isMine = msg.sender === user!.id;
+            return (
+              <div
+                key={msg._id}
+                className={`${css.msgRow} ${isMine ? css.mine : ''}`}
+              >
+                {!isMine && (
                   <div className={css.avatar}>
-                    {pic ? <img src={pic} alt={name} /> : init}
+                    {friendPic
+                      ? <img src={friendPic} alt={friend?.name} />
+                      : friendInitial}
                   </div>
-                  <div className={css.msgContent}>
-                    <div className={css.msgText}>{msg.message}</div>
-                    <div className={css.msgMeta}>
-                      {new Date(msg.createdAt).toLocaleTimeString([], {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                      {isMine && (
-                        <span className={msg.seen ? css.seenTick : css.sentTick}>
-                          {msg.seen ? '✓✓' : '✓'}
-                        </span>
-                      )}
-                    </div>
+                )}
+                <div className={css.bubble}>
+                  <span className={css.msgText}>{msg.message}</span>
+                  <div className={css.msgMeta}>
+                    {new Date(msg.createdAt).toLocaleTimeString([], {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                    {isMine && (
+                      <span className={msg.seen ? css.seenTick : css.sentTick}>
+                        {msg.seen ? '✓✓' : '✓'}
+                      </span>
+                    )}
                   </div>
                 </div>
-              );
-            })}
-          </div>
+              </div>
+            );
+          })}
+        </div>
 
-          {/* ── Input ── */}
-          <div className={css.inputRow}>
-            <div className={css.myAv}>
-              {myPic ? <img src={myPic} alt={user?.name} /> : myInitial}
-            </div>
-            <input
-              ref={inputRef}
-              className={css.input}
-              value={text}
-              onChange={e => setText(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder={t('chat.placeholder')}
-              autoComplete="off"
-              dir={isRtl ? 'rtl' : 'ltr'}
-            />
-          </div>
-
+        {/* ── Input ── */}
+        <div className={css.inputRow}>
+          <input
+            ref={inputRef}
+            className={css.input}
+            value={text}
+            onChange={e => setText(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={t('chat.placeholder')}
+            autoComplete="off"
+            dir={isRtl ? 'rtl' : 'ltr'}
+          />
+          <button
+            className={css.sendBtn}
+            onClick={handleSend}
+            disabled={!text.trim()}
+            aria-label="Send"
+          >
+            <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+            </svg>
+          </button>
         </div>
       </div>
     </div>

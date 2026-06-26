@@ -296,7 +296,7 @@ export const translations: Record<Lang, Dict> = {
     'report.detectedAt': 'اتكشف: {pose} عند ~{time} ث',
     'report.prayAgain': 'صلِّ مرة أخرى',
     'notFound.eyebrow': 'الصفحة غير موجودة',
-    'notFound.title': 'ضُعْتَ في الطريق؟',
+    'notFound.title': 'ضعْتَ في الطريق؟',
     'notFound.subtitle': 'الصفحة اللي بتدور عليها مش موجودة أو اتنقلت.',
     'notFound.cta': 'ارجع للرئيسية',
     'friends.eyebrow': 'اجتماعي',

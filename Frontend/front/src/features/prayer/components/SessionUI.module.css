@@ -24,25 +24,6 @@
   gap: 0.9rem;
 }
 
-.backBtn {
-  color: var(--muted);
-  font-size: 1.5rem;
-  line-height: 1;
-  text-decoration: none;
-  flex-shrink: 0;
-  transition: color 0.15s;
-  width: 40px;
-  height: 40px;
-  display: grid;
-  place-items: center;
-  border-radius: 8px;
-}
-
-.backBtn:hover { 
-  color: var(--accent); 
-  background: rgba(232, 196, 106, 0.1);
-}
-
 .prayerName {
   font-family: 'Noto Naskh Arabic', serif;
   font-size: 1.25rem;
