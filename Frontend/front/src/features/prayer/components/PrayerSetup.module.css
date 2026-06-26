@@ -1,4 +1,5 @@
 .setup {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -8,6 +9,19 @@
   padding: 2rem;
   animation: fadeInUp 0.35s ease both;
 }
+
+.back {
+  position: absolute;
+  top: 1.5rem;
+  inset-inline-start: 1.75rem;
+  color: var(--muted);
+  font-size: 1.3rem;
+  line-height: 1;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.back:hover { color: var(--accent); }
 
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(16px); }

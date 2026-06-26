@@ -1,4 +1,5 @@
 import { useRef, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import type { ReportData, GroupedMistake } from '../types/prayer.types';
 import { getPoseLabel } from '../constants/poses';
 import { useI18n } from '../../../shared/i18n/LanguageProvider';
@@ -79,6 +80,9 @@ export function PrayerReport({ data, onRestart }: Props) {
         <button type="button" className={css.restartBtn} onClick={onRestart}>
           {t('report.prayAgain')}
         </button>
+        <Link to="/dashboard" className={css.dashBtn}>
+          {t('report.dashboard')}
+        </Link>
       </div>
     </div>
   );
