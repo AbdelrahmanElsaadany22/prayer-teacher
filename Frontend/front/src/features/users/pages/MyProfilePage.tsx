@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/hooks/useAuth';
 import { useI18n } from '../../../shared/i18n/LanguageProvider';
+import { LANGUAGES } from '../../../shared/i18n/translations';
+import { useTheme } from '../../../shared/theme/ThemeProvider';
 import { api, getApiErrorMessage } from '../../../shared/api/axios';
 import { uploadProfilePicture, updateName, changePassword } from '../api/users.api';
 import { avatarUrl } from '../../../shared/utils/avatar';
@@ -9,8 +12,10 @@ import css from './MyProfilePage.module.css';
 type Msg = { type: 'ok' | 'err'; text: string };
 
 export default function MyProfilePage() {
-  const { user, refreshUser } = useAuth();
-  const { t } = useI18n();
+  const navigate = useNavigate();
+  const { user, logout, refreshUser } = useAuth();
+  const { t, lang, setLang } = useI18n();
+  const { theme, toggleTheme } = useTheme();
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [picUrl, setPicUrl] = useState<string | null>(null);
@@ -240,6 +245,56 @@ export default function MyProfilePage() {
           </button>
         </form>
       </div>
+
+      {/* ── Preferences card ── */}
+      <div className={`${css.card} ${css.cardSpaced}`}>
+        <p className={css.sectionHeading}>{t('myProfile.preferencesSection')}</p>
+        <div className={css.userInfo}>
+          <div className={css.infoRow}>
+            <span className={css.infoLabel}>{t('myProfile.language')}</span>
+            <div className={css.prefPill}>
+              {LANGUAGES.map(({ code, label }) => (
+                <button
+                  key={code}
+                  type="button"
+                  className={`${css.prefOpt}${lang === code ? ` ${css.prefOptActive}` : ''}`}
+                  onClick={() => setLang(code)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className={css.infoRow}>
+            <span className={css.infoLabel}>{t('myProfile.appearance')}</span>
+            <div className={css.prefPill}>
+              <button
+                type="button"
+                className={`${css.prefOpt}${theme === 'dark' ? ` ${css.prefOptActive}` : ''}`}
+                onClick={() => theme !== 'dark' && toggleTheme()}
+              >
+                {t('myProfile.dark')}
+              </button>
+              <button
+                type="button"
+                className={`${css.prefOpt}${theme === 'light' ? ` ${css.prefOptActive}` : ''}`}
+                onClick={() => theme !== 'light' && toggleTheme()}
+              >
+                {t('myProfile.light')}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Logout ── */}
+      <button
+        type="button"
+        className={css.logoutBtn}
+        onClick={() => { logout(); navigate('/login', { replace: true }); }}
+      >
+        {t('myProfile.logout')}
+      </button>
     </div>
   );
 }

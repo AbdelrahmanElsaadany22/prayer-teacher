@@ -1,23 +1,16 @@
-import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { Link, NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../../features/auth/hooks/useAuth';
 import NotificationBell from '../../features/notifications/components/NotificationBell';
 import UserSearch from '../../features/users/components/UserSearch';
 import { useI18n } from '../../shared/i18n/LanguageProvider';
-import { LANGUAGES } from '../../shared/i18n/translations';
-
-const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
+import { avatarUrl } from '../../shared/utils/avatar';
 
 export default function MainLayout() {
-  const navigate = useNavigate();
-  const { isAuthenticated, logout, user } = useAuth();
-  const { t, lang, setLang } = useI18n();
-
-  function handleLogout() {
-    logout();
-    navigate('/login', { replace: true });
-  }
+  const { isAuthenticated, user } = useAuth();
+  const { t } = useI18n();
 
   const initial = user?.name?.[0]?.toUpperCase() ?? '?';
+  const picSrc = avatarUrl(user?.profilePicture);
 
   return (
     <div className="app-shell">
@@ -34,38 +27,18 @@ export default function MainLayout() {
               <NavLink to="/dashboard">{t('nav.dashboard')}</NavLink>
               <NavLink to="/friends">{t('nav.friends')}</NavLink>
               <NotificationBell />
-              <NavLink to="/profile" className="nav-user-pill">
+              <NavLink to="/profile" className="nav-user-pill" aria-label={t('nav.myProfile')}>
                 <span className="nav-avatar">
-                  {initial}
+                  {picSrc ? <img src={picSrc} alt={user?.name} /> : initial}
                 </span>
-                <span>{user?.name}</span>
               </NavLink>
-              <button className="nav-button" type="button" onClick={handleLogout}>
-                {t('nav.logout')}
-              </button>
             </>
           ) : (
             <>
               <NavLink to="/login">{t('nav.login')}</NavLink>
-              <NavLink className="nav-signup" to="/signup">
-                {t('nav.signup')}
-              </NavLink>
+              <NavLink className="nav-signup" to="/signup">{t('nav.signup')}</NavLink>
             </>
           )}
-
-          <div className="lang-pill" role="group" aria-label="Select language">
-            {LANGUAGES.map(({ code, label }) => (
-              <button
-                key={code}
-                className={`lang-opt${lang === code ? ' lang-opt--active' : ''}`}
-                type="button"
-                onClick={() => setLang(code)}
-                aria-pressed={lang === code}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
         </nav>
       </header>
 

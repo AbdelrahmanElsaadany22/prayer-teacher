@@ -318,6 +318,62 @@
   letter-spacing: 0.06em;
 }
 
+/* ── Preferences pill ── */
+.prefPill {
+  display: flex;
+  align-items: center;
+  background: var(--surface-light);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 3px;
+  gap: 2px;
+}
+
+.prefOpt {
+  display: grid;
+  place-items: center;
+  min-width: 52px;
+  padding: 5px 12px;
+  border: none;
+  border-radius: 4px;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  background: transparent;
+  color: var(--muted);
+  transition: background 150ms ease, color 150ms ease;
+}
+
+.prefOptActive {
+  background: var(--accent);
+  color: #17140d;
+  font-weight: 700;
+}
+
+/* ── Logout ── */
+.logoutBtn {
+  margin-top: 1.5rem;
+  width: 100%;
+  padding: 11px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--danger-border);
+  background: var(--danger-bg);
+  color: var(--danger);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  letter-spacing: 0.02em;
+}
+
+.logoutBtn:hover {
+  background: rgba(255, 123, 114, 0.16);
+  border-color: var(--danger);
+}
+
 @media (max-width: 480px) {
   .avatarWrap { flex-direction: column; align-items: flex-start; }
 }
