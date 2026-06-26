@@ -84,6 +84,14 @@ export function AuthProvider({ children }: PropsWithChildren) {
     setUser(null);
   }
 
+  const refreshUser = useCallback(async () => {
+    try {
+      setUser(await getCurrentUserRequest());
+    } catch {
+      // ignore — stale context is better than forcing logout
+    }
+  }, []);
+
   const value = useMemo(
     () => ({
       user,
@@ -92,8 +100,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
       login,
       signup,
       logout,
+      refreshUser,
     }),
-    [user, isInitializing, login, signup],
+    [user, isInitializing, login, signup, refreshUser],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

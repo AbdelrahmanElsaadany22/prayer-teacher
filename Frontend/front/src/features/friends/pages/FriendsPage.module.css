@@ -187,6 +187,22 @@
   transform: translateY(-1px);
 }
 
+.unreadBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 99px;
+  background: var(--danger, #e85d4a);
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 800;
+  margin-left: 6px;
+  flex-shrink: 0;
+}
+
 .removeBtn {
   background: transparent;
   border: 1px solid var(--border);

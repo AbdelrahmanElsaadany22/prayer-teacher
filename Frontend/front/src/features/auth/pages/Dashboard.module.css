@@ -1,7 +1,7 @@
 .page {
   width: min(980px, calc(100% - 40px));
   margin: 0 auto;
-  padding: 52px 0 80px;
+  padding: 60px 0 100px;
   animation: fadeInUp 0.3s ease both;
 }
 
@@ -11,7 +11,7 @@
 }
 
 /* ── Header ── */
-.header { margin-bottom: 2.5rem; }
+.header { margin-bottom: 2.75rem; }
 
 .eyebrow {
   display: block;
@@ -41,7 +41,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  margin: 2.5rem 0 1rem;
+  margin: 3rem 0 1.25rem;
   font-size: 0.7rem;
   font-weight: 700;
   color: var(--muted);
@@ -65,27 +65,18 @@
 
 .statCard {
   position: relative;
-  padding: 1.4rem 1.5rem 1.4rem 1.75rem;
-  background: var(--surface);
+  padding: 1.75rem;
+  background: linear-gradient(160deg, #1e1209 0%, var(--surface) 100%);
   border: 1px solid var(--border);
+  border-top: 2px solid rgba(212, 174, 92, 0.4);
   border-radius: var(--radius-lg);
   overflow: hidden;
   transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
 }
 
-.statCard::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: var(--accent);
-  border-radius: 0 2px 2px 0;
-}
-
 .statCard:hover {
   border-color: var(--border-hover);
+  border-top-color: rgba(212, 174, 92, 0.6);
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
 }
@@ -96,13 +87,13 @@
   font-weight: 700;
   color: var(--muted);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   margin-bottom: 0.6rem;
 }
 
 .statValue {
   display: block;
-  font-size: 2.4rem;
+  font-size: 2.8rem;
   font-weight: 800;
   color: var(--accent);
   line-height: 1;
@@ -111,7 +102,7 @@
 
 .statSub {
   display: block;
-  margin-top: 0.35rem;
+  margin-top: 0.4rem;
   font-size: 0.74rem;
   color: var(--muted);
 }
@@ -155,7 +146,7 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 1.5rem;
+  padding: 2rem;
 }
 
 .chartTitle {
@@ -242,7 +233,7 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 0.85rem 1.25rem;
+  padding: 1rem 1.5rem;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
@@ -259,7 +250,7 @@
   height: 36px;
   border-radius: 50%;
   background: var(--accent-glow);
-  border: 1px solid rgba(212, 174, 92, 0.25);
+  border: 1px solid rgba(212, 174, 92, 0.2);
   display: grid;
   place-items: center;
   font-family: 'Noto Naskh Arabic', serif;
@@ -323,7 +314,7 @@
 
 /* ── States ── */
 .empty {
-  padding: 3rem;
+  padding: 4rem;
   text-align: center;
   color: var(--muted);
   background: var(--surface);

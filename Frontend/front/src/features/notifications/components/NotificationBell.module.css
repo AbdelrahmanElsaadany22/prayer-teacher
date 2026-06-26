@@ -8,19 +8,19 @@
   position: relative;
   display: grid;
   place-items: center;
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--muted);
   cursor: pointer;
-  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  transition: border-color 0.18s, color 0.18s, background 0.18s;
 }
 
 .bell:hover {
   color: var(--accent);
-  border-color: var(--accent-dark);
+  border-color: rgba(212, 174, 92, 0.3);
   background: var(--accent-glow);
 }
 
@@ -50,7 +50,7 @@
   right: 0;
   width: 340px;
   max-width: calc(100vw - 32px);
-  background: var(--surface);
+  background: linear-gradient(180deg, var(--surface-light) 0%, var(--surface) 100%);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
@@ -68,7 +68,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 0.85rem 1.1rem;
+  padding: 0.9rem 1.1rem;
   font-size: 0.68rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -104,7 +104,7 @@
 .list {
   list-style: none;
   margin: 0;
-  padding: 0.35rem;
+  padding: 0.5rem;
   max-height: 360px;
   overflow-y: auto;
   display: flex;
@@ -114,17 +114,17 @@
 
 .item {
   display: flex;
-  gap: 0.7rem;
-  padding: 0.65rem 0.7rem;
+  gap: 0.75rem;
+  padding: 0.8rem 0.85rem;
   border-radius: var(--radius-md);
-  transition: background 0.12s;
+  transition: background 0.15s;
 }
 
-.item:hover { background: var(--surface-light); }
+.item:hover { background: var(--surface-hover); }
 
 .avatar {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   flex-shrink: 0;
   border-radius: 50%;
   background: var(--accent-glow);
@@ -247,7 +247,7 @@
 .viewAll {
   display: block;
   width: 100%;
-  padding: 0.8rem;
+  padding: 0.9rem;
   border: none;
   border-top: 1px solid var(--border);
   background: transparent;
@@ -260,12 +260,12 @@
   transition: background 0.15s;
 }
 
-.viewAll:hover { background: var(--surface-light); }
+.viewAll:hover { background: var(--surface-hover); }
 
 @media (max-width: 560px) {
   .panel {
     position: fixed;
-    top: 60px;
+    top: 62px;
     right: 16px;
     left: 16px;
     width: auto;

@@ -6,9 +6,8 @@ import { cancelFriendRequest, removeFriend, sendFriendRequest } from '../../frie
 import { useNotifications } from '../../notifications/context/NotificationsContext';
 import { getUserProfileWithStats } from '../api/users.api';
 import type { UserProfileWithStats } from '../types/users.types';
+import { avatarUrl } from '../../../shared/utils/avatar';
 import css from './UserProfilePage.module.css';
-
-const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
 
 export default function UserProfilePage() {
   const { userId } = useParams<{ userId: string }>();
@@ -139,7 +138,7 @@ export default function UserProfilePage() {
     }
   }
 
-  const avatarSrc = profile?.profilePicture ? `${API_BASE}/uploads/${profile.profilePicture}` : null;
+  const avatarSrc = avatarUrl(profile?.profilePicture);
 
   return (
     <div className={css.page}>

@@ -11,13 +11,21 @@ export async function getUserProfileWithStats(userId: string): Promise<UserProfi
   return res.data;
 }
 
-export async function uploadProfilePicture(file: File): Promise<{ filename: string }> {
+export async function uploadProfilePicture(file: File): Promise<{ url: string }> {
   const form = new FormData();
   form.append('file', file);
-  const res = await api.patch<{ filename: string }>('/user/profile-picture', form, {
+  const res = await api.patch<{ url: string }>('/user/profile-picture', form, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
   return res.data;
+}
+
+export async function updateName(name: string): Promise<void> {
+  await api.patch('/user/name', { name });
+}
+
+export async function changePassword(currentPassword: string, newPassword: string): Promise<void> {
+  await api.patch('/user/password', { currentPassword, newPassword });
 }
 
 export async function getFriendsComparison(): Promise<FriendComparison[]> {

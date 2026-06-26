@@ -8,6 +8,7 @@ export type AuthContextValue = {
   login: (data: LoginData) => Promise<User>;
   signup: (data: SignupData) => Promise<User>;
   logout: () => void;
+  refreshUser: () => Promise<void>;
 };
 
 export const AuthContext = createContext<AuthContextValue | undefined>(

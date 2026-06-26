@@ -3,9 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useI18n } from '../../../shared/i18n/LanguageProvider';
 import { searchUsers } from '../api/users.api';
 import type { UserSearchResult } from '../types/users.types';
+import { avatarUrl } from '../../../shared/utils/avatar';
 import css from './UserSearch.module.css';
-
-const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
 
 export default function UserSearch() {
   const navigate = useNavigate();
@@ -81,8 +80,8 @@ export default function UserSearch() {
               onClick={() => openProfile(u._id)}
             >
               <span className={css.avatar}>
-                {u.profilePicture ? (
-                  <img src={`${API_BASE}/uploads/${u.profilePicture}`} alt={u.name} />
+                {avatarUrl(u.profilePicture) ? (
+                  <img src={avatarUrl(u.profilePicture)!} alt={u.name} />
                 ) : (
                   u.name?.[0]?.toUpperCase() ?? '?'
                 )}

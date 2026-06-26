@@ -2,8 +2,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-height: calc(100vh - 72px);
-  padding: 3rem 1.5rem 4rem;
+  min-height: calc(100vh - 76px);
+  padding: 3.5rem 1.5rem 5rem;
   animation: fadeInUp 0.35s ease both;
 }
 
@@ -46,22 +46,23 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 1.5rem 1.25rem;
+  padding: 2rem;
   text-align: center;
-  transition: border-color 0.2s, transform 0.2s;
+  transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
 }
 
 .statCard:hover {
   border-color: var(--border-hover);
   transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .statNum {
-  font-size: 2.8rem;
+  font-size: 3.2rem;
   font-weight: 800;
   line-height: 1;
-  margin-bottom: 0.4rem;
-  letter-spacing: -0.02em;
+  margin-bottom: 0.45rem;
+  letter-spacing: -0.03em;
 }
 
 .statNum.gold  { color: var(--accent); }
@@ -80,7 +81,7 @@
 .videoContainer {
   max-width: 720px;
   width: 100%;
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -105,7 +106,7 @@
 .section {
   max-width: 720px;
   width: 100%;
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
 }
 
 .section h2 {
@@ -114,8 +115,8 @@
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: var(--muted);
-  margin: 0 0 0.75rem;
-  padding-bottom: 0.55rem;
+  margin: 0 0 0.85rem;
+  padding-bottom: 0.6rem;
   border-bottom: 1px solid var(--border);
 }
 
@@ -123,10 +124,11 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.7rem 0;
+  padding: 0.85rem 0;
   border-bottom: 1px solid var(--border);
   font-size: 0.875rem;
   gap: 1rem;
+  transition: background 0.15s;
 }
 
 .mistakeItem:last-child { border-bottom: none; }
@@ -166,7 +168,7 @@
   gap: 1rem;
   flex-wrap: wrap;
   justify-content: center;
-  margin-top: 0.5rem;
+  margin-top: 1.5rem;
 }
 
 .restartBtn {
@@ -174,10 +176,10 @@
   color: #17140d;
   border: none;
   border-radius: var(--radius-sm);
-  padding: 0.9rem 3rem;
+  padding: 0.95rem 3rem;
   font-size: 0.88rem;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   cursor: pointer;
   transition: background 0.15s, transform 0.15s, box-shadow 0.15s;

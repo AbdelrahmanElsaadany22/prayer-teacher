@@ -7,15 +7,16 @@ import type { FriendComparison } from '../../users/types/users.types';
 import { useNotifications } from '../../notifications/context/NotificationsContext';
 import { removeFriend } from '../api/friends.api';
 import { useFriends } from '../hooks/useFriends';
+import { getUnreadCounts } from '../../chat/api/chat.api';
+import { avatarUrl } from '../../../shared/utils/avatar';
 import css from './FriendsPage.module.css';
 
-const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
-
 function Avatar({ name, pic }: { name: string; pic?: string | null }) {
-  if (pic) {
+  const src = avatarUrl(pic);
+  if (src) {
     return (
       <div className={css.avatar}>
-        <img src={`${API_BASE}/uploads/${pic}`} alt={name} />
+        <img src={src} alt={name} />
       </div>
     );
   }
@@ -28,10 +29,15 @@ export default function FriendsPage() {
   const { t } = useI18n();
   const [removing, setRemoving] = useState<string | null>(null);
   const [leaderboard, setLeaderboard] = useState<FriendComparison[]>([]);
+  const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
     if (eventTick > 0) void refresh();
   }, [eventTick, refresh]);
+
+  useEffect(() => {
+    getUnreadCounts().then(setUnreadCounts).catch(() => {});
+  }, [friends, eventTick]);
 
   useEffect(() => {
     getFriendsComparison()
@@ -107,6 +113,9 @@ export default function FriendsPage() {
             <div className={css.rowActions}>
               <Link to={`/chat/${friend._id}`} className={css.chatBtn}>
                 {t('friends.chat')}
+                {(unreadCounts[friend._id] ?? 0) > 0 && (
+                  <span className={css.unreadBadge}>{unreadCounts[friend._id]}</span>
+                )}
               </Link>
               <button
                 type="button"
