@@ -1,0 +1,73 @@
+/* Theme switcher grid — global classes used by MyProfilePage */
+
+.theme-section {
+  padding: 1rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.6rem;
+}
+
+.theme-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.8rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: transparent;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, transform 0.15s;
+  font: inherit;
+}
+
+.theme-card:hover {
+  border-color: var(--border-hover);
+  background: var(--surface-light);
+  transform: translateY(-1px);
+}
+
+.theme-card-active {
+  border-color: var(--accent) !important;
+  background: var(--accent-glow) !important;
+}
+
+.theme-swatch {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: block;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.30);
+  flex-shrink: 0;
+}
+
+.theme-name {
+  font-size: 0.70rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.2;
+}
+
+.theme-card-active .theme-name {
+  color: var(--accent);
+}
+
+.theme-credits {
+  margin: 0.25rem 0 0;
+  font-size: 0.66rem;
+  color: var(--muted);
+  opacity: 0.45;
+  text-align: center;
+  letter-spacing: 0.01em;
+}
+
+@media (max-width: 480px) {
+  .theme-grid { grid-template-columns: repeat(2, 1fr); }
+}

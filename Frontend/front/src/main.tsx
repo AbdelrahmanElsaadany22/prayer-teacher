@@ -6,6 +6,7 @@ import { NotificationsProvider } from './features/notifications/context/Notifica
 import { LanguageProvider } from './shared/i18n/LanguageProvider';
 import { ThemeProvider } from './shared/theme/ThemeProvider';
 import './index.css';
+import './theme-switcher.css';
 import { router } from './router.tsx';
 
 createRoot(document.getElementById('root')!).render(

@@ -1,29 +1,34 @@
 import { createContext, useContext, useEffect, useState } from 'react';
+import { applyTheme } from './themeVars';
 
-type Theme = 'dark' | 'light';
+export type Theme = 'amber' | 'lapis' | 'ruby' | 'emerald' | 'onyx' | 'diamond';
 
 interface ThemeContextValue {
   theme: Theme;
-  toggleTheme: () => void;
+  setTheme: (t: Theme) => void;
 }
 
+const VALID: Theme[] = ['amber', 'lapis', 'ruby', 'emerald', 'onyx', 'diamond'];
+
 const ThemeContext = createContext<ThemeContextValue>({
-  theme: 'dark',
-  toggleTheme: () => {},
+  theme: 'amber',
+  setTheme: () => {},
 });
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>(() =>
-    (localStorage.getItem('theme') as Theme) ?? 'dark'
-  );
+  const [theme, setThemeState] = useState<Theme>(() => {
+    const s = localStorage.getItem('theme') as Theme;
+    return VALID.includes(s) ? s : 'amber';
+  });
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
+    applyTheme(theme);
     localStorage.setItem('theme', theme);
   }, [theme]);
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme: () => setTheme(t => t === 'dark' ? 'light' : 'dark') }}>
+    <ThemeContext.Provider value={{ theme, setTheme: setThemeState }}>
       {children}
     </ThemeContext.Provider>
   );

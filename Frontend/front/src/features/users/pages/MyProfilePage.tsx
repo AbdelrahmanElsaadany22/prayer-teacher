@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/hooks/useAuth';
 import { useI18n } from '../../../shared/i18n/LanguageProvider';
 import { LANGUAGES } from '../../../shared/i18n/translations';
-import { useTheme } from '../../../shared/theme/ThemeProvider';
+import { useTheme, type Theme } from '../../../shared/theme/ThemeProvider';
 import { api, getApiErrorMessage } from '../../../shared/api/axios';
 import { uploadProfilePicture, updateName, changePassword } from '../api/users.api';
 import { avatarUrl } from '../../../shared/utils/avatar';
@@ -15,7 +15,7 @@ export default function MyProfilePage() {
   const navigate = useNavigate();
   const { user, logout, refreshUser } = useAuth();
   const { t, lang, setLang } = useI18n();
-  const { theme, toggleTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [picUrl, setPicUrl] = useState<string | null>(null);
@@ -32,6 +32,15 @@ export default function MyProfilePage() {
   const [confirmPwd, setConfirmPwd] = useState('');
   const [savingPwd, setSavingPwd] = useState(false);
   const [pwdMsg, setPwdMsg] = useState<Msg | null>(null);
+
+  const THEMES: { id: Theme; swatch: string; label: string }[] = [
+    { id: 'amber',   swatch: '#e8c46a', label: t('theme.amber') },
+    { id: 'lapis',   swatch: '#88c4f5', label: t('theme.lapis') },
+    { id: 'ruby',    swatch: '#f5a0b0', label: t('theme.ruby') },
+    { id: 'emerald', swatch: '#6ee89a', label: t('theme.emerald') },
+    { id: 'onyx',    swatch: '#c8c8d8', label: t('theme.onyx') },
+    { id: 'diamond', swatch: '#c0e0ff', label: t('theme.diamond') },
+  ];
 
   useEffect(() => {
     api.get<{ profilePicture?: string | null }>('/user/current')
@@ -141,7 +150,6 @@ export default function MyProfilePage() {
         )}
 
         <div className={css.userInfo}>
-          {/* Name row */}
           <div className={`${css.infoRow} ${editingName ? css.infoRowEdit : ''}`}>
             <span className={css.infoLabel}>{t('field.name')}</span>
             {editingName ? (
@@ -181,7 +189,6 @@ export default function MyProfilePage() {
             )}
           </div>
 
-          {/* Email row */}
           <div className={css.infoRow}>
             <span className={css.infoLabel}>{t('field.email')}</span>
             <span className={css.infoValue}>{user?.email}</span>
@@ -266,26 +273,24 @@ export default function MyProfilePage() {
               ))}
             </div>
           </div>
-          <div className={css.infoRow}>
-            <span className={css.infoLabel}>{t('myProfile.appearance')}</span>
-            <div className={css.prefPill}>
-              <button
-                type="button"
-                className={`${css.prefOpt}${theme === 'dark' ? ` ${css.prefOptActive}` : ''}`}
-                onClick={() => theme !== 'dark' && toggleTheme()}
-              >
-                {t('myProfile.dark')}
-              </button>
-              <button
-                type="button"
-                className={`${css.prefOpt}${theme === 'light' ? ` ${css.prefOptActive}` : ''}`}
-                onClick={() => theme !== 'light' && toggleTheme()}
-              >
-                {t('myProfile.light')}
-              </button>
+          <div className={css.themeSection}>
+            <span className={css.infoLabel}>{t('myProfile.theme')}</span>
+            <div className={css.themeGrid}>
+              {THEMES.map(({ id, swatch, label }) => (
+                <button
+                  key={id}
+                  type="button"
+                  className={`${css.themeCard}${theme === id ? ` ${css.themeCardActive}` : ''}`}
+                  onClick={() => setTheme(id)}
+                >
+                  <span className={css.themeSwatch} style={{ background: swatch }} />
+                  <span className={css.themeName}>{label}</span>
+                </button>
+              ))}
             </div>
           </div>
         </div>
+        <p className={css.credits}>Palette inspired by onyx-shell creators</p>
       </div>
 
       {/* ── Logout ── */}
