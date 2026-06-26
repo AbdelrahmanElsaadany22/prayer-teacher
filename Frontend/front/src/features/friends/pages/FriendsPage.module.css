@@ -93,7 +93,7 @@
   height: 40px;
   border-radius: 50%;
   background: var(--accent-glow);
-  border: 1px solid rgba(212, 174, 92, 0.2);
+  border: 1px solid rgba(232, 196, 106, 0.28);
   display: grid;
   place-items: center;
   font-weight: 700;
@@ -160,7 +160,7 @@
 }
 
 .acceptBtn:hover {
-  background: #e0bc6a;
+  background: #f0cf7a;
   transform: translateY(-1px);
 }
 
@@ -282,7 +282,7 @@
 
 .lbRow:last-child { border-bottom: none; }
 .lbRow:hover { background: var(--surface-light); }
-.lbSelf { background: rgba(212, 174, 92, 0.05); }
+.lbSelf { background: rgba(232, 196, 106, 0.08); }
 
 .lbRank {
   font-weight: 800;
@@ -312,7 +312,7 @@
   font-size: 0.66rem;
   font-weight: 700;
   flex-shrink: 0;
-  border: 1px solid rgba(212, 174, 92, 0.2);
+  border: 1px solid rgba(232, 196, 106, 0.28);
 }
 
 @media (max-width: 560px) {

@@ -97,7 +97,7 @@ body {
 
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(212, 174, 92, 0.18); border-radius: 99px; }
+::-webkit-scrollbar-thumb { background: rgba(232, 196, 106, 0.22); border-radius: 99px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--accent-dark); }
 
 button, input { font: inherit; }
@@ -123,8 +123,8 @@ h1, h2, h3 { font-family: var(--display-font); }
 }
 
 @keyframes pulse-ring {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(212, 174, 92, 0.4); }
-  50%       { box-shadow: 0 0 0 6px rgba(212, 174, 92, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(232, 196, 106, 0.5); }
+  50%       { box-shadow: 0 0 0 6px rgba(232, 196, 106, 0); }
 }
 
 @keyframes online-pulse {
@@ -240,7 +240,7 @@ h1, h2, h3 { font-family: var(--display-font); }
 
 .site-header .nav-signup {
   padding: 7px 18px;
-  border: 1px solid rgba(212, 174, 92, 0.35);
+  border: 1px solid rgba(232, 196, 106, 0.45);
   border-radius: var(--radius-sm);
   color: var(--accent);
   letter-spacing: 0.04em;
@@ -280,7 +280,7 @@ h1, h2, h3 { font-family: var(--display-font); }
 }
 
 .nav-user-pill:hover {
-  border-color: rgba(212, 174, 92, 0.3);
+  border-color: rgba(232, 196, 106, 0.40);
   background: var(--surface-light);
   color: var(--text);
 }
@@ -455,7 +455,7 @@ main { display: grid; }
 
 .auth-submit:hover:not(:disabled),
 .primary-link:hover {
-  background: #e0bc6a;
+  background: #f0cf7a;
   transform: translateY(-1px);
   box-shadow: var(--shadow-accent);
 }
@@ -479,7 +479,7 @@ main { display: grid; }
   transition: color 150ms ease;
 }
 
-.auth-switch a:hover { color: #e0bc6a; }
+.auth-switch a:hover { color: #f0cf7a; }
 
 /* ── 404 page ─────────────────────────────────────────────────────────────── */
 
@@ -500,7 +500,7 @@ main { display: grid; }
   line-height: 1;
   font-weight: 700;
   letter-spacing: -0.04em;
-  background: linear-gradient(160deg, #e8c97a 0%, var(--accent) 45%, var(--accent-dark) 100%);
+  background: linear-gradient(160deg, #f5d888 0%, var(--accent) 45%, var(--accent-dark) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -587,7 +587,7 @@ main { display: grid; }
   display: flex;
   align-items: center;
   background: var(--surface);
-  border: 1px solid rgba(212, 174, 92, 0.18);
+  border: 1px solid rgba(232, 196, 106, 0.22);
   border-radius: var(--radius-sm);
   padding: 3px;
   gap: 2px;

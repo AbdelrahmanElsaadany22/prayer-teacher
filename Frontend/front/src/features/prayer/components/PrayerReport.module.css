@@ -186,7 +186,7 @@
 }
 
 .restartBtn:hover {
-  background: #e0bc6a;
+  background: #f0cf7a;
   transform: translateY(-2px);
   box-shadow: var(--shadow-accent);
 }

@@ -40,7 +40,7 @@
 
 .back:hover {
   color: var(--accent);
-  border-color: rgba(212, 174, 92, 0.3);
+  border-color: rgba(232, 196, 106, 0.40);
 }
 
 .friendMeta {
@@ -55,7 +55,7 @@
   height: 38px;
   border-radius: 50%;
   background: var(--accent-glow);
-  border: 1.5px solid rgba(212, 174, 92, 0.2);
+  border: 1.5px solid rgba(232, 196, 106, 0.28);
   display: grid;
   place-items: center;
   font-weight: 800;
@@ -238,7 +238,7 @@
 }
 
 .sendBtn:hover:not(:disabled) {
-  background: #e0bc6a;
+  background: #f0cf7a;
   transform: translateY(-1px);
 }
 

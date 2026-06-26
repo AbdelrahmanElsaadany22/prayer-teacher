@@ -68,7 +68,7 @@
   padding: 1.75rem;
   background: linear-gradient(160deg, #1e1209 0%, var(--surface) 100%);
   border: 1px solid var(--border);
-  border-top: 2px solid rgba(212, 174, 92, 0.4);
+  border-top: 2px solid rgba(232, 196, 106, 0.50);
   border-radius: var(--radius-lg);
   overflow: hidden;
   transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
@@ -76,7 +76,7 @@
 
 .statCard:hover {
   border-color: var(--border-hover);
-  border-top-color: rgba(212, 174, 92, 0.6);
+  border-top-color: rgba(232, 196, 106, 0.70);
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
 }
@@ -250,7 +250,7 @@
   height: 36px;
   border-radius: 50%;
   background: var(--accent-glow);
-  border: 1px solid rgba(212, 174, 92, 0.2);
+  border: 1px solid rgba(232, 196, 106, 0.28);
   display: grid;
   place-items: center;
   font-family: 'Noto Naskh Arabic', serif;
