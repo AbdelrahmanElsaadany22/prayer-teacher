@@ -50,8 +50,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       authTokenStorage.set(accessToken);
 
       try {
-        const authenticatedUser =
-          response.user ?? (await getCurrentUserRequest());
+        const authenticatedUser = await getCurrentUserRequest();
         setUser(authenticatedUser);
         return authenticatedUser;
       } catch (error) {

@@ -48,6 +48,7 @@ export default function MyProfilePage() {
       const res = await uploadProfilePicture(file);
       setPicUrl(res.url);
       setPicMsg({ type: 'ok', text: t('myProfile.uploadSuccess') });
+      window.dispatchEvent(new CustomEvent('nav-pic-update', { detail: res.url }));
     } catch (err) {
       setPicMsg({ type: 'err', text: getApiErrorMessage(err) });
     } finally {

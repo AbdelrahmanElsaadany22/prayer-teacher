@@ -211,7 +211,7 @@ h1, h2, h3 { font-family: var(--display-font); }
 .site-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 0;
   width: min(1120px, calc(100% - 40px));
   margin: 0 auto;
   min-height: 68px;
@@ -248,7 +248,30 @@ h1, h2, h3 { font-family: var(--display-font); }
 .site-header nav {
   display: flex;
   align-items: center;
+  flex: 1;
+  gap: 0;
+}
+
+.nav-start {
+  display: flex;
+  align-items: center;
   gap: 24px;
+  margin-inline-start: 32px;
+  flex: 1;
+}
+
+.nav-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-end {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex: 1;
+  justify-content: flex-end;
 }
 
 .site-header nav a,
@@ -331,14 +354,14 @@ h1, h2, h3 { font-family: var(--display-font); }
 .nav-user-pill.active::after { display: none; }
 
 .nav-avatar {
-  width: 24px;
-  height: 24px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   background: var(--accent);
   color: #17140d;
   display: grid;
   place-items: center;
-  font-size: 0.66rem;
+  font-size: 0.78rem;
   font-weight: 800;
   flex-shrink: 0;
   overflow: hidden;
@@ -348,6 +371,92 @@ h1, h2, h3 { font-family: var(--display-font); }
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+/* ── Profile dropdown ─────────────────────────────────────────────────────── */
+
+.nav-profile {
+  position: relative;
+}
+
+.nav-avatar-btn {
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.nav-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  inset-inline-end: 0;
+  min-width: 200px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  animation: fadeInUp 0.15s ease both;
+  z-index: 200;
+}
+
+.nav-menu-user {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 14px 16px;
+}
+
+.nav-menu-name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.nav-menu-email {
+  font-size: 0.74rem;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nav-menu-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 0;
+}
+
+.nav-menu-item {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 600;
+  text-decoration: none;
+  text-align: start;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+
+.nav-menu-item:hover {
+  background: var(--surface-light);
+  color: var(--text);
+}
+
+.nav-menu-logout {
+  color: var(--danger);
+}
+
+.nav-menu-logout:hover {
+  background: var(--danger-bg);
+  color: var(--danger);
 }
 
 main { display: grid; }
