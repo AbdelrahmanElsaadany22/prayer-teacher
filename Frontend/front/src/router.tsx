@@ -26,13 +26,18 @@ export const router = createBrowserRouter([
         element: <ProtectedRoute />,
         children: [
           { path: '/dashboard', element: <Dashboard /> },
-          { path: '/prayer', element: <PrayerSession /> },
           { path: '/friends', element: <FriendsPage /> },
           { path: '/profile', element: <MyProfilePage /> },
           { path: '/users/:userId', element: <UserProfilePage /> },
-          { path: '/chat/:friendId', element: <ChatPage /> },
         ],
       },
+    ],
+  },
+  {
+    element: <ProtectedRoute />,
+    children: [
+      { path: '/prayer', element: <PrayerSession /> },
+      { path: '/chat/:friendId', element: <ChatPage /> },
     ],
   },
   {

@@ -1,6 +1,7 @@
 /* ── Shell: fills remaining viewport after the nav ── */
 .shell {
-  height: calc(100vh - 68px);
+  width: 100vw;
+  height: 100vh;
   overflow: hidden;
   display: flex;
   align-items: center;

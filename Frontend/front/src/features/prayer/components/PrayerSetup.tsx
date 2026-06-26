@@ -17,6 +17,15 @@ export function PrayerSetup({ prayers, selected, onSelect, onStart }: Props) {
       <div className={css.logo}>{t('setup.logo')}</div>
       <div className={css.sub}>{t('setup.sub')}</div>
 
+      <button
+        type="button"
+        className={css.startBtn}
+        disabled={!selected}
+        onClick={onStart}
+      >
+        {t('setup.begin')}
+      </button>
+
       <div className={css.grid}>
         {prayers.map((p) => (
           <button
@@ -31,15 +40,6 @@ export function PrayerSetup({ prayers, selected, onSelect, onStart }: Props) {
           </button>
         ))}
       </div>
-
-      <button
-        type="button"
-        className={css.startBtn}
-        disabled={!selected}
-        onClick={onStart}
-      >
-        {t('setup.begin')}
-      </button>
 
       <p className={css.tips}>{t('setup.tips')}</p>
     </div>

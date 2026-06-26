@@ -33,6 +33,7 @@ export default function Dashboard() {
         <span className={css.eyebrow}>{t('dash.eyebrow')}</span>
         <h1 className={css.title}>{t('dash.welcome', { name: user?.name ?? '' })}</h1>
         <p className={css.subtitle}>{t('dash.subtitle')}</p>
+        <Link className="primary-link" to="/prayer">{t('dash.startSession')}</Link>
       </div>
 
       {loading && total === 0 && <div className={css.loader}>{t('dash.loading')}</div>}
@@ -195,9 +196,6 @@ export default function Dashboard() {
             </div>
           )}
 
-          <div className={css.cta}>
-            <Link className="primary-link" to="/prayer">{t('dash.startSession')}</Link>
-          </div>
         </>
       )}
     </div>
