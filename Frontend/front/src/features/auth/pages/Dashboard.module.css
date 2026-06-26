@@ -71,9 +71,9 @@
 .statCard {
   position: relative;
   padding: 1.75rem;
-  background: linear-gradient(160deg, #1e1209 0%, var(--surface) 100%);
+  background: linear-gradient(160deg, var(--surface-light, var(--surface)) 0%, var(--surface) 100%);
   border: 1px solid var(--border);
-  border-top: 2px solid rgba(232, 196, 106, 0.50);
+  border-top: 2px solid var(--accent, rgba(232, 196, 106, 0.5));
   border-radius: var(--radius-lg);
   overflow: hidden;
   transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
@@ -81,7 +81,7 @@
 
 .statCard:hover {
   border-color: var(--border-hover);
-  border-top-color: rgba(232, 196, 106, 0.70);
+  border-top-color: var(--accent-dark, var(--accent));
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
 }
@@ -152,6 +152,54 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 2rem;
+}
+
+.chartCard :global(.recharts-cartesian-grid-horizontal line),
+.chartCard :global(.recharts-cartesian-grid-vertical line) {
+  stroke: var(--border) !important;
+}
+
+.chartCard :global(.recharts-x-axis text),
+.chartCard :global(.recharts-y-axis text) {
+  fill: var(--muted) !important;
+}
+
+.chartCard :global(.recharts-tooltip-wrapper) {
+  outline: none;
+}
+
+.chartCard :global(.recharts-tooltip-wrapper > div) {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+.chartCard :global(.recharts-tooltip-label) {
+  color: var(--muted) !important;
+}
+
+.chartCard :global(.recharts-tooltip-item) {
+  color: var(--accent) !important;
+}
+
+.chartCard :global(.recharts-cursor) {
+  stroke: var(--border) !important;
+}
+
+.chartCard :global(.recharts-reference-line line) {
+  stroke: var(--success) !important;
+}
+
+.chartCard :global(.recharts-line .recharts-curve) {
+  stroke: var(--accent) !important;
+}
+
+.chartCard :global(.recharts-line .recharts-dot) {
+  fill: var(--accent) !important;
+}
+
+.chartCard :global(.recharts-line .recharts-active-dot circle) {
+  fill: var(--accent-bright, var(--accent)) !important;
 }
 
 .chartTitle {
@@ -255,7 +303,7 @@
   height: 36px;
   border-radius: 50%;
   background: var(--accent-glow);
-  border: 1px solid rgba(232, 196, 106, 0.28);
+  border: 1px solid var(--accent, rgba(232, 196, 106, 0.28));
   display: grid;
   place-items: center;
   font-family: 'Noto Naskh Arabic', serif;

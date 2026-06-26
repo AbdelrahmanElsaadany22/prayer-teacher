@@ -19,13 +19,9 @@
   overflow: hidden;
   border: 1px solid var(--border);
   border-radius: 16px;
-  background: rgba(21, 11, 5, 0.60);
+  background: var(--surface, rgba(21, 11, 5, 0.60));
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-}
-
-[data-theme="light"] .chatBox {
-  background: rgba(248, 242, 232, 0.65);
 }
 
 /* ── Header ── */

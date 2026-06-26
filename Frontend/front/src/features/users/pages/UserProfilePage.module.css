@@ -44,7 +44,7 @@
   height: 90px;
   border-radius: 50%;
   background: var(--accent-glow);
-  border: 2px solid rgba(232, 196, 106, 0.38);
+  border: 2px solid var(--accent);
   display: grid;
   place-items: center;
   font-weight: 800;
@@ -52,7 +52,7 @@
   color: var(--accent);
   flex-shrink: 0;
   overflow: hidden;
-  box-shadow: 0 0 0 4px rgba(232, 196, 106, 0.10);
+  box-shadow: 0 0 0 4px var(--accent-glow);
 }
 
 .avatar img {
@@ -93,7 +93,7 @@
 }
 
 .primaryBtn:hover:not(:disabled) {
-  background: #f0cf7a;
+  background: var(--accent-bright, var(--accent));
   transform: translateY(-1px);
   box-shadow: var(--shadow-accent);
 }
@@ -193,14 +193,14 @@
   padding: 1.5rem 1.75rem;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-top: 2px solid rgba(232, 196, 106, 0.45);
+  border-top: 2px solid var(--accent);
   border-radius: var(--radius-lg);
   transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
 }
 
 .statCard:hover {
   border-color: var(--border-hover);
-  border-top-color: rgba(232, 196, 106, 0.65);
+  border-top-color: var(--accent);
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
 }

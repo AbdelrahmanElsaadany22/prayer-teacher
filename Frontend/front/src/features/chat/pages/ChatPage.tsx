@@ -5,7 +5,6 @@ import { getUserProfile } from '../../friends/api/friends.api';
 import type { FriendProfile } from '../../friends/types/friends.types';
 import { useChat } from '../hooks/useChat';
 import { useI18n } from '../../../shared/i18n/LanguageProvider';
-import { api } from '../../../shared/api/axios';
 import { avatarUrl } from '../../../shared/utils/avatar';
 import css from './ChatPage.module.css';
 
@@ -14,7 +13,6 @@ export default function ChatPage() {
   const { user } = useAuth();
   const { t, lang } = useI18n();
   const [friend, setFriend] = useState<FriendProfile | null>(null);
-  const [myPic, setMyPic] = useState<string | null>(null);
   const [text, setText] = useState('');
   const msgsRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -25,12 +23,6 @@ export default function ChatPage() {
     if (!friendId) return;
     getUserProfile(friendId).then(setFriend).catch(() => null);
   }, [friendId]);
-
-  useEffect(() => {
-    api.get<{ profilePicture?: string | null }>('/user/current')
-      .then(r => setMyPic(avatarUrl(r.data.profilePicture) ?? null))
-      .catch(() => {});
-  }, []);
 
   useEffect(() => {
     const el = msgsRef.current;
