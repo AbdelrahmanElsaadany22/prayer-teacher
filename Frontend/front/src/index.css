@@ -219,9 +219,15 @@ h1, h2, h3 { font-family: var(--display-font); }
   position: sticky;
   top: 0;
   z-index: 100;
-  background: transparent;
+  background: rgba(21, 11, 5, 0.82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   padding: 0 24px;
   transition: background 0.2s;
+}
+
+[data-theme="light"] .site-header {
+  background: rgba(248, 242, 232, 0.82);
 }
 
 .brand {
@@ -830,13 +836,21 @@ main { display: grid; }
 .site-footer {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   gap: 20px;
   width: min(1120px, calc(100% - 40px));
   margin: 0 auto;
-  padding: 24px;
+  padding: 20px 24px;
   border-top: 1px solid var(--border);
+  background: rgba(21, 11, 5, 0.82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   color: var(--muted);
   font-size: 0.78rem;
+}
+
+[data-theme="light"] .site-footer {
+  background: rgba(248, 242, 232, 0.82);
 }
 
 /* ── Mobile ───────────────────────────────────────────────────────────────── */
