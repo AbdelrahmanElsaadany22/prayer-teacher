@@ -93,7 +93,7 @@
   height: 40px;
   border-radius: 50%;
   background: var(--accent-glow);
-  border: 1px solid rgba(232, 196, 106, 0.28);
+  border: 1px solid var(--accent, rgba(232, 196, 106, 0.28));
   display: grid;
   place-items: center;
   font-weight: 700;
@@ -160,7 +160,7 @@
 }
 
 .acceptBtn:hover {
-  background: #f0cf7a;
+  background: var(--accent-bright, var(--accent));
   transform: translateY(-1px);
 }
 
@@ -282,17 +282,13 @@
 
 .lbRow:last-child { border-bottom: none; }
 .lbRow:hover { background: var(--surface-light); }
-.lbSelf { background: rgba(232, 196, 106, 0.08); }
+.lbSelf { background: var(--accent-glow, rgba(232, 196, 106, 0.08)); }
 
 .lbRank {
   font-weight: 800;
   font-size: 0.9rem;
   color: var(--muted);
 }
-
-.lbRank[data-rank='1'] { color: #f5c842; }
-.lbRank[data-rank='2'] { color: #c0c0c0; }
-.lbRank[data-rank='3'] { color: #cd7f32; }
 
 .lbName {
   font-weight: 600;
@@ -312,7 +308,7 @@
   font-size: 0.66rem;
   font-weight: 700;
   flex-shrink: 0;
-  border: 1px solid rgba(232, 196, 106, 0.28);
+  border: 1px solid var(--accent, rgba(232, 196, 106, 0.28));
 }
 
 @media (max-width: 560px) {

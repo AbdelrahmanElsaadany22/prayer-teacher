@@ -44,6 +44,14 @@
   gap: 1.75rem;
 }
 
+.credits {
+  color: rgba(120, 120, 120, 0.5);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-align: left;
+  margin-top: 0.5rem;
+}
+
 .avatar {
   width: 88px;
   height: 88px;

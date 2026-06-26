@@ -283,7 +283,7 @@ export default function MyProfilePage() {
                   className={`${css.prefOpt}${theme === id ? ` ${css.prefOptActive}` : ''}`}
                   onClick={() => setTheme(id)}
                 >
-                  {/* <span className={css.themeSwatchMini} style={{ background: swatch }} /> */}
+                  {/* <span cl`assName={css.themeSwatchMini} style={{ background: swatch }} /> */}
                   {label}
                 </button>
               ))}

@@ -20,7 +20,7 @@
 
 .bell:hover {
   color: var(--accent);
-  border-color: rgba(232, 196, 106, 0.40);
+  border-color: var(--accent);
   background: var(--accent-glow);
 }
 
@@ -128,7 +128,7 @@
   flex-shrink: 0;
   border-radius: 50%;
   background: var(--accent-glow);
-  border: 1px solid rgba(232, 196, 106, 0.28);
+  border: 1px solid var(--accent);
   display: grid;
   place-items: center;
   font-weight: 700;

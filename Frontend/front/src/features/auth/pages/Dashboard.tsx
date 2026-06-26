@@ -95,24 +95,23 @@ export default function Dashboard() {
             <p className={css.chartTitle}>{t('dash.accuracyPerSession')}</p>
             <ResponsiveContainer width="100%" height={240}>
               <LineChart data={stats.accuracyOverTime} margin={{ top: 8, right: 16, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#3d2b18" />
-                <XAxis dataKey="label" tick={{ fill: '#9b8b78', fontSize: 11 }} axisLine={false} tickLine={false} />
-                <YAxis domain={[0, 100]} tick={{ fill: '#9b8b78', fontSize: 11 }} axisLine={false} tickLine={false} />
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="label" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
                 <Tooltip
-                  contentStyle={{ background: '#1d1108', border: '1px solid #3d2b18', borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}
-                  labelStyle={{ color: '#9b8b78', fontSize: 11, marginBottom: 4 }}
-                  itemStyle={{ color: '#d4ae5c', fontWeight: 700 }}
+                  contentStyle={{ borderRadius: 10 }}
+                  labelStyle={{ fontSize: 11, marginBottom: 4 }}
+                  itemStyle={{ fontWeight: 700 }}
                   formatter={(v) => [`${v}%`, t('dash.accuracy')]}
-                  cursor={{ stroke: '#3d2b18', strokeWidth: 1 }}
+                  cursor={{ strokeWidth: 1 }}
                 />
-                <ReferenceLine y={75} stroke="#3fb950" strokeDasharray="4 4" strokeOpacity={0.35} />
+                <ReferenceLine y={75} strokeDasharray="4 4" strokeOpacity={0.35} />
                 <Line
                   type="monotone"
                   dataKey="accuracy"
-                  stroke="#d4ae5c"
                   strokeWidth={2.5}
-                  dot={{ fill: '#d4ae5c', r: 3.5, strokeWidth: 0 }}
-                  activeDot={{ r: 5, fill: '#e0bc6a', strokeWidth: 0 }}
+                  dot={{ r: 3.5, strokeWidth: 0 }}
+                  activeDot={{ r: 5, strokeWidth: 0 }}
                 />
               </LineChart>
             </ResponsiveContainer>
