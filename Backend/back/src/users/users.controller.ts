@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Body,
   Controller,
   Get,
   Param,
@@ -15,6 +16,8 @@ import { AuthGuard } from '@nestjs/passport';
 import { memoryStorage } from 'multer';
 import { UsersService } from './users.service';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import { UpdateNameDto } from './dto/update-name.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Controller('user')
 export class UsersController {
@@ -75,5 +78,21 @@ export class UsersController {
     const url = await this.cloudinaryService.uploadImage(file);
     await this.userService.updateProfilePicture(req.user.id, url);
     return { url };
+  }
+
+  @Patch('/name')
+  @UseGuards(AuthGuard('jwt'))
+  updateName(@Req() req, @Body() dto: UpdateNameDto) {
+    return this.userService.updateName(req.user.id, dto.name);
+  }
+
+  @Patch('/password')
+  @UseGuards(AuthGuard('jwt'))
+  changePassword(@Req() req, @Body() dto: ChangePasswordDto) {
+    return this.userService.changePassword(
+      req.user.id,
+      dto.currentPassword,
+      dto.newPassword,
+    );
   }
 }

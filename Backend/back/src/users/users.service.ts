@@ -1,7 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import * as bcrypt from 'bcrypt';
 import { User, UserDocument } from './schemas/user.schema';
 import { Model, Types } from 'mongoose';
+
+const BCRYPT_SALT_ROUNDS = 12;
 import {
   PrayerSession,
   PrayerSessionDocument,
@@ -85,6 +92,45 @@ export class UsersService {
     return this.userModel
       .findByIdAndUpdate(userId, { profilePicture: filename }, { new: true })
       .exec();
+  }
+
+  async updateName(userId: string, name: string) {
+    const user = await this.userModel
+      .findByIdAndUpdate(userId, { name }, { new: true })
+      .exec();
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      profilePicture: user.profilePicture,
+    };
+  }
+
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+  ) {
+    const user = await this.userModel
+      .findById(userId)
+      .select('+password')
+      .exec();
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+
+    user.password = await bcrypt.hash(newPassword, BCRYPT_SALT_ROUNDS);
+    await user.save();
+
+    return { message: 'Password updated successfully' };
   }
 
   async getProfileWithStats(
