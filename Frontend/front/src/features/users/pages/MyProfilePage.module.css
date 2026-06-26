@@ -352,6 +352,15 @@
   font-weight: 700;
 }
 
+.themeSwatchMini {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
 /* ── Logout ── */
 .logoutBtn {
   margin-top: 1.5rem;

@@ -273,24 +273,24 @@ export default function MyProfilePage() {
               ))}
             </div>
           </div>
-          <div className={css.themeSection}>
+          <div className={css.infoRow}>
             <span className={css.infoLabel}>{t('myProfile.theme')}</span>
-            <div className={css.themeGrid}>
+            <div className={css.prefPill}>
               {THEMES.map(({ id, swatch, label }) => (
                 <button
                   key={id}
                   type="button"
-                  className={`${css.themeCard}${theme === id ? ` ${css.themeCardActive}` : ''}`}
+                  className={`${css.prefOpt}${theme === id ? ` ${css.prefOptActive}` : ''}`}
                   onClick={() => setTheme(id)}
                 >
-                  <span className={css.themeSwatch} style={{ background: swatch }} />
-                  <span className={css.themeName}>{label}</span>
+                  {/* <span className={css.themeSwatchMini} style={{ background: swatch }} /> */}
+                  {label}
                 </button>
               ))}
             </div>
           </div>
         </div>
-        <p className={css.credits}>Palette inspired by onyx-shell creators</p>
+        <p className={css.credits}>Themes inspired by onyx-shell creators</p>
       </div>
 
       {/* ── Logout ── */}
