@@ -1,4 +1,5 @@
 import type { Prayer } from '../types/prayer.types';
+import { Link } from 'react-router-dom';
 import { useI18n } from '../../../shared/i18n/LanguageProvider';
 import css from './PrayerSetup.module.css';
 
@@ -10,10 +11,13 @@ interface Props {
 }
 
 export function PrayerSetup({ prayers, selected, onSelect, onStart }: Props) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
 
   return (
     <div className={css.setup}>
+      <Link to="/dashboard" className={css.backBtn}>
+        {lang === 'ar' ? '→' : '←'}
+      </Link>
       <div className={css.logo}>{t('setup.logo')}</div>
       <div className={css.sub}>{t('setup.sub')}</div>
 

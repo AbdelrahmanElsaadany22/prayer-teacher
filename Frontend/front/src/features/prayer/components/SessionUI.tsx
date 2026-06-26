@@ -1,5 +1,6 @@
 import type { RefObject } from 'react';
 import type { PoseStep, PoseBadgeState } from '../types/prayer.types';
+import { Link } from 'react-router-dom';
 import { useI18n } from '../../../shared/i18n/LanguageProvider';
 import { VideoCanvas } from './VideoCanvas';
 import css from './SessionUI.module.css';
@@ -40,13 +41,16 @@ export function SessionUI({
   countdown,
   onEnd,
 }: Props) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
 
   return (
     <div className={css.session}>
       {/* Topbar */}
       <div className={css.topbar}>
         <div className={css.topbarLeft}>
+          <Link to="/dashboard" className={css.backBtn}>
+            {lang === 'ar' ? '→' : '←'}
+          </Link>
           <span className={css.prayerName}>{prayerName}</span>
           <div className={css.rakaBadge}>
             {t('session.raka')} <span>{Math.min(rakaNum, rakaTotal)}</span> / <span>{rakaTotal}</span>

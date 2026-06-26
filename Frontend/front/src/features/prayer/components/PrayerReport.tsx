@@ -1,6 +1,7 @@
 import { useRef, useEffect } from 'react';
 import type { ReportData, GroupedMistake } from '../types/prayer.types';
 import { getPoseLabel } from '../constants/poses';
+import { Link } from 'react-router-dom';
 import { useI18n } from '../../../shared/i18n/LanguageProvider';
 import { localizePrayerName } from '../../../shared/i18n/translations';
 import css from './PrayerReport.module.css';
@@ -27,6 +28,9 @@ export function PrayerReport({ data, onRestart }: Props) {
 
   return (
     <div className={css.report}>
+      <Link to="/dashboard" className={css.backBtn}>
+        {lang === 'ar' ? '→' : '←'}
+      </Link>
       <div className={css.header}>
         <h1>{t('report.title')}</h1>
         <p>

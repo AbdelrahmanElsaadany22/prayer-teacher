@@ -13,6 +13,11 @@
 /* ── Header ── */
 .header { margin-bottom: 2.75rem; }
 
+.header :global(.primary-link) {
+  margin-top: 2rem;
+  padding: 0 2.5rem;
+}
+
 .eyebrow {
   display: block;
   margin-bottom: 8px;

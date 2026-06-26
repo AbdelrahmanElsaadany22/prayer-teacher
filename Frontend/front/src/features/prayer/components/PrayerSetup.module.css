@@ -7,6 +7,36 @@
   min-height: 100vh;
   padding: 2rem;
   animation: fadeInUp 0.35s ease both;
+  position: relative;
+}
+
+.backBtn {
+  position: absolute;
+  top: 2rem;
+  left: 2rem;
+  color: var(--muted);
+  font-size: 1.5rem;
+  line-height: 1;
+  text-decoration: none;
+  transition: color 0.15s;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  z-index: 10;
+}
+
+[data-theme="rtl"] .backBtn,
+html[dir="rtl"] .backBtn,
+.backBtn:dir(rtl) {
+  left: auto;
+  right: 2rem;
+}
+
+.backBtn:hover { 
+  color: var(--accent); 
+  background: rgba(232, 196, 106, 0.1);
 }
 
 @keyframes fadeInUp {
