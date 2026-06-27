@@ -25,6 +25,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
     applyTheme(theme);
+    applyFaviconForTheme(theme);
     localStorage.setItem('theme', theme);
   }, [theme]);
 

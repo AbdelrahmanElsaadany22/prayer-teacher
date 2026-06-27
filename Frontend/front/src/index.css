@@ -324,6 +324,44 @@ h1, h2, h3 { font-family: var(--display-font); }
 .site-header .nav-signup:hover { color: var(--text); }
 .site-header .nav-signup.active::after { display: none; }
 
+/* ── Guest nav ── */
+.nav-guest {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-inline-start: auto;
+}
+
+.nav-guest-login {
+  padding: 7px 14px;
+  border-radius: 99px;
+  color: var(--muted);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 150ms;
+}
+.nav-guest-login:hover,
+.nav-guest-login.active { color: var(--text); }
+.nav-guest-login.active::after { display: none; }
+
+.nav-guest-signup {
+  padding: 7px 18px;
+  border-radius: 99px;
+  border: 1.5px solid var(--accent);
+  color: var(--accent);
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: background 150ms, color 150ms;
+}
+.nav-guest-signup:hover { background: var(--accent-glow); }
+.nav-guest-signup.active::after { display: none; }
+
 .nav-button {
   padding: 0;
   border: 0;

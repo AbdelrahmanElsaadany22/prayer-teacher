@@ -108,10 +108,10 @@ export default function MainLayout() {
               </div>
             </>
           ) : (
-            <>
-              <NavLink to="/login">{t('nav.login')}</NavLink>
-              <NavLink className="nav-signup" to="/signup">{t('nav.signup')}</NavLink>
-            </>
+            <div className="nav-guest">
+              <NavLink to="/login" className="nav-guest-login">{t('nav.login')}</NavLink>
+              <NavLink to="/signup" className="nav-guest-signup">{t('nav.signup')}</NavLink>
+            </div>
           )}
         </nav>
       </header>
