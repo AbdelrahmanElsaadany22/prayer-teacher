@@ -4,9 +4,16 @@ import { authTokenStorage } from '../../../shared/api/axios';
 import {
   getCurrentUserRequest,
   loginRequest,
+  resendCodeRequest,
   signupRequest,
+  verifyEmailRequest,
 } from '../api/auth.api';
-import type { LoginData, SignupData, User } from '../types/auth.types';
+import type {
+  LoginData,
+  SignupData,
+  User,
+  VerifyData,
+} from '../types/auth.types';
 import { AuthContext } from './AuthContext';
 
 export function AuthProvider({ children }: PropsWithChildren) {
@@ -70,13 +77,23 @@ export function AuthProvider({ children }: PropsWithChildren) {
     [completeAuthentication],
   );
 
-  const signup = useCallback(
-    async (data: SignupData) => {
-      const response = await signupRequest(data);
+  const signup = useCallback(async (data: SignupData) => {
+    // Signup no longer logs the user in: it returns a pending-verification
+    // response and emails a code that must be confirmed via verifyEmail.
+    return signupRequest(data);
+  }, []);
+
+  const verifyEmail = useCallback(
+    async (data: VerifyData) => {
+      const response = await verifyEmailRequest(data);
       return completeAuthentication(response);
     },
     [completeAuthentication],
   );
+
+  const resendCode = useCallback(async (email: string) => {
+    await resendCodeRequest(email);
+  }, []);
 
   function logout() {
     authTokenStorage.clear();
@@ -98,10 +115,12 @@ export function AuthProvider({ children }: PropsWithChildren) {
       isInitializing,
       login,
       signup,
+      verifyEmail,
+      resendCode,
       logout,
       refreshUser,
     }),
-    [user, isInitializing, login, signup, refreshUser],
+    [user, isInitializing, login, signup, verifyEmail, resendCode, refreshUser],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import axios from 'axios';
 import { useForm } from 'react-hook-form';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { getApiErrorMessage } from '../../../shared/api/axios';
@@ -35,6 +36,11 @@ export default function Login() {
       const state = location.state as LoginLocationState | null;
       navigate(state?.from?.pathname ?? '/dashboard', { replace: true });
     } catch (error) {
+      // An unverified account is rejected with 403 — send them to verify.
+      if (axios.isAxiosError(error) && error.response?.status === 403) {
+        navigate('/verify', { state: { email: data.email } });
+        return;
+      }
       setError('root', {
         message: getApiErrorMessage(error),
       });

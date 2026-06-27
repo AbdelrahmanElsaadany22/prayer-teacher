@@ -8,6 +8,7 @@ import ProtectedRoute from './features/auth/components/ProtectedRoute';
 import Dashboard from './features/auth/pages/Dashboard';
 import Login from './features/auth/pages/Login';
 import Signup from './features/auth/pages/Signup';
+import Verify from './features/auth/pages/Verify';
 import { PrayerSession } from './features/prayer';
 import FriendsPage from './features/friends/pages/FriendsPage';
 import ChatPage from './features/chat/pages/ChatPage';
@@ -48,6 +49,7 @@ export const router = createBrowserRouter([
         children: [
           { path: '/login', element: <Login /> },
           { path: '/signup', element: <Signup /> },
+          { path: '/verify', element: <Verify /> },
         ],
       },
       { path: '*', element: <NotFound /> },

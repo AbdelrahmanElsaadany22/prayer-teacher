@@ -81,6 +81,36 @@ export class UsersService {
     return this.userModel.findOne({ email }).select('+password').exec();
   }
 
+  findByEmailWithVerification(email: string): Promise<UserDocument | null> {
+    return this.userModel
+      .findOne({ email })
+      .select('+verificationCode +verificationCodeExpires')
+      .exec();
+  }
+
+  async setVerificationCode(
+    userId: string,
+    hashedCode: string,
+    expiresAt: Date,
+  ): Promise<void> {
+    await this.userModel
+      .findByIdAndUpdate(userId, {
+        verificationCode: hashedCode,
+        verificationCodeExpires: expiresAt,
+      })
+      .exec();
+  }
+
+  async markVerified(userId: string): Promise<void> {
+    await this.userModel
+      .findByIdAndUpdate(userId, {
+        isVerified: true,
+        verificationCode: null,
+        verificationCodeExpires: null,
+      })
+      .exec();
+  }
+
   findById(id: string): Promise<UserDocument | null> {
     return this.userModel.findById(id).exec();
   }

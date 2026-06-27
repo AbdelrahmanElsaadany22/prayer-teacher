@@ -31,6 +31,15 @@ export class User {
   @Prop({ type: String, default: null })
   profilePicture?: string | null;
 
+  @Prop({ type: Boolean, default: false })
+  isVerified!: boolean;
+
+  @Prop({ type: String, select: false, default: null })
+  verificationCode?: string | null;
+
+  @Prop({ type: Date, select: false, default: null })
+  verificationCodeExpires?: Date | null;
+
   @Prop({
     type: [
       {

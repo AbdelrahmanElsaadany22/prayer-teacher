@@ -24,8 +24,11 @@ export default function Signup() {
 
   async function onSubmit(data: SignupData) {
     try {
-      await signup(data);
-      navigate('/dashboard', { replace: true });
+      const response = await signup(data);
+      navigate('/verify', {
+        replace: true,
+        state: { email: response.email },
+      });
     } catch (error) {
       setError('root', {
         message: getApiErrorMessage(error),

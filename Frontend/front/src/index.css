@@ -630,6 +630,16 @@ main { display: grid; }
   line-height: 1.5;
 }
 
+.form-success {
+  padding: 10px 14px;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
 /* ── Primary button ───────────────────────────────────────────────────────── */
 
 .auth-submit,
@@ -678,6 +688,25 @@ main { display: grid; }
 }
 
 .auth-switch a:hover { color: #f0cf7a; }
+
+.auth-link-button {
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--accent);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: inherit;
+  cursor: pointer;
+  transition: color 150ms ease;
+}
+
+.auth-link-button:hover:not(:disabled) { color: #f0cf7a; }
+
+.auth-link-button:disabled {
+  color: var(--muted);
+  cursor: not-allowed;
+}
 
 /* ── 404 page ─────────────────────────────────────────────────────────────── */
 

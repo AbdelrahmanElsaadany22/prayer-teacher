@@ -35,3 +35,12 @@ export const loginSchema = z.object({
   email: emailSchema,
   password: passwordSchema,
 });
+
+export const verifySchema = z.object({
+  email: emailSchema,
+  code: z
+    .string()
+    .trim()
+    .min(1, 'Verification code is required')
+    .regex(/^\d{6}$/, 'Enter the 6-digit code'),
+});

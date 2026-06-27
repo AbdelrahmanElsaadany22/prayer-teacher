@@ -276,7 +276,7 @@ export default function MyProfilePage() {
           <div className={css.infoRow}>
             <span className={css.infoLabel}>{t('myProfile.theme')}</span>
             <div className={css.prefPill}>
-              {THEMES.map(({ id, swatch, label }) => (
+              {THEMES.map(({ id, label }) => (
                 <button
                   key={id}
                   type="button"
