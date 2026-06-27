@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { applyTheme } from './themeVars';
+import { applyFaviconForTheme } from './applyFavicon';
 
 export type Theme = 'amber' | 'lapis' | 'ruby' | 'emerald' | 'onyx' | 'diamond';
 

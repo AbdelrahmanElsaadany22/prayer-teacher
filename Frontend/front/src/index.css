@@ -249,6 +249,8 @@ h1, h2, h3 { font-family: var(--display-font); }
   height: 38px;
   object-fit: contain;
   border-radius: 8px;
+  filter: var(--logo-filter, none);
+  transition: filter 0.3s ease;
 }
 
 .site-header nav {
