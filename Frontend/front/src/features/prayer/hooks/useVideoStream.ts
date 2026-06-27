@@ -23,7 +23,10 @@ export function useVideoStream() {
   const stopCamera = useCallback((): void => {
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
-  }, []);
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+  }, [videoRef]);
 
   return { videoRef, streamRef, startCamera, stopCamera };
 }
