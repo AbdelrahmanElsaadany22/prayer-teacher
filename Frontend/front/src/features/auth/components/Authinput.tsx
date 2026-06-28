@@ -1,9 +1,7 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import type { HTMLInputAutoCompleteAttribute } from 'react';
 import type { UseFormRegisterReturn } from 'react-hook-form';
 import { useI18n } from '../../../shared/i18n/LanguageProvider';
-
-const MASK = '✦';
 
 type AuthInputProps = {
   label: string;
@@ -22,88 +20,51 @@ export default function AuthInput({
 }: AuthInputProps) {
   const { t } = useI18n();
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-  const [displayValue, setDisplayValue] = useState('');
-  const realValue = useRef('');
   const inputId = `auth-${register.name}`;
   const isPassword = type === 'password';
 
-  function handlePasswordChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const raw = e.target.value;
-    const sel = e.target.selectionStart;
-
-    if (isPasswordVisible) {
-      realValue.current = raw;
-      setDisplayValue(raw);
-    } else {
-      const prevLen = realValue.current.length;
-      const newLen = raw.length;
-
-      if (newLen < prevLen) {
-        const deleteAt = sel ?? newLen;
-        const deleteCount = prevLen - newLen;
-        realValue.current =
-          realValue.current.slice(0, deleteAt) +
-          realValue.current.slice(deleteAt + deleteCount);
-      } else if (newLen > prevLen) {
-        const insertAt = sel != null ? sel - (newLen - prevLen) : prevLen;
-        const newChars = raw.replace(new RegExp(MASK, 'g'), '');
-        realValue.current =
-          realValue.current.slice(0, insertAt) +
-          newChars +
-          realValue.current.slice(insertAt);
-      }
-
-      setDisplayValue(MASK.repeat(realValue.current.length));
-    }
-
-    register.onChange({ target: { name: register.name, value: realValue.current } });
-  }
-
   function toggleVisibility() {
-    const next = !isPasswordVisible;
-    setIsPasswordVisible(next);
-    setDisplayValue(next ? realValue.current : MASK.repeat(realValue.current.length));
+    setIsPasswordVisible((v) => !v);
   }
+
+  // Use a native password/text input so the value the form receives is exactly
+  // what the user typed — identical to every other password field in the app.
+  // (A previous custom mask implementation could diverge from native inputs,
+  // making a correctly-typed password later look "incorrect".)
+  const inputType = isPassword
+    ? isPasswordVisible
+      ? 'text'
+      : 'password'
+    : type;
 
   return (
     <div className="auth-field">
       <label htmlFor={inputId}>{label}</label>
-      <div className="auth-input-wrapper" dir={isPassword || type === 'email' ? 'ltr' : undefined}>
-        {isPassword ? (
-          <input
-            id={inputId}
-            type="text"
-            dir="ltr"
-            autoComplete={autoComplete}
-            autoCapitalize="off"
-            autoCorrect="off"
-            spellCheck={false}
-            value={displayValue}
-            onChange={handlePasswordChange}
-            onBlur={register.onBlur}
-            name={register.name}
-            ref={register.ref}
-            aria-invalid={Boolean(error)}
-            aria-describedby={error ? `${inputId}-error` : undefined}
-          />
-        ) : (
-          <input
-            id={inputId}
-            type={type}
-            dir={type === 'email' ? 'ltr' : undefined}
-            autoComplete={autoComplete}
-            aria-invalid={Boolean(error)}
-            aria-describedby={error ? `${inputId}-error` : undefined}
-            {...register}
-          />
-        )}
+      <div
+        className="auth-input-wrapper"
+        dir={isPassword || type === 'email' ? 'ltr' : undefined}
+      >
+        <input
+          id={inputId}
+          type={inputType}
+          dir={isPassword || type === 'email' ? 'ltr' : undefined}
+          autoComplete={autoComplete}
+          autoCapitalize={isPassword ? 'off' : undefined}
+          autoCorrect={isPassword ? 'off' : undefined}
+          spellCheck={isPassword ? false : undefined}
+          aria-invalid={Boolean(error)}
+          aria-describedby={error ? `${inputId}-error` : undefined}
+          {...register}
+        />
 
         {isPassword && (
           <button
             className="password-toggle"
             type="button"
             onClick={toggleVisibility}
-            aria-label={isPasswordVisible ? t('auth.hidePassword') : t('auth.showPassword')}
+            aria-label={
+              isPasswordVisible ? t('auth.hidePassword') : t('auth.showPassword')
+            }
           >
             {isPasswordVisible ? (
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none"

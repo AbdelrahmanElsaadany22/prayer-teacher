@@ -92,14 +92,18 @@ export default function MyProfilePage() {
 
   async function handleChangePassword(e: React.FormEvent) {
     e.preventDefault();
-    if (newPwd !== confirmPwd) {
+    // Trim so accidental surrounding whitespace doesn't cause a false mismatch
+    // or a wrongly-rejected "current password".
+    const current = currentPwd.trim();
+    const next = newPwd.trim();
+    if (next !== confirmPwd.trim()) {
       setPwdMsg({ type: 'err', text: t('myProfile.passwordMismatch') });
       return;
     }
     setSavingPwd(true);
     setPwdMsg(null);
     try {
-      await changePassword(currentPwd, newPwd);
+      await changePassword(current, next);
       setPwdMsg({ type: 'ok', text: t('myProfile.passwordUpdated') });
       setCurrentPwd('');
       setNewPwd('');

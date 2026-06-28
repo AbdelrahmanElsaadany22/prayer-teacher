@@ -151,13 +151,12 @@ export class UsersService {
     if (!user) {
       throw new NotFoundException('User not found');
     }
-
-    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    const isMatch = await bcrypt.compare(currentPassword.trim(), user.password);
     if (!isMatch) {
       throw new UnauthorizedException('Current password is incorrect');
     }
 
-    user.password = await bcrypt.hash(newPassword, BCRYPT_SALT_ROUNDS);
+    user.password = await bcrypt.hash(newPassword.trim(), BCRYPT_SALT_ROUNDS);
     await user.save();
 
     return { message: 'Password updated successfully' };

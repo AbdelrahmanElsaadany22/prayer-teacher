@@ -45,7 +45,12 @@ export class AuthService {
       throw new ConflictException('Email already exists');
     }
 
-    const hashedPassword = await bcrypt.hash(data.password, BCRYPT_SALT_ROUNDS);
+    // Trim the password so accidental surrounding whitespace (autofill, paste,
+    // mobile keyboards) is never baked into the stored hash.
+    const hashedPassword = await bcrypt.hash(
+      data.password.trim(),
+      BCRYPT_SALT_ROUNDS,
+    );
 
     try {
       const user = await this.usersService.create({
@@ -79,7 +84,10 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
 
-    const isPasswordMatch = await bcrypt.compare(data.password, user.password);
+    const isPasswordMatch = await bcrypt.compare(
+      data.password.trim(),
+      user.password,
+    );
 
     if (!isPasswordMatch) {
       throw new UnauthorizedException('Invalid email or password');
