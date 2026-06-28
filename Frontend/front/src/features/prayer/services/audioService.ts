@@ -1,3 +1,5 @@
+import type { Lang } from '../../../shared/i18n/translations';
+
 class AudioManager {
   private ctx: AudioContext | null = null;
   private currentSource: AudioBufferSourceNode | null = null;
@@ -49,6 +51,7 @@ class AudioManager {
     const cached = this.bufferCache.get(url);
     if (cached) return cached;
     const res = await fetch(url);
+    if (!res.ok) throw new Error(`audio ${url} not found`);
     const data = await res.arrayBuffer();
     const buffer = await this.getCtx().decodeAudioData(data);
     this.bufferCache.set(url, buffer);
@@ -70,16 +73,18 @@ class AudioManager {
   }
 
   /**
-   * Speaks the English prefix "The next move is" followed by the movement name
-   * in Arabic, e.g. → "الركوع", in a deepened (male) voice.
+   * Speaks the "next move is" lead-in followed by the movement name, using the
+   * pre-generated (male) MP3 clips bundled under /audio.
    *
-   * Both parts are pre-generated MP3 files bundled under /audio, decoded and
-   * played through Web Audio at a lower playback rate so the female TTS clips
-   * sound male. No installed voices, no runtime external requests.
+   * The lead-in is language-aware: English uses `prefix.mp3`, Arabic uses
+   * `prefix_ar.mp3`. The movement-name clips (Arabic pronunciation) are shared
+   * by both languages. If a prefix clip is missing the name still plays, so
+   * there is always audio guidance.
    *
    * @param pose one of: qiyam | ruku | iqama | sujood | juloos | tashahhud
+   * @param lang the active UI language
    */
-  speakCue(pose: string): void {
+  speakCue(pose: string, lang: Lang = 'en'): void {
     if (typeof window === 'undefined') return;
 
     // Stop any cue still playing so they don't overlap.
@@ -93,17 +98,20 @@ class AudioManager {
       this.currentSource = null;
     }
 
+    const prefixUrl = lang === 'ar' ? '/audio/prefix_ar.mp3' : '/audio/prefix.mp3';
+
     void (async () => {
       try {
         const ctx = this.getCtx();
         if (ctx.state === 'suspended') await ctx.resume();
 
-        const [prefix, name] = await Promise.all([
-          this.loadBuffer('/audio/prefix.mp3'),
-          this.loadBuffer(`/audio/${pose}.mp3`),
-        ]);
+        // The movement name is required; the prefix is optional (so a missing
+        // localized prefix never silences the cue entirely).
+        const namePromise = this.loadBuffer(`/audio/${pose}.mp3`);
+        const prefix = await this.loadBuffer(prefixUrl).catch(() => null);
+        const name = await namePromise;
 
-        await this.playBuffer(prefix);
+        if (prefix) await this.playBuffer(prefix);
         await this.playBuffer(name);
       } catch {
         /* ignore playback failures */

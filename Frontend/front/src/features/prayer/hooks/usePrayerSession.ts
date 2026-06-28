@@ -200,8 +200,9 @@ export function usePrayerSession() {
         // the user initiates takbeerat al-ihram themselves, it's the trigger)
         const upcoming = nextSeq?.[s.stepIndex];
         if (upcoming && upcoming.pose !== POSE.TAKBEER) {
-          // "The next move is" + the movement name pronounced in Arabic
-          audioService.speakCue(upcoming.pose);
+          // "The next move is" + the movement name, spoken in the active
+          // language (Arabic guidance for Arabic, English for English).
+          audioService.speakCue(upcoming.pose, langRef.current);
         }
 
         setUiState((prev) => ({
