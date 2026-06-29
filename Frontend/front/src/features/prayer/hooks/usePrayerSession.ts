@@ -85,6 +85,7 @@ export function usePrayerSession() {
 
   const endPrayer = useCallback(async (): Promise<void> => {
     stopLoop();
+    audioService.stopRecitation(); // silence any Qur'an still playing
     const videoBlob = await stopRecording();
     stopCamera();
 
@@ -168,6 +169,10 @@ export function usePrayerSession() {
       const s = sess.current;
       if (s.rakaIndex >= (s.selectedPrayer?.rakas ?? 0)) return;
 
+      // Bowing into ruku' means the learner has left qiyam — stop the recitation
+      // rather than letting it bleed into the rest of the rak'ah.
+      if (pose === POSE.RUKU) audioService.stopRecitation();
+
       const seq = s.rakaSequences[s.rakaIndex];
       const step = seq?.[s.stepIndex];
       if (!step) return;
@@ -200,9 +205,18 @@ export function usePrayerSession() {
         // the user initiates takbeerat al-ihram themselves, it's the trigger)
         const upcoming = nextSeq?.[s.stepIndex];
         if (upcoming && upcoming.pose !== POSE.TAKBEER) {
-          // "The next move is" + the movement name, spoken in the active
-          // language (Arabic guidance for Arabic, English for English).
-          audioService.speakCue(upcoming.pose, langRef.current);
+          if (upcoming.pose === POSE.QIYAM) {
+            // Qiyam isn't announced by name (it would clash with the reciter) —
+            // play the recitation; the move after qiyam (ruku') is announced
+            // only once the recitation finishes.
+            const afterQiyam = nextSeq?.[s.stepIndex + 1];
+            audioService.reciteQiyam(s.rakaIndex, langRef.current, afterQiyam?.pose ?? null);
+          } else if (upcoming.pose !== POSE.RUKU) {
+            // "The next move is" + the movement name, spoken in the active
+            // language. Ruku' is skipped here: reciteQiyam announces it when the
+            // recitation ends so the guide never talks over the reciter.
+            audioService.speakCue(upcoming.pose, langRef.current);
+          }
         }
 
         setUiState((prev) => ({
@@ -314,6 +328,7 @@ export function usePrayerSession() {
       s.sessionStartTime = Date.now();
       s.selectedPrayer = prayer;
       s.prayerStarted = false;
+      audioService.resetRecitation(); // no surah carry-over between prayers
       s.rakaSequences = Array.from({ length: prayer.rakas }, (_, i) =>
         buildRakaSequence(i, prayer.rakas),
       );

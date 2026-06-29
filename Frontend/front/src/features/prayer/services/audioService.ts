@@ -3,7 +3,29 @@ import type { Lang } from '../../../shared/i18n/translations';
 class AudioManager {
   private ctx: AudioContext | null = null;
   private currentSource: AudioBufferSourceNode | null = null;
+  /**
+   * Qur'an recitation plays on its own channel so the short movement cues
+   * (e.g. announcing "ruku'") never interrupt it — it continues until the next
+   * rak'ah's recitation begins or the session ends.
+   */
+  private recitationSource: AudioBufferSourceNode | null = null;
   private bufferCache = new Map<string, AudioBuffer>();
+
+  /**
+   * Surah played during the previous rak'ah's qiyam, so the second rak'ah never
+   * repeats the same short surah. Reset per prayer via {@link resetRecitation}.
+   */
+  private lastSurah: number | null = null;
+
+  /**
+   * Recitation is streamed through our own backend proxy (`/recitation/:surah`)
+   * so playback never depends on the upstream reciter server's CORS policy.
+   * Al-Fatiha is recited in every rak'ah's qiyam.
+   */
+  private readonly RECITER_BASE = `${import.meta.env.VITE_API_URL ?? 'http://localhost:3000'}/recitation`;
+  private readonly FATIHA = 1;
+  private readonly SURAH_MIN = 86; // first short surah eligible for rak'ahs 1–2
+  private readonly SURAH_MAX = 114; // last surah (An-Nas)
 
   /** Playback speed for voice cues (1 = natural; the clips are already male). */
   private readonly CUE_RATE = 1.0;
@@ -81,22 +103,15 @@ class AudioManager {
    * by both languages. If a prefix clip is missing the name still plays, so
    * there is always audio guidance.
    *
-   * @param pose one of: qiyam | ruku | iqama | sujood | juloos | tashahhud
+   * @param pose one of: ruku | iqama | sujood | juloos | tashahhud
    * @param lang the active UI language
    */
   speakCue(pose: string, lang: Lang = 'en'): void {
     if (typeof window === 'undefined') return;
 
-    // Stop any cue still playing so they don't overlap.
-    if (this.currentSource) {
-      try {
-        this.currentSource.onended = null;
-        this.currentSource.stop();
-      } catch {
-        /* already stopped */
-      }
-      this.currentSource = null;
-    }
+    // Stop any cue still playing so they don't overlap. Recitation lives on its
+    // own channel and is left alone here.
+    this.stopCurrent();
 
     const prefixUrl = lang === 'ar' ? '/audio/prefix_ar.mp3' : '/audio/prefix.mp3';
 
@@ -117,6 +132,107 @@ class AudioManager {
         /* ignore playback failures */
       }
     })();
+  }
+
+  /**
+   * Starts the qiyam recitation (Fatiha + optional surah) for the given rak'ah.
+   * Unlike the movement cues, qiyam is *not* announced by name — the spoken cue
+   * would clash with the reciter — so the learner just hears the recitation
+   * while standing. The qiyam pose itself is still scored on detection.
+   *
+   * Once the recitation finishes on its own, the next movement (`nextCue`, e.g.
+   * ruku') is announced so the guide never talks over the reciter. If the
+   * learner bows early, stopRecitation() leaves the recitation pending and the
+   * follow-up cue is never spoken (the move already happened).
+   */
+  reciteQiyam(rakaIndex: number, lang: Lang = 'en', nextCue: string | null = null): void {
+    if (typeof window === 'undefined') return;
+    void (async () => {
+      try {
+        const ctx = this.getCtx();
+        if (ctx.state === 'suspended') await ctx.resume();
+        await this.playRecitation(rakaIndex);
+        if (nextCue) this.speakCue(nextCue, lang);
+      } catch {
+        /* ignore playback failures */
+      }
+    })();
+  }
+
+  /** Resets surah history and stops any recitation from a previous prayer. */
+  resetRecitation(): void {
+    this.lastSurah = null;
+    this.stopRecitation();
+  }
+
+  /** Stops the recitation channel (e.g. when the session ends). */
+  stopRecitation(): void {
+    if (this.recitationSource) {
+      try {
+        this.recitationSource.onended = null;
+        this.recitationSource.stop();
+      } catch {
+        /* already stopped */
+      }
+      this.recitationSource = null;
+    }
+  }
+
+  /**
+   * Stops the current voice cue. The cue's onended is left intact so a cue that
+   * is interrupted mid-clip still resolves its play promise — this lets the
+   * qiyam cue hand off to the recitation even if the next move was announced
+   * before the name clip finished. Recitation is on its own channel and is not
+   * touched here.
+   */
+  private stopCurrent(): void {
+    if (this.currentSource) {
+      try {
+        this.currentSource.stop();
+      } catch {
+        /* already stopped */
+      }
+      this.currentSource = null;
+    }
+  }
+
+  /** Plays a recitation clip on the dedicated channel; resolves when it ends. */
+  private playRecitationBuffer(buffer: AudioBuffer): Promise<void> {
+    const ctx = this.getCtx();
+    return new Promise((resolve) => {
+      const src = ctx.createBufferSource();
+      src.buffer = buffer;
+      src.connect(ctx.destination);
+      src.onended = () => resolve();
+      this.recitationSource = src;
+      src.start();
+    });
+  }
+
+  /**
+   * Recites Al-Fatiha (every rak'ah) and, for the first two rak'ahs, a random
+   * short surah (86–114) afterwards. The second rak'ah never repeats the surah
+   * the first one used. Runs on its own channel so movement cues don't cut it.
+   */
+  private async playRecitation(rakaIndex: number): Promise<void> {
+    this.stopRecitation(); // replace any recitation still playing
+    const fatiha = await this.loadBuffer(this.surahUrl(this.FATIHA));
+    await this.playRecitationBuffer(fatiha);
+
+    if (rakaIndex < 2) {
+      const span = this.SURAH_MAX - this.SURAH_MIN + 1;
+      let surah: number;
+      do {
+        surah = this.SURAH_MIN + Math.floor(Math.random() * span);
+      } while (surah === this.lastSurah);
+      this.lastSurah = surah;
+      const buffer = await this.loadBuffer(this.surahUrl(surah));
+      await this.playRecitationBuffer(buffer);
+    }
+  }
+
+  private surahUrl(n: number): string {
+    return `${this.RECITER_BASE}/${n}`;
   }
 }
 
