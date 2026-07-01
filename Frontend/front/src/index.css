@@ -144,7 +144,7 @@ body {
 
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(232, 196, 106, 0.22); border-radius: 99px; }
+::-webkit-scrollbar-thumb { background: rgba(232, 196, 106, 0.22); border-radius: 0px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--accent-dark); }
 
 button, input { font: inherit; }
