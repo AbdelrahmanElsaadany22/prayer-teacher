@@ -120,6 +120,11 @@ export function buildTileCommands(
   const cy = cellSize / 2;
   const outerR = motifSize * 0.46;
 
+  // Seed-driven orientation of the whole motif. The star stays symmetric
+  // under it, but rotating it against the (axis-aligned) border frame is
+  // what makes two seeds visibly different, not just internally jittered.
+  const baseRotation = rng() * (Math.PI / geometry) * 2;
+
   const layers = 1 + Math.round((complexity / 100) * 3); // 1..4 overlapping star layers
   const innerRatio = 0.34 + (complexity / 100) * 0.24; // fuller stars as complexity rises
   const step = Math.PI / geometry;
@@ -128,7 +133,7 @@ export function buildTileCommands(
     const jitter = (rng() - 0.5) * 0.06 * (ornament / 100);
     cmds.push({
       type: 'poly',
-      points: starPoints(cx, cy, outerR, outerR * innerRatio, geometry, l * step + jitter),
+      points: starPoints(cx, cy, outerR, outerR * innerRatio, geometry, baseRotation + l * step + jitter),
     });
   }
 
@@ -138,7 +143,7 @@ export function buildTileCommands(
   // Ornament: strapwork lines linking star tips to the tile's neighbors,
   // classic Islamic lattice connectors. Probability scales with `ornament`.
   if (ornament > 15) {
-    const tips = starPoints(cx, cy, outerR, outerR, geometry, 0);
+    const tips = starPoints(cx, cy, outerR, outerR, geometry, baseRotation);
     const linkChance = ornament / 100;
     for (let i = 0; i < tips.length; i += 2) {
       if (rng() < linkChance) {

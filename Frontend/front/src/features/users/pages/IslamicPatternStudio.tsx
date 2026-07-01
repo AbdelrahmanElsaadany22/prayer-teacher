@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useI18n } from '../../../shared/i18n/LanguageProvider';
 import { useBgPattern } from '../../../shared/theme/PatternProvider';
 import {
@@ -17,14 +17,13 @@ const PREVIEW_H = 300;
 
 export default function IslamicPatternStudio() {
   const { t } = useI18n();
-  const { params: appliedParams, applyParams } = useBgPattern();
-  const [draft, setDraft] = useState<PatternParams>(appliedParams);
-  const [justConstructed, setJustConstructed] = useState(false);
+  const { params, applyParams } = useBgPattern();
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  // Every change applies immediately — both the studio preview and the
+  // site-wide background stay in lockstep with the sliders in real time.
   function set<K extends keyof PatternParams>(key: K, value: PatternParams[K]) {
-    setDraft((d) => ({ ...d, [key]: value }));
-    setJustConstructed(false);
+    applyParams({ ...params, [key]: value });
   }
 
   useEffect(() => {
@@ -32,19 +31,14 @@ export default function IslamicPatternStudio() {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    paintPatternCanvas(ctx, draft, PREVIEW_W, PREVIEW_H);
-  }, [draft]);
-
-  function handleConstruct() {
-    applyParams(draft);
-    setJustConstructed(true);
-  }
+    paintPatternCanvas(ctx, params, PREVIEW_W, PREVIEW_H);
+  }, [params]);
 
   function handleExport() {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const link = document.createElement('a');
-    link.download = `islamic-pattern-${draft.seed}.png`;
+    link.download = `islamic-pattern-${params.seed}.png`;
     link.href = canvas.toDataURL('image/png');
     link.click();
   }
@@ -63,7 +57,7 @@ export default function IslamicPatternStudio() {
           <MaterialRow
             key={id}
             id={id}
-            active={draft.material === id}
+            active={params.material === id}
             label={t(`pattern.material.${id}`)}
             onClick={() => set('material', id)}
           />
@@ -76,7 +70,7 @@ export default function IslamicPatternStudio() {
           <button
             key={n}
             type="button"
-            className={`${css.segOpt}${draft.geometry === n ? ` ${css.segOptActive}` : ''}`}
+            className={`${css.segOpt}${params.geometry === n ? ` ${css.segOptActive}` : ''}`}
             onClick={() => set('geometry', n)}
           >
             {n}
@@ -84,22 +78,22 @@ export default function IslamicPatternStudio() {
         ))}
       </div>
 
-      <SliderRow label={t('pattern.complexity')} value={draft.complexity} onChange={(v) => set('complexity', v)} />
-      <SliderRow label={t('pattern.density')} value={draft.density} onChange={(v) => set('density', v)} />
-      <SliderRow label={t('pattern.spacing')} value={draft.spacing} onChange={(v) => set('spacing', v)} />
-      <SliderRow label={t('pattern.ornament')} value={draft.ornament} onChange={(v) => set('ornament', v)} />
+      <SliderRow label={t('pattern.complexity')} value={params.complexity} onChange={(v) => set('complexity', v)} />
+      <SliderRow label={t('pattern.density')} value={params.density} onChange={(v) => set('density', v)} />
+      <SliderRow label={t('pattern.spacing')} value={params.spacing} onChange={(v) => set('spacing', v)} />
+      <SliderRow label={t('pattern.ornament')} value={params.ornament} onChange={(v) => set('ornament', v)} />
 
       <h4 className={css.sectionTitle}>{t('pattern.stonework')}</h4>
-      <SliderRow label={t('pattern.lineWeight')} value={draft.lineWeight} onChange={(v) => set('lineWeight', v)} />
-      <SliderRow label={t('pattern.opacity')} value={draft.opacity} onChange={(v) => set('opacity', v)} />
-      <SliderRow label={t('pattern.border')} value={draft.border} onChange={(v) => set('border', v)} />
+      <SliderRow label={t('pattern.lineWeight')} value={params.lineWeight} onChange={(v) => set('lineWeight', v)} />
+      <SliderRow label={t('pattern.opacity')} value={params.opacity} onChange={(v) => set('opacity', v)} />
+      <SliderRow label={t('pattern.border')} value={params.border} onChange={(v) => set('border', v)} />
 
       <h4 className={css.sectionTitle}>{t('pattern.seed')}</h4>
       <div className={css.seedRow}>
         <input
           type="text"
           className={css.seedInput}
-          value={draft.seed}
+          value={params.seed}
           maxLength={16}
           onChange={(e) => set('seed', e.target.value.toUpperCase())}
         />
@@ -110,9 +104,6 @@ export default function IslamicPatternStudio() {
       <p className={css.seedHint}>{t('pattern.seedHint')}</p>
 
       <div className={css.actions}>
-        <button type="button" className={css.constructBtn} onClick={handleConstruct}>
-          {justConstructed ? t('pattern.constructed') : t('pattern.construct')}
-        </button>
         <button type="button" className={css.exportBtn} onClick={handleExport}>
           {t('pattern.exportPng')}
         </button>
