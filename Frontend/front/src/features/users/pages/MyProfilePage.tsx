@@ -4,6 +4,7 @@ import { useAuth } from '../../auth/hooks/useAuth';
 import { useI18n } from '../../../shared/i18n/LanguageProvider';
 import { LANGUAGES } from '../../../shared/i18n/translations';
 import { useTheme, type Theme } from '../../../shared/theme/ThemeProvider';
+import { useCorners } from '../../../shared/theme/RadiusProvider';
 import { api, getApiErrorMessage } from '../../../shared/api/axios';
 import { uploadProfilePicture, updateName, changePassword } from '../api/users.api';
 import { avatarUrl } from '../../../shared/utils/avatar';
@@ -16,6 +17,7 @@ export default function MyProfilePage() {
   const { user, logout, refreshUser } = useAuth();
   const { t, lang, setLang } = useI18n();
   const { theme, setTheme } = useTheme();
+  const { corners, setCorners } = useCorners();
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [picUrl, setPicUrl] = useState<string | null>(null);
@@ -313,6 +315,25 @@ export default function MyProfilePage() {
                     {label}
                   </button>
                 ))}
+              </div>
+            </div>
+            <div className={css.infoRow}>
+              <span className={css.infoLabel}>{t('myProfile.corners')}</span>
+              <div className={css.prefPill}>
+                <button
+                  type="button"
+                  className={`${css.prefOpt}${corners === 'default' ? ` ${css.prefOptActive}` : ''}`}
+                  onClick={() => setCorners('default')}
+                >
+                  {t('myProfile.cornersDefault')}
+                </button>
+                <button
+                  type="button"
+                  className={`${css.prefOpt}${corners === 'sharp' ? ` ${css.prefOptActive}` : ''}`}
+                  onClick={() => setCorners('sharp')}
+                >
+                  {t('myProfile.cornersSharp')}
+                </button>
               </div>
             </div>
           </div>

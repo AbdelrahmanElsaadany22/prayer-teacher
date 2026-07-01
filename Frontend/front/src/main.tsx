@@ -5,6 +5,7 @@ import { AuthProvider } from './features/auth/context/AuthProvider';
 import { NotificationsProvider } from './features/notifications/context/NotificationsProvider';
 import { LanguageProvider } from './shared/i18n/LanguageProvider';
 import { ThemeProvider } from './shared/theme/ThemeProvider';
+import { RadiusProvider } from './shared/theme/RadiusProvider';
 import './index.css';
 import './theme-switcher.css';
 import { router } from './router.tsx';
@@ -12,6 +13,7 @@ import { router } from './router.tsx';
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ThemeProvider>
+      <RadiusProvider>
       <LanguageProvider>
         <AuthProvider>
           <NotificationsProvider>
@@ -19,6 +21,7 @@ createRoot(document.getElementById('root')!).render(
           </NotificationsProvider>
         </AuthProvider>
       </LanguageProvider>
+      </RadiusProvider>
     </ThemeProvider>
   </StrictMode>,
 );
