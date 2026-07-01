@@ -27,6 +27,8 @@ export default function MyProfilePage() {
   const [savingName, setSavingName] = useState(false);
   const [nameMsg, setNameMsg] = useState<Msg | null>(null);
 
+  const [activeTab, setActiveTab] = useState<'profile' | 'preferences'>('profile');
+
   const [currentPwd, setCurrentPwd] = useState('');
   const [newPwd, setNewPwd] = useState('');
   const [confirmPwd, setConfirmPwd] = useState('');
@@ -122,180 +124,201 @@ export default function MyProfilePage() {
       <span className={css.eyebrow}>{t('myProfile.eyebrow')}</span>
       <h1 className={css.title}>{t('myProfile.title')}</h1>
 
-      {/* ── Profile info card ── */}
-      <div className={css.card}>
-        <div className={css.avatarWrap}>
-          <div className={css.avatar}>
-            {picUrl ? <img src={picUrl} alt={user?.name} /> : initial}
-          </div>
-          <div className={css.uploadArea}>
-            <p className={css.picLabel}>{t('myProfile.picture')}</p>
-            <button
-              type="button"
-              className={css.uploadBtn}
-              onClick={() => fileRef.current?.click()}
-              disabled={uploading}
-            >
-              {uploading ? t('myProfile.uploading') : t('myProfile.uploadBtn')}
-            </button>
-            <p className={css.formats}>{t('myProfile.allowedFormats')}</p>
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/jpeg,image/png,image/webp,image/gif"
-              className={css.fileInput}
-              onChange={handleFileChange}
-            />
-          </div>
-        </div>
+      {/* ── Tab switcher ── */}
+      <div className={css.tabs}>
+        <button
+          type="button"
+          className={`${css.tab}${activeTab === 'profile' ? ` ${css.tabActive}` : ''}`}
+          onClick={() => setActiveTab('profile')}
+        >
+          {t('myProfile.tabProfile')}
+        </button>
+        <button
+          type="button"
+          className={`${css.tab}${activeTab === 'preferences' ? ` ${css.tabActive}` : ''}`}
+          onClick={() => setActiveTab('preferences')}
+        >
+          {t('myProfile.tabPreferences')}
+        </button>
+      </div>
 
-        {picMsg && (
-          <p className={picMsg.type === 'ok' ? css.successMsg : css.errorMsg}>{picMsg.text}</p>
-        )}
-
-        <div className={css.userInfo}>
-          <div className={`${css.infoRow} ${editingName ? css.infoRowEdit : ''}`}>
-            <span className={css.infoLabel}>{t('field.name')}</span>
-            {editingName ? (
-              <form className={css.inlineForm} onSubmit={handleSaveName}>
-                <input
-                  className={css.fieldInput}
-                  value={nameValue}
-                  onChange={(e) => setNameValue(e.target.value)}
-                  minLength={2}
-                  maxLength={80}
-                  autoFocus
-                />
-                <div className={css.editActions}>
-                  <button
-                    type="submit"
-                    className={css.saveBtn}
-                    disabled={savingName || nameValue.trim().length < 2}
-                  >
-                    {savingName ? t('myProfile.updating') : t('myProfile.saveName')}
-                  </button>
-                  <button
-                    type="button"
-                    className={css.cancelBtn}
-                    onClick={() => { setEditingName(false); setNameMsg(null); }}
-                  >
-                    {t('myProfile.cancelEdit')}
-                  </button>
-                </div>
-              </form>
-            ) : (
-              <div className={css.infoValueRow}>
-                <span className={css.infoValue}>{user?.name}</span>
-                <button type="button" className={css.editBtn} onClick={startEditName}>
-                  {t('myProfile.editName')}
-                </button>
+      {activeTab === 'profile' && (
+        <>
+          {/* ── Profile info card ── */}
+          <div className={css.card}>
+            <div className={css.avatarWrap}>
+              <div className={css.avatar}>
+                {picUrl ? <img src={picUrl} alt={user?.name} /> : initial}
               </div>
+              <div className={css.uploadArea}>
+                <p className={css.picLabel}>{t('myProfile.picture')}</p>
+                <button
+                  type="button"
+                  className={css.uploadBtn}
+                  onClick={() => fileRef.current?.click()}
+                  disabled={uploading}
+                >
+                  {uploading ? t('myProfile.uploading') : t('myProfile.uploadBtn')}
+                </button>
+                <p className={css.formats}>{t('myProfile.allowedFormats')}</p>
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  className={css.fileInput}
+                  onChange={handleFileChange}
+                />
+              </div>
+            </div>
+
+            {picMsg && (
+              <p className={picMsg.type === 'ok' ? css.successMsg : css.errorMsg}>{picMsg.text}</p>
+            )}
+
+            <div className={css.userInfo}>
+              <div className={`${css.infoRow} ${editingName ? css.infoRowEdit : ''}`}>
+                <span className={css.infoLabel}>{t('field.name')}</span>
+                {editingName ? (
+                  <form className={css.inlineForm} onSubmit={handleSaveName}>
+                    <input
+                      className={css.fieldInput}
+                      value={nameValue}
+                      onChange={(e) => setNameValue(e.target.value)}
+                      minLength={2}
+                      maxLength={80}
+                      autoFocus
+                    />
+                    <div className={css.editActions}>
+                      <button
+                        type="submit"
+                        className={css.saveBtn}
+                        disabled={savingName || nameValue.trim().length < 2}
+                      >
+                        {savingName ? t('myProfile.updating') : t('myProfile.saveName')}
+                      </button>
+                      <button
+                        type="button"
+                        className={css.cancelBtn}
+                        onClick={() => { setEditingName(false); setNameMsg(null); }}
+                      >
+                        {t('myProfile.cancelEdit')}
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <div className={css.infoValueRow}>
+                    <span className={css.infoValue}>{user?.name}</span>
+                    <button type="button" className={css.editBtn} onClick={startEditName}>
+                      {t('myProfile.editName')}
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div className={css.infoRow}>
+                <span className={css.infoLabel}>{t('field.email')}</span>
+                <span className={css.infoValue}>{user?.email}</span>
+              </div>
+            </div>
+
+            {nameMsg && (
+              <p className={nameMsg.type === 'ok' ? css.successMsg : css.errorMsg}>{nameMsg.text}</p>
             )}
           </div>
 
-          <div className={css.infoRow}>
-            <span className={css.infoLabel}>{t('field.email')}</span>
-            <span className={css.infoValue}>{user?.email}</span>
+          {/* ── Change password card ── */}
+          <div className={`${css.card} ${css.cardSpaced}`}>
+            <p className={css.sectionHeading}>{t('myProfile.changePasswordSection')}</p>
+            <form className={css.passwordForm} onSubmit={handleChangePassword}>
+              <div className={css.formGroup}>
+                <label className={css.formLabel}>{t('myProfile.currentPassword')}</label>
+                <input
+                  type="password"
+                  className={css.fieldInput}
+                  value={currentPwd}
+                  onChange={(e) => setCurrentPwd(e.target.value)}
+                  autoComplete="current-password"
+                  required
+                />
+              </div>
+              <div className={css.formGroup}>
+                <label className={css.formLabel}>{t('myProfile.newPassword')}</label>
+                <input
+                  type="password"
+                  className={css.fieldInput}
+                  value={newPwd}
+                  onChange={(e) => setNewPwd(e.target.value)}
+                  minLength={8}
+                  maxLength={72}
+                  autoComplete="new-password"
+                  required
+                />
+              </div>
+              <div className={css.formGroup}>
+                <label className={css.formLabel}>{t('myProfile.confirmNewPassword')}</label>
+                <input
+                  type="password"
+                  className={css.fieldInput}
+                  value={confirmPwd}
+                  onChange={(e) => setConfirmPwd(e.target.value)}
+                  minLength={8}
+                  maxLength={72}
+                  autoComplete="new-password"
+                  required
+                />
+              </div>
+              {pwdMsg && (
+                <p className={pwdMsg.type === 'ok' ? css.successMsg : css.errorMsg}>{pwdMsg.text}</p>
+              )}
+              <button
+                type="submit"
+                className={css.uploadBtn}
+                disabled={savingPwd || !currentPwd || !newPwd || !confirmPwd}
+              >
+                {savingPwd ? t('myProfile.updating') : t('myProfile.updatePassword')}
+              </button>
+            </form>
           </div>
-        </div>
+        </>
+      )}
 
-        {nameMsg && (
-          <p className={nameMsg.type === 'ok' ? css.successMsg : css.errorMsg}>{nameMsg.text}</p>
-        )}
-      </div>
-
-      {/* ── Change password card ── */}
-      <div className={`${css.card} ${css.cardSpaced}`}>
-        <p className={css.sectionHeading}>{t('myProfile.changePasswordSection')}</p>
-        <form className={css.passwordForm} onSubmit={handleChangePassword}>
-          <div className={css.formGroup}>
-            <label className={css.formLabel}>{t('myProfile.currentPassword')}</label>
-            <input
-              type="password"
-              className={css.fieldInput}
-              value={currentPwd}
-              onChange={(e) => setCurrentPwd(e.target.value)}
-              autoComplete="current-password"
-              required
-            />
-          </div>
-          <div className={css.formGroup}>
-            <label className={css.formLabel}>{t('myProfile.newPassword')}</label>
-            <input
-              type="password"
-              className={css.fieldInput}
-              value={newPwd}
-              onChange={(e) => setNewPwd(e.target.value)}
-              minLength={8}
-              maxLength={72}
-              autoComplete="new-password"
-              required
-            />
-          </div>
-          <div className={css.formGroup}>
-            <label className={css.formLabel}>{t('myProfile.confirmNewPassword')}</label>
-            <input
-              type="password"
-              className={css.fieldInput}
-              value={confirmPwd}
-              onChange={(e) => setConfirmPwd(e.target.value)}
-              minLength={8}
-              maxLength={72}
-              autoComplete="new-password"
-              required
-            />
-          </div>
-          {pwdMsg && (
-            <p className={pwdMsg.type === 'ok' ? css.successMsg : css.errorMsg}>{pwdMsg.text}</p>
-          )}
-          <button
-            type="submit"
-            className={css.uploadBtn}
-            disabled={savingPwd || !currentPwd || !newPwd || !confirmPwd}
-          >
-            {savingPwd ? t('myProfile.updating') : t('myProfile.updatePassword')}
-          </button>
-        </form>
-      </div>
-
-      {/* ── Preferences card ── */}
-      <div className={`${css.card} ${css.cardSpaced}`}>
-        <p className={css.sectionHeading}>{t('myProfile.preferencesSection')}</p>
-        <div className={css.userInfo}>
-          <div className={css.infoRow}>
-            <span className={css.infoLabel}>{t('myProfile.language')}</span>
-            <div className={css.prefPill}>
-              {LANGUAGES.map(({ code, label }) => (
-                <button
-                  key={code}
-                  type="button"
-                  className={`${css.prefOpt}${lang === code ? ` ${css.prefOptActive}` : ''}`}
-                  onClick={() => setLang(code)}
-                >
-                  {label}
-                </button>
-              ))}
+      {activeTab === 'preferences' && (
+        <div className={css.card}>
+          <div className={css.userInfo}>
+            <div className={css.infoRow}>
+              <span className={css.infoLabel}>{t('myProfile.language')}</span>
+              <div className={css.prefPill}>
+                {LANGUAGES.map(({ code, label }) => (
+                  <button
+                    key={code}
+                    type="button"
+                    className={`${css.prefOpt}${lang === code ? ` ${css.prefOptActive}` : ''}`}
+                    onClick={() => setLang(code)}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className={css.infoRow}>
+              <span className={css.infoLabel}>{t('myProfile.theme')}</span>
+              <div className={css.prefPill}>
+                {THEMES.map(({ id, label }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    className={`${css.prefOpt}${theme === id ? ` ${css.prefOptActive}` : ''}`}
+                    onClick={() => setTheme(id)}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-          <div className={css.infoRow}>
-            <span className={css.infoLabel}>{t('myProfile.theme')}</span>
-            <div className={css.prefPill}>
-              {THEMES.map(({ id, label }) => (
-                <button
-                  key={id}
-                  type="button"
-                  className={`${css.prefOpt}${theme === id ? ` ${css.prefOptActive}` : ''}`}
-                  onClick={() => setTheme(id)}
-                >
-                  {/* <span cl`assName={css.themeSwatchMini} style={{ background: swatch }} /> */}
-                  {label}
-                </button>
-              ))}
-            </div>
-          </div>
+          <p className={css.credits}>Themes inspired by onyx-shell creators</p>
         </div>
-        <p className={css.credits}>Themes inspired by onyx-shell creators</p>
-      </div>
+      )}
 
       {/* ── Logout ── */}
       <button

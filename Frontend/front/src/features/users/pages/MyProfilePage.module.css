@@ -27,6 +27,43 @@
   color: var(--text);
 }
 
+/* ── Tabs ── */
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 4px;
+}
+
+.tab {
+  flex: 1;
+  padding: 9px 16px;
+  border: none;
+  border-radius: calc(var(--radius-md) - 2px);
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  letter-spacing: 0.02em;
+}
+
+.tab:hover:not(.tabActive) {
+  background: var(--surface-light);
+  color: var(--text);
+}
+
+.tabActive {
+  background: var(--accent);
+  color: #17140d;
+  font-weight: 700;
+}
+
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
