@@ -23,6 +23,7 @@ export const router = createBrowserRouter([
         path: '/',
         element: <Home />,
       },
+      { path: '/prayer-test', element: <PrayerSession /> },
       {
         element: <ProtectedRoute />,
         children: [
