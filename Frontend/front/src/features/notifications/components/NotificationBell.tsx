@@ -18,7 +18,8 @@ function timeAgo(iso: string, t: TFn): string {
 }
 
 export default function NotificationBell() {
-  const { requests, activity, count, accept, reject, dismiss } = useNotifications();
+  const { requests, activity, messages, count, accept, reject, dismiss, dismissMessage } =
+    useNotifications();
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -113,32 +114,63 @@ export default function NotificationBell() {
                 );
               })}
 
-              {activity.map((a) => (
-                <li key={a.id} className={css.item}>
-                  <div
-                    className={`${css.avatar} ${
-                      a.type === 'FRIEND_REQUEST_ACCEPTED' ? css.avatarOk : css.avatarNo
-                    }`}
-                  >
-                    {a.type === 'FRIEND_REQUEST_ACCEPTED' ? '✓' : '✕'}
-                  </div>
+              {messages.map((m) => (
+                <li
+                  key={m.senderId}
+                  className={`${css.item} ${css.clickable}`}
+                  onClick={() => {
+                    dismissMessage(m.senderId);
+                    setOpen(false);
+                    navigate(`/chat/${m.senderId}`);
+                  }}
+                >
+                  <div className={`${css.avatar} ${css.avatarMsg}`}>💬</div>
                   <div className={css.body}>
                     <p className={css.text}>
-                      {a.type === 'FRIEND_REQUEST_ACCEPTED'
-                        ? t('notif.accepted', { name: a.senderName })
-                        : t('notif.declined', { name: a.senderName })}
+                      {t('notif.newMessage', { name: m.senderName })}
                     </p>
-                    <span className={css.time}>{timeAgo(a.createdAt, t)}</span>
                   </div>
+                  {m.count > 1 && <span className={css.headerCount}>{m.count}</span>}
                   <button
                     type="button"
                     className={css.dismiss}
                     aria-label={t('notif.dismiss')}
-                    onClick={() => dismiss(a.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      dismissMessage(m.senderId);
+                    }}
                   >
                     ✕
                   </button>
                 </li>
+              ))}
+
+              {activity.map((a) => (
+                  <li key={a.id} className={css.item}>
+                    <div
+                      className={`${css.avatar} ${
+                        a.type === 'FRIEND_REQUEST_ACCEPTED' ? css.avatarOk : css.avatarNo
+                      }`}
+                    >
+                      {a.type === 'FRIEND_REQUEST_ACCEPTED' ? '✓' : '✕'}
+                    </div>
+                    <div className={css.body}>
+                      <p className={css.text}>
+                        {a.type === 'FRIEND_REQUEST_ACCEPTED'
+                          ? t('notif.accepted', { name: a.senderName })
+                          : t('notif.declined', { name: a.senderName })}
+                      </p>
+                      <span className={css.time}>{timeAgo(a.createdAt, t)}</span>
+                    </div>
+                    <button
+                      type="button"
+                      className={css.dismiss}
+                      aria-label={t('notif.dismiss')}
+                      onClick={() => dismiss(a.id)}
+                    >
+                      ✕
+                    </button>
+                  </li>
               ))}
             </ul>
           )}

@@ -120,6 +120,7 @@ export default function MainLayout() {
         <Outlet />
       </main>
 
+
       <footer className="site-footer">
         <span>{t('footer.brand')}</span>
         <span>{t('footer.privacy')}</span>

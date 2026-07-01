@@ -2,13 +2,15 @@ import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect,
 import { ChatService } from './chat.service';
 import { Server,Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
+import { NotificationGateway } from '../notification/notification.gateway';
 
 
 
 @WebSocketGateway()
 export class ChatGateway implements OnGatewayConnection,OnGatewayDisconnect{
   constructor(private chatService:ChatService,
-    private jwtService:JwtService
+    private jwtService:JwtService,
+    private notificationGateway:NotificationGateway
   ){}
   @WebSocketServer()
   server!:Server
@@ -66,6 +68,13 @@ export class ChatGateway implements OnGatewayConnection,OnGatewayDisconnect{
       data.friendId
     ].sort().join("_")
     currentSocket.to(room).emit("newMessage",message)
+
+    // Notify the receiver globally (works even if they aren't on the chat page)
+    this.notificationGateway.sendToUser(data.receiver, "newNotification", {
+      type: "NEW_MESSAGE",
+      message: data.text,
+      sender: senderId,
+    })
   }
 
 
