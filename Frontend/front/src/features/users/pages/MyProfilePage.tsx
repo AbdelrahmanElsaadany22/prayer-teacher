@@ -8,6 +8,7 @@ import { useCorners } from '../../../shared/theme/RadiusProvider';
 import { api, getApiErrorMessage } from '../../../shared/api/axios';
 import { uploadProfilePicture, updateName, changePassword } from '../api/users.api';
 import { avatarUrl } from '../../../shared/utils/avatar';
+import IslamicPatternStudio from './IslamicPatternStudio';
 import css from './MyProfilePage.module.css';
 
 type Msg = { type: 'ok' | 'err'; text: string };
@@ -337,6 +338,12 @@ export default function MyProfilePage() {
               </div>
             </div>
           </div>
+
+          <div className={`${css.card} ${css.cardSpaced}`}>
+            <p className={css.sectionHeading}>{t('pattern.studioTitle')}</p>
+            <IslamicPatternStudio />
+          </div>
+
           <p className={css.credits}>Themes inspired by onyx-shell creators</p>
         </div>
       )}
@@ -352,3 +359,4 @@ export default function MyProfilePage() {
     </div>
   );
 }
+

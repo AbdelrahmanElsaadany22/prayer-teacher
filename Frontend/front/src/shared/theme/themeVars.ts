@@ -9,8 +9,6 @@ interface ThemeConfig {
   light?: boolean;
 }
 
-const pat = (color: string, opacity = '0.06') =>
-  `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cg fill='none' stroke='${color}' stroke-opacity='${opacity}' stroke-width='1'%3E%3Crect x='16' y='16' width='32' height='32'/%3E%3Crect x='16' y='16' width='32' height='32' transform='rotate(45 32 32)'/%3E%3Ccircle cx='32' cy='32' r='3'/%3E%3C/g%3E%3C/svg%3E")`;
 
 export const THEME_CONFIGS: Record<Theme, ThemeConfig> = {
   amber: {
@@ -34,7 +32,6 @@ export const THEME_CONFIGS: Record<Theme, ThemeConfig> = {
       '--auth-card-bg':  'rgba(25,14,6,0.98)',
       '--input-bg':      '#0c0603',
       '--shadow-accent': '0 8px 32px rgba(232,196,106,0.25)',
-      '--pattern':       pat('%23e8c46a'),
       '--logo-filter':   'none',
     },
     bodyGradient: `rgba(210,140,40,0.14)`,
@@ -64,7 +61,6 @@ export const THEME_CONFIGS: Record<Theme, ThemeConfig> = {
       '--auth-card-bg':  'rgba(8,18,36,0.98)',
       '--input-bg':      '#030810',
       '--shadow-accent': '0 8px 32px rgba(136,196,245,0.25)',
-      '--pattern':       pat('%2388c4f5'),
       '--logo-filter':   'hue-rotate(164deg)',
     },
     bodyGradient: `rgba(40,100,200,0.16)`,
@@ -94,7 +90,6 @@ export const THEME_CONFIGS: Record<Theme, ThemeConfig> = {
       '--auth-card-bg':  'rgba(25,6,10,0.98)',
       '--input-bg':      '#0c0305',
       '--shadow-accent': '0 8px 32px rgba(245,160,176,0.25)',
-      '--pattern':       pat('%23f5a0b0'),
       '--logo-filter':   'hue-rotate(307deg) saturate(0.85)',
     },
     bodyGradient: `rgba(200,40,80,0.16)`,
@@ -124,7 +119,6 @@ export const THEME_CONFIGS: Record<Theme, ThemeConfig> = {
       '--auth-card-bg':  'rgba(8,20,10,0.98)',
       '--input-bg':      '#030805',
       '--shadow-accent': '0 8px 32px rgba(110,232,154,0.25)',
-      '--pattern':       pat('%236ee89a'),
       '--logo-filter':   'hue-rotate(97deg)',
     },
     bodyGradient: `rgba(30,160,70,0.16)`,
@@ -154,7 +148,6 @@ export const THEME_CONFIGS: Record<Theme, ThemeConfig> = {
       '--auth-card-bg':  'rgba(12,12,12,0.98)',
       '--input-bg':      '#050505',
       '--shadow-accent': '0 8px 32px rgba(200,200,216,0.15)',
-      '--pattern':       pat('%23c8c8d8', '0.05'),
       '--logo-filter':   'grayscale(1) brightness(1.15)',
     },
     bodyGradient: `rgba(120,120,160,0.10)`,
@@ -187,7 +180,6 @@ export const THEME_CONFIGS: Record<Theme, ThemeConfig> = {
       '--shadow-sm':     '0 1px 4px rgba(0,0,0,0.08)',
       '--shadow-md':     '0 4px 20px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06)',
       '--shadow-lg':     '0 16px 48px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.07)',
-      '--pattern':       pat('%233b82f6', '0.06'),
       '--logo-filter':   'hue-rotate(174deg) saturate(1.4) brightness(0.88)',
     },
     bodyGradient: `rgba(100,160,255,0.18)`,
@@ -207,12 +199,6 @@ export function applyTheme(theme: Theme): void {
   Object.entries(cfg.vars).forEach(([key, val]) => {
     root.style.setProperty(key, val);
   });
-
-  // Set body background
-  const pattern = cfg.vars['--pattern'];
-  const bg = cfg.vars['--background'];
-  document.body.style.background = `${pattern}, radial-gradient(ellipse 70% 45% at 50% 0%, ${cfg.bodyGradient}, transparent 60%), radial-gradient(circle at 85% 100%, ${cfg.bodyGradientSide}, transparent 35%), ${bg}`;
-  document.body.style.backgroundAttachment = 'fixed';
 
   // Inject overrides for hardcoded CSS values
   const glassy = cfg.glassy
