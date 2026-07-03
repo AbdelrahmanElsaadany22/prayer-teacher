@@ -178,13 +178,7 @@ class AudioManager {
     }
   }
 
-  /**
-   * Stops the current voice cue. The cue's onended is left intact so a cue that
-   * is interrupted mid-clip still resolves its play promise — this lets the
-   * qiyam cue hand off to the recitation even if the next move was announced
-   * before the name clip finished. Recitation is on its own channel and is not
-   * touched here.
-   */
+
   private stopCurrent(): void {
     if (this.currentSource) {
       try {
