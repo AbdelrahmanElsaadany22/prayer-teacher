@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useI18n } from '../../../shared/i18n/LanguageProvider';
 import { useBgPattern } from '../../../shared/theme/PatternProvider';
+import { useTheme } from '../../../shared/theme/ThemeProvider';
+import { getThemeBg } from '../../../shared/theme/themeVars';
 import {
   type PatternParams,
   type MaterialId,
@@ -18,6 +20,7 @@ const PREVIEW_H = 300;
 export default function IslamicPatternStudio() {
   const { t } = useI18n();
   const { params, applyParams } = useBgPattern();
+  const { theme } = useTheme();
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // Sliders only edit this local draft — the studio preview follows it live,
@@ -34,8 +37,11 @@ export default function IslamicPatternStudio() {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    paintPatternCanvas(ctx, draft, PREVIEW_W, PREVIEW_H);
-  }, [draft]);
+    // Resolved straight from THEME_CONFIGS (not read off the DOM), so this
+    // never races ThemeProvider's own effect that writes the CSS variables —
+    // otherwise the preview would lag one theme-switch behind.
+    paintPatternCanvas(ctx, draft, PREVIEW_W, PREVIEW_H, getThemeBg(theme));
+  }, [draft, theme]);
 
   function handleExport() {
     const canvas = canvasRef.current;

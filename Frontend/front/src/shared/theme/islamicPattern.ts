@@ -168,12 +168,19 @@ export function patternCellSize(params: PatternParams): number {
   return patternMotifSize(params.density) + (params.spacing / 100) * 60; // +0..60
 }
 
+export interface ThemeBg {
+  background: string;
+  glowTop: string;
+  glowSide: string;
+}
+
 // ── Canvas renderer (studio preview + PNG export) ──
 export function paintPatternCanvas(
   ctx: CanvasRenderingContext2D,
   params: PatternParams,
   width: number,
   height: number,
+  themeBg: ThemeBg,
 ): void {
   const material = MATERIAL_DEFS[params.material];
   const motifSize = patternMotifSize(params.density);
@@ -181,10 +188,27 @@ export function paintPatternCanvas(
   const sw = lineWeightPx(params.lineWeight) * (motifSize / 64);
   const cmds = buildTileCommands(params, cellSize, motifSize);
 
-  const bgGrad = ctx.createLinearGradient(0, 0, width, height);
-  bgGrad.addColorStop(0, material.bgFrom);
-  bgGrad.addColorStop(1, material.bgTo);
-  ctx.fillStyle = bgGrad;
+  // The preview's backdrop mirrors the site's actual currently-applied theme
+  // background (same glow layout as index.css's `body` rule), so the studio
+  // shows exactly what the pattern will look like once applied — not an
+  // arbitrary material-tinted backdrop. `themeBg` is passed in (resolved
+  // straight from THEME_CONFIGS) rather than read from computed CSS here,
+  // because reading the DOM would race ThemeProvider's own effect that writes
+  // those custom properties — a same-render read would see last render's
+  // color, lagging the preview one theme-switch behind.
+  ctx.fillStyle = themeBg.background;
+  ctx.fillRect(0, 0, width, height);
+
+  const topGlow = ctx.createRadialGradient(width * 0.5, 0, 0, width * 0.5, 0, width * 0.55);
+  topGlow.addColorStop(0, themeBg.glowTop);
+  topGlow.addColorStop(1, 'transparent');
+  ctx.fillStyle = topGlow;
+  ctx.fillRect(0, 0, width, height);
+
+  const sideGlow = ctx.createRadialGradient(width * 0.85, height, 0, width * 0.85, height, width * 0.35);
+  sideGlow.addColorStop(0, themeBg.glowSide);
+  sideGlow.addColorStop(1, 'transparent');
+  ctx.fillStyle = sideGlow;
   ctx.fillRect(0, 0, width, height);
 
   ctx.lineJoin = 'round';

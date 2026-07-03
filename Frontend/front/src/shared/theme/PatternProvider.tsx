@@ -64,11 +64,9 @@ export function PatternProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('pattern-params', JSON.stringify(params));
   }, [params]);
 
-  // Drives the whole erase → draw sequence. The "-mount" phases sit at
+  // Drives the whole erase → draw sequence. Each "-mount" phase sits at
   // clip-path 0 for one extra paint before growing, so the browser always has
-  // a committed starting frame to transition from (this matters most for
-  // draw-mount, which also has to land its transition-less snap-to-zero
-  // before draw-grow re-enables the transition and grows it).
+  // a committed starting frame to transition from.
   useEffect(() => {
     if (!reveal) return;
 
@@ -105,8 +103,13 @@ export function PatternProvider({ children }: { children: React.ReactNode }) {
     setReveal({ phase: 'erase-mount', x, y, newParams: p, newPattern: buildSvgPattern(p) });
   }
 
-  const erasing = reveal?.phase === 'erase-mount' || reveal?.phase === 'erase-grow';
-  const grown = reveal?.phase === 'erase-grow' || reveal?.phase === 'draw-grow';
+  // The eraser layer grows once (erase-mount → erase-grow) and then *stays*
+  // fully covering the screen for the rest of the sequence — it must never
+  // shrink back down, or the still-uncommitted old background would flash
+  // through underneath for a frame before the drawer layer grows over it.
+  const eraserGrown = !!reveal && reveal.phase !== 'erase-mount';
+  const showDrawer = reveal?.phase === 'draw-mount' || reveal?.phase === 'draw-grow';
+  const drawerGrown = reveal?.phase === 'draw-grow';
 
   return (
     <PatternContext.Provider value={{ params, applyParams }}>
@@ -118,13 +121,25 @@ export function PatternProvider({ children }: { children: React.ReactNode }) {
             inset: 0,
             zIndex: 0,
             pointerEvents: 'none',
-            // Always the same longhand properties (never mixed with the `background`
-            // shorthand) — switching between shorthand and longhand across renders can
-            // clear the very background-image the other branch just set.
-            backgroundImage: erasing ? GRADIENTS : `${reveal.newPattern}, ${GRADIENTS}`,
+            backgroundImage: GRADIENTS,
             backgroundColor: 'var(--background)',
-            clipPath: `circle(${grown ? 150 : 0}vmax at ${reveal.x}% ${reveal.y}%)`,
-            transition: reveal.phase === 'draw-mount' ? 'none' : `clip-path ${REVEAL_MS}ms ease-out`,
+            clipPath: `circle(${eraserGrown ? 150 : 0}vmax at ${reveal.x}% ${reveal.y}%)`,
+            transition: `clip-path ${REVEAL_MS}ms ease-out`,
+          }}
+        />
+      )}
+      {showDrawer && reveal && (
+        <div
+          aria-hidden="true"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 0,
+            pointerEvents: 'none',
+            backgroundImage: `${reveal.newPattern}, ${GRADIENTS}`,
+            backgroundColor: 'var(--background)',
+            clipPath: `circle(${drawerGrown ? 150 : 0}vmax at ${reveal.x}% ${reveal.y}%)`,
+            transition: `clip-path ${REVEAL_MS}ms ease-out`,
           }}
         />
       )}

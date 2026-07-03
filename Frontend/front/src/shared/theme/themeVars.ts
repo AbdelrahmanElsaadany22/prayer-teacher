@@ -191,6 +191,16 @@ export const THEME_CONFIGS: Record<Theme, ThemeConfig> = {
   } as ThemeConfig & { bodyGradient: string; bodyGradientSide: string },
 };
 
+/** Resolves a theme's background colors directly from config — no DOM/CSS-var read, so callers never race applyTheme's own effect. */
+export function getThemeBg(theme: Theme): { background: string; glowTop: string; glowSide: string } {
+  const vars = THEME_CONFIGS[theme].vars;
+  return {
+    background: vars['--background'],
+    glowTop: vars['--glow-top'],
+    glowSide: vars['--glow-side'],
+  };
+}
+
 export function applyTheme(theme: Theme): void {
   const cfg = THEME_CONFIGS[theme] as ThemeConfig & { bodyGradient: string; bodyGradientSide: string };
   const root = document.documentElement;
