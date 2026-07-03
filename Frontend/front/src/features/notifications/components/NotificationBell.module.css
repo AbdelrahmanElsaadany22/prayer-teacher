@@ -122,6 +122,15 @@
 
 .item:hover { background: var(--surface-hover); }
 
+.clickable { cursor: pointer; }
+
+.avatarMsg {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-glow);
+  font-size: 1rem;
+}
+
 .avatar {
   width: 36px;
   height: 36px;

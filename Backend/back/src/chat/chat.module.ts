@@ -7,9 +7,11 @@ import { Message, MessageSchema } from './schemas/chat.schema';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { User, UserSchema } from '../users/schemas/user.schema';
+import { NotificationModule } from '../notification/notification.module';
 
 @Module({
   imports:[
+    NotificationModule,
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
