@@ -145,13 +145,18 @@ class AudioManager {
    * learner bows early, stopRecitation() leaves the recitation pending and the
    * follow-up cue is never spoken (the move already happened).
    */
-  reciteQiyam(rakaIndex: number, lang: Lang = 'en', nextCue: string | null = null): void {
+  reciteQiyam(
+    rakaIndex: number,
+    lang: Lang = 'en',
+    nextCue: string | null = null,
+    reciterServer: string | null = null,
+  ): void {
     if (typeof window === 'undefined') return;
     void (async () => {
       try {
         const ctx = this.getCtx();
         if (ctx.state === 'suspended') await ctx.resume();
-        await this.playRecitation(rakaIndex);
+        await this.playRecitation(rakaIndex, reciterServer);
         if (nextCue) this.speakCue(nextCue, lang);
       } catch {
         /* ignore playback failures */
@@ -208,9 +213,9 @@ class AudioManager {
    * short surah (86–114) afterwards. The second rak'ah never repeats the surah
    * the first one used. Runs on its own channel so movement cues don't cut it.
    */
-  private async playRecitation(rakaIndex: number): Promise<void> {
+  private async playRecitation(rakaIndex: number, reciterServer: string | null): Promise<void> {
     this.stopRecitation(); // replace any recitation still playing
-    const fatiha = await this.loadBuffer(this.surahUrl(this.FATIHA));
+    const fatiha = await this.loadBuffer(this.surahUrl(this.FATIHA, reciterServer));
     await this.playRecitationBuffer(fatiha);
 
     if (rakaIndex < 2) {
@@ -220,13 +225,15 @@ class AudioManager {
         surah = this.SURAH_MIN + Math.floor(Math.random() * span);
       } while (surah === this.lastSurah);
       this.lastSurah = surah;
-      const buffer = await this.loadBuffer(this.surahUrl(surah));
+      const buffer = await this.loadBuffer(this.surahUrl(surah, reciterServer));
       await this.playRecitationBuffer(buffer);
     }
   }
 
-  private surahUrl(n: number): string {
-    return `${this.RECITER_BASE}/${n}`;
+  /** The URL differs per reciter, so switching reciters never serves a cached buffer from another one. */
+  private surahUrl(n: number, reciterServer: string | null): string {
+    const base = `${this.RECITER_BASE}/${n}`;
+    return reciterServer ? `${base}?server=${encodeURIComponent(reciterServer)}` : base;
   }
 }
 

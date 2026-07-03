@@ -9,6 +9,7 @@ import { api, getApiErrorMessage } from '../../../shared/api/axios';
 import { uploadProfilePicture, updateName, changePassword } from '../api/users.api';
 import { avatarUrl } from '../../../shared/utils/avatar';
 import IslamicPatternStudio from './IslamicPatternStudio';
+import ReciterPicker from '../components/ReciterPicker';
 import css from './MyProfilePage.module.css';
 
 type Msg = { type: 'ok' | 'err'; text: string };
@@ -336,6 +337,10 @@ export default function MyProfilePage() {
                   {t('myProfile.cornersSharp')}
                 </button>
               </div>
+            </div>
+            <div className={css.infoRow}>
+              <span className={css.infoLabel}>{t('myProfile.reciter')}</span>
+              <ReciterPicker />
             </div>
           </div>
 

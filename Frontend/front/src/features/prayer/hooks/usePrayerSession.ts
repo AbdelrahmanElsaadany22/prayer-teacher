@@ -12,6 +12,7 @@ import { usePrayerRecorder } from './usePrayerRecorder';
 import { usePoseDetection } from './usePoseDetection';
 import { api } from '../../../shared/api/axios';
 import { useI18n } from '../../../shared/i18n/LanguageProvider';
+import { useReciter } from '../../../shared/reciter/ReciterProvider';
 
 export interface SessionUIState {
   poseBadgeText: string;
@@ -75,6 +76,11 @@ export function usePrayerSession() {
   const { lang } = useI18n();
   const langRef = useRef(lang);
   langRef.current = lang;
+
+  // Active reciter, mirrored into a ref for the same reason as langRef above.
+  const { reciter } = useReciter();
+  const reciterRef = useRef(reciter);
+  reciterRef.current = reciter;
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const { videoRef, streamRef, startCamera, stopCamera } = useVideoStream();
@@ -210,7 +216,12 @@ export function usePrayerSession() {
             // play the recitation; the move after qiyam (ruku') is announced
             // only once the recitation finishes.
             const afterQiyam = nextSeq?.[s.stepIndex + 1];
-            audioService.reciteQiyam(s.rakaIndex, langRef.current, afterQiyam?.pose ?? null);
+            audioService.reciteQiyam(
+              s.rakaIndex,
+              langRef.current,
+              afterQiyam?.pose ?? null,
+              reciterRef.current?.server ?? null,
+            );
           } else if (upcoming.pose !== POSE.RUKU) {
             // "The next move is" + the movement name, spoken in the active
             // language. Ruku' is skipped here: reciteQiyam announces it when the

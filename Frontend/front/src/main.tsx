@@ -7,6 +7,7 @@ import { LanguageProvider } from './shared/i18n/LanguageProvider';
 import { ThemeProvider } from './shared/theme/ThemeProvider';
 import { RadiusProvider } from './shared/theme/RadiusProvider';
 import { PatternProvider } from './shared/theme/PatternProvider';
+import { ReciterProvider } from './shared/reciter/ReciterProvider';
 import './index.css';
 import './theme-switcher.css';
 import { router } from './router.tsx';
@@ -16,6 +17,7 @@ createRoot(document.getElementById('root')!).render(
     <ThemeProvider>
       <RadiusProvider>
       <PatternProvider>
+      <ReciterProvider>
       <LanguageProvider>
         <AuthProvider>
           <NotificationsProvider>
@@ -23,6 +25,7 @@ createRoot(document.getElementById('root')!).render(
           </NotificationsProvider>
         </AuthProvider>
       </LanguageProvider>
+      </ReciterProvider>
       </PatternProvider>
       </RadiusProvider>
     </ThemeProvider>
