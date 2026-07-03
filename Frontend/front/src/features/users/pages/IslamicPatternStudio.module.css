@@ -160,53 +160,54 @@
   cursor: pointer;
 }
 
-/* ── Seed ── */
-.seedRow {
+/* ── Border checkbox ── */
+.checkboxRow {
   display: flex;
-  gap: 8px;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 2px;
+  cursor: pointer;
 }
 
-.seedInput {
-  flex: 1;
-  padding: 9px 14px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
+.checkbox {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  border: 2px solid var(--border);
   background: var(--surface-light);
-  color: var(--text);
-  font: inherit;
-  font-size: 0.88rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  outline: none;
-  transition: border-color 0.15s;
-}
-
-.seedInput:focus {
-  border-color: var(--accent-dark);
-}
-
-.shuffleBtn {
-  width: 40px;
-  flex-shrink: 0;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-  background: var(--surface-light);
-  color: var(--accent);
-  font-size: 1.1rem;
   cursor: pointer;
   transition: border-color 0.15s, background 0.15s;
+  flex-shrink: 0;
+  position: relative;
 }
 
-.shuffleBtn:hover {
-  border-color: var(--accent-dark);
-  background: var(--accent-glow);
+.checkbox:hover {
+  border-color: var(--border-hover);
 }
 
-.seedHint {
-  margin: 4px 0 0;
-  font-size: 0.72rem;
+.checkbox:checked {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+.checkbox:checked::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 0px;
+  width: 4px;
+  height: 8px;
+  border: solid #17140d;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.checkboxLabel {
+  font-size: 0.78rem;
   color: var(--muted);
-  opacity: 0.75;
+  font-weight: 600;
 }
 
 /* ── Actions ── */
@@ -214,6 +215,26 @@
   display: flex;
   gap: 10px;
   margin-top: 1.25rem;
+}
+
+.resetBtn {
+  flex: 1;
+  padding: 11px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface-light);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.03em;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.resetBtn:hover {
+  border-color: var(--border-hover);
+  background: var(--surface-hover);
 }
 
 .exportBtn {

@@ -7,8 +7,8 @@ import {
   MATERIALS,
   MATERIAL_DEFS,
   GEOMETRIES,
+  DEFAULT_PATTERN_PARAMS,
   paintPatternCanvas,
-  randomSeed,
 } from '../../../shared/theme/islamicPattern';
 import css from './IslamicPatternStudio.module.css';
 
@@ -38,13 +38,13 @@ export default function IslamicPatternStudio() {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const link = document.createElement('a');
-    link.download = `islamic-pattern-${params.seed}.png`;
+    link.download = 'islamic-pattern.png';
     link.href = canvas.toDataURL('image/png');
     link.click();
   }
 
-  function handleShuffleSeed() {
-    set('seed', randomSeed());
+  function handleReset() {
+    applyParams(DEFAULT_PATTERN_PARAMS);
   }
 
   return (
@@ -81,29 +81,30 @@ export default function IslamicPatternStudio() {
       <SliderRow label={t('pattern.complexity')} value={params.complexity} onChange={(v) => set('complexity', v)} />
       <SliderRow label={t('pattern.density')} value={params.density} onChange={(v) => set('density', v)} />
       <SliderRow label={t('pattern.spacing')} value={params.spacing} onChange={(v) => set('spacing', v)} />
-      <SliderRow label={t('pattern.ornament')} value={params.ornament} onChange={(v) => set('ornament', v)} />
+      <SliderRow
+        label={t('pattern.rotation')}
+        value={params.rotation}
+        max={90}
+        onChange={(v) => set('rotation', v)}
+      />
 
       <h4 className={css.sectionTitle}>{t('pattern.stonework')}</h4>
       <SliderRow label={t('pattern.lineWeight')} value={params.lineWeight} onChange={(v) => set('lineWeight', v)} />
       <SliderRow label={t('pattern.opacity')} value={params.opacity} onChange={(v) => set('opacity', v)} />
-      <SliderRow label={t('pattern.border')} value={params.border} onChange={(v) => set('border', v)} />
-
-      <h4 className={css.sectionTitle}>{t('pattern.seed')}</h4>
-      <div className={css.seedRow}>
+      <label className={css.checkboxRow}>
         <input
-          type="text"
-          className={css.seedInput}
-          value={params.seed}
-          maxLength={16}
-          onChange={(e) => set('seed', e.target.value.toUpperCase())}
+          type="checkbox"
+          className={css.checkbox}
+          checked={params.border}
+          onChange={(e) => set('border', e.target.checked)}
         />
-        <button type="button" className={css.shuffleBtn} onClick={handleShuffleSeed} title={t('pattern.shuffle')}>
-          ⟳
-        </button>
-      </div>
-      <p className={css.seedHint}>{t('pattern.seedHint')}</p>
+        <span className={css.checkboxLabel}>{t('pattern.border')}</span>
+      </label>
 
       <div className={css.actions}>
+        <button type="button" className={css.resetBtn} onClick={handleReset}>
+          {t('pattern.reset')}
+        </button>
         <button type="button" className={css.exportBtn} onClick={handleExport}>
           {t('pattern.exportPng')}
         </button>
@@ -129,14 +130,24 @@ function MaterialRow({ id, active, label, onClick }: { id: MaterialId; active: b
   );
 }
 
-function SliderRow({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
+function SliderRow({
+  label,
+  value,
+  onChange,
+  max = 100,
+}: {
+  label: string;
+  value: number;
+  onChange: (v: number) => void;
+  max?: number;
+}) {
   return (
     <div className={css.sliderRow}>
       <span className={css.sliderLabel}>{label}</span>
       <input
         type="range"
         min={0}
-        max={100}
+        max={max}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
         className={css.slider}
