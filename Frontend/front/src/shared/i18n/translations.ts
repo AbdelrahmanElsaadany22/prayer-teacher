@@ -454,7 +454,7 @@ export const translations: Record<Lang, Dict> = {
     'pattern.lineWeight': 'سُمك الخط',
     'pattern.opacity': 'الشفافية',
     'pattern.border': 'الإطار',
-    'pattern.seed': 'البذرة',
+    'pattern.seed': 'الseed',
     'pattern.shuffle': 'بذرة عشوائية',
     'pattern.seedHint': 'كل تصميم قابل لإعادة الإنتاج بالكامل من بذرته.',
     'pattern.exportPng': 'تصدير PNG',
