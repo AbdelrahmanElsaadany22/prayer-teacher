@@ -5,7 +5,7 @@ import type {
 } from '../types/prayer.types';
 import { PRAYERS, POSE, buildRakaSequence } from '../constants/prayerConfig';
 import { getPoseLabel } from '../constants/poses';
-import { audioService } from '../services/audioService';
+import { audioService, type DhikrKey, type NextMove } from '../services/audioService';
 import { buildReportData } from '../services/prayerService';
 import { useVideoStream } from './useVideoStream';
 import { usePrayerRecorder } from './usePrayerRecorder';
@@ -13,6 +13,22 @@ import { usePoseDetection } from './usePoseDetection';
 import { api } from '../../../shared/api/axios';
 import { useI18n } from '../../../shared/i18n/LanguageProvider';
 import { useReciter } from '../../../shared/reciter/ReciterProvider';
+
+/**
+ * Dhikr recited while holding a posture, played the moment the pose is reached.
+ * Poses without a spoken dhikr (qiyam, i'tidal) return null and keep the beep.
+ * The last tashahhud (final rak'ah) is followed by the tasleem.
+ */
+function dhikrForPose(pose: PoseType, isLastRaka: boolean): DhikrKey[] | null {
+  switch (pose) {
+    case POSE.RUKU: return ['ruku'];
+    case POSE.SUJOOD: return ['sujood'];
+    case POSE.JULOOS: return ['juloos'];
+    case POSE.TASHAHHUD:
+      return isLastRaka ? ['tashahhud_akheer', 'tasleem'] : ['tashahhud_awsat'];
+    default: return null;
+  }
+}
 
 export interface SessionUIState {
   poseBadgeText: string;
@@ -89,9 +105,11 @@ export function usePrayerSession() {
 
   // ─── Callbacks (kept stable but always read fresh sess.current) ───────────
 
-  const endPrayer = useCallback(async (): Promise<void> => {
+  const endPrayer = useCallback(async (opts?: { stopAudio?: boolean }): Promise<void> => {
     stopLoop();
-    audioService.stopRecitation(); // silence any Qur'an still playing
+    // Ending early (the "End" button) silences everything; a natural finish
+    // leaves the cue channel alone so the closing tasleem is still heard.
+    if (opts?.stopAudio) audioService.stopCues();
     const videoBlob = await stopRecording();
     stopCamera();
 
@@ -173,11 +191,8 @@ export function usePrayerSession() {
   const onNewStablePose = useCallback(
     (pose: PoseType): void => {
       const s = sess.current;
-      if (s.rakaIndex >= (s.selectedPrayer?.rakas ?? 0)) return;
-
-      // Bowing into ruku' means the learner has left qiyam — stop the recitation
-      // rather than letting it bleed into the rest of the rak'ah.
-      if (pose === POSE.RUKU) audioService.stopRecitation();
+      const rakas = s.selectedPrayer?.rakas ?? 0;
+      if (s.rakaIndex >= rakas) return;
 
       const seq = s.rakaSequences[s.rakaIndex];
       const step = seq?.[s.stepIndex];
@@ -190,44 +205,61 @@ export function usePrayerSession() {
 
       if (effective === step.pose) {
         // ── Correct pose ──────────────────────────────────────────────────────
-        // Takbeerat al-ihram is the trigger that actually starts evaluation
-        if (step.pose === POSE.TAKBEER) s.prayerStarted = true;
-        audioService.playSuccessBeep();
+        // Capture what was just performed *before* advancing, so the dhikr (and
+        // middle-vs-last tashahhud) reflect the movement that actually happened.
+        const performedPose = step.pose;
+        const isLastRaka = s.rakaIndex === rakas - 1;
+        const dhikr = dhikrForPose(performedPose, isLastRaka) ?? undefined;
+
+        // Takbeerat al-ihram is the trigger that actually starts evaluation.
+        if (performedPose === POSE.TAKBEER) s.prayerStarted = true;
+
         s.stepIndex++;
 
         if (s.stepIndex >= seq.length) {
           s.rakaIndex++;
           s.stepIndex = 0;
 
-          if (s.rakaIndex >= (s.selectedPrayer?.rakas ?? 0)) {
+          if (s.rakaIndex >= rakas) {
+            // Final movement: voice its dhikr (last tashahhud → tasleem), then
+            // wrap up. endPrayer() here leaves the cue channel alone so the
+            // tasleem keeps playing as the report opens.
+            audioService.playFlow({ lang: langRef.current, dhikr });
             setTimeout(() => endPrayer(), 800);
             return;
           }
         }
 
         const nextSeq = s.rakaSequences[s.rakaIndex];
-
-        // Voice guidance: announce the movement now due (skip takbeer —
-        // the user initiates takbeerat al-ihram themselves, it's the trigger)
         const upcoming = nextSeq?.[s.stepIndex];
-        if (upcoming && upcoming.pose !== POSE.TAKBEER) {
-          if (upcoming.pose === POSE.QIYAM) {
-            // Qiyam isn't announced by name (it would clash with the reciter) —
-            // play the recitation; the move after qiyam (ruku') is announced
-            // only once the recitation finishes.
-            const afterQiyam = nextSeq?.[s.stepIndex + 1];
-            audioService.reciteQiyam(
-              s.rakaIndex,
-              langRef.current,
-              afterQiyam?.pose ?? null,
-              reciterRef.current?.server ?? null,
-            );
-          } else if (upcoming.pose !== POSE.RUKU) {
-            // "The next move is" + the movement name, spoken in the active
-            // language. Ruku' is skipped here: reciteQiyam announces it when the
-            // recitation ends so the guide never talks over the reciter.
-            audioService.speakCue(upcoming.pose, langRef.current);
+
+        // Qiyam is never voiced here: the recitation queued when the previous
+        // movement finished is still playing and announces ruku' when it ends,
+        // so re-triggering audio would only cut the reciter off.
+        if (performedPose !== POSE.QIYAM) {
+          let next: NextMove | undefined;
+          if (upcoming && upcoming.pose !== POSE.TAKBEER) {
+            if (upcoming.pose === POSE.QIYAM) {
+              // Qiyam isn't announced by name — play the recitation (in the
+              // chosen reciter's voice), then the move after it (ruku') once the
+              // recitation finishes.
+              const afterQiyam = nextSeq?.[s.stepIndex + 1];
+              next = {
+                kind: 'recite',
+                rakaIndex: s.rakaIndex,
+                thenPose: afterQiyam?.pose ?? null,
+                reciterServer: reciterRef.current?.server ?? null,
+              };
+            } else {
+              next = { kind: 'announce', pose: upcoming.pose };
+            }
           }
+          audioService.playFlow({
+            lang: langRef.current,
+            opening: performedPose === POSE.TAKBEER,
+            dhikr,
+            next,
+          });
         }
 
         setUiState((prev) => ({

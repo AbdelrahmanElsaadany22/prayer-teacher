@@ -1,14 +1,44 @@
 import type { Lang } from '../../../shared/i18n/translations';
+import takbeerAudioUrl from '../../../assets/alluah-akbar.mp3';
+import samiAllahAudioUrl from '../../../assets/sm3-alluh.mp3';
+import rukuDhikrUrl from '../../../assets/sobhan-elazim.mp3';
+import sujoodDhikrUrl from '../../../assets/sobhan-el23la.mp3';
+import juloosDhikrUrl from '../../../assets/rb-eغfrly.mp3';
+import tashahhudAwsatUrl from '../../../assets/eltshahd-2l2wst.mp3';
+import tashahhudAkheerUrl from '../../../assets/eltshadhd-el2kher.mp3';
+import tasleemUrl from '../../../assets/taslem.mp3';
+
+/** Dhikr clips recited while holding a posture. */
+export type DhikrKey =
+  | 'ruku'
+  | 'sujood'
+  | 'juloos'
+  | 'tashahhud_awsat'
+  | 'tashahhud_akheer'
+  | 'tasleem';
+
+/** What to voice for the movement that follows the one just completed. */
+export type NextMove =
+  | { kind: 'announce'; pose: string }
+  | { kind: 'recite'; rakaIndex: number; thenPose: string | null; reciterServer: string | null };
+
+/** One completed movement's audio: what was just done, then what comes next. */
+export interface CueFlow {
+  lang: Lang;
+  /** True for takbeerat al-ihram — plays the opening takbir. */
+  opening?: boolean;
+  /** Dhikr of the posture that was just reached. */
+  dhikr?: DhikrKey[];
+  /** Guidance for the movement now due. */
+  next?: NextMove;
+}
+
+/** A queued cue is either a clip to play or a silent gap. */
+type CueSegment = { url: string } | { pauseMs: number };
 
 class AudioManager {
   private ctx: AudioContext | null = null;
   private currentSource: AudioBufferSourceNode | null = null;
-  /**
-   * Qur'an recitation plays on its own channel so the short movement cues
-   * (e.g. announcing "ruku'") never interrupt it — it continues until the next
-   * rak'ah's recitation begins or the session ends.
-   */
-  private recitationSource: AudioBufferSourceNode | null = null;
   private bufferCache = new Map<string, AudioBuffer>();
 
   /**
@@ -16,6 +46,13 @@ class AudioManager {
    * repeats the same short surah. Reset per prayer via {@link resetRecitation}.
    */
   private lastSurah: number | null = null;
+
+  /**
+   * Bumped every time a new sequence starts (or the cues are stopped). The
+   * running sequence checks it between steps and bails the moment it's
+   * superseded, so a new flow always cancels whatever was still playing/queued.
+   */
+  private queueRunId = 0;
 
   /**
    * Recitation is streamed through our own backend proxy (`/recitation/:surah`)
@@ -29,6 +66,26 @@ class AudioManager {
 
   /** Playback speed for voice cues (1 = natural; the clips are already male). */
   private readonly CUE_RATE = 1.0;
+
+  /** Silence inserted between the spoken parts so they never run into each other. */
+  private readonly GAP_MS = 2000;
+
+  /**
+   * The takbir ("Allahu akbar") that accompanies every change of posture, and
+   * the "Sami' Allahu liman hamidah" said when rising from ruku' (iqama/i'tidal).
+   */
+  private readonly TAKBEER_URL = takbeerAudioUrl;
+  private readonly SAMI_ALLAH_URL = samiAllahAudioUrl;
+
+  /** Dhikr recited while holding each posture (keyed by {@link DhikrKey}). */
+  private readonly DHIKR: Record<DhikrKey, string> = {
+    ruku: rukuDhikrUrl,
+    sujood: sujoodDhikrUrl,
+    juloos: juloosDhikrUrl,
+    tashahhud_awsat: tashahhudAwsatUrl,
+    tashahhud_akheer: tashahhudAkheerUrl,
+    tasleem: tasleemUrl,
+  };
 
   private getCtx(): AudioContext {
     if (!this.ctx) {
@@ -68,6 +125,119 @@ class AudioManager {
     setTimeout(() => this.playBeep(880, 'sine', 0.15, 0.2), 150);
   }
 
+  /**
+   * Voices one completed movement then the guidance for the next, as a single
+   * gap-separated sequence on one channel — so the dhikr, the "next movement is"
+   * lead-in, the movement name and the takbir never overlap. Starting a new
+   * flow cancels whatever was still playing.
+   *
+   * Order: [opening takbir | dhikr just performed] → "next movement is" → name
+   * → the takbir (or "Sami' Allah" when rising from ruku'). When the next move
+   * is qiyam the recitation is played instead of a name, and the movement after
+   * it (ruku') is announced once the recitation ends.
+   */
+  playFlow(flow: CueFlow): void {
+    void this.runQueue(this.buildFlow(flow));
+  }
+
+  /** Stops any cue or recitation currently playing or still queued. */
+  stopCues(): void {
+    this.queueRunId++;
+    this.stopCurrent();
+  }
+
+  /** Clears surah history and silences audio between prayers. */
+  resetRecitation(): void {
+    this.lastSurah = null;
+    this.stopCues();
+  }
+
+  // ─── Sequence building ──────────────────────────────────────────────────────
+
+  /**
+   * Turns a flow into a flat list of clips separated by {@link GAP_MS} pauses.
+   * Clips inside a group (e.g. Fatiha + surah) play back-to-back; the gap only
+   * sits between groups so the recitation itself isn't chopped up.
+   */
+  private buildFlow(flow: CueFlow): CueSegment[] {
+    const groups: string[][] = [];
+
+    if (flow.opening) groups.push([this.TAKBEER_URL]);
+    for (const key of flow.dhikr ?? []) groups.push([this.DHIKR[key]]);
+
+    if (flow.next?.kind === 'announce') {
+      groups.push(...this.announceGroups(flow.next.pose, flow.lang));
+    } else if (flow.next?.kind === 'recite') {
+      groups.push(this.recitationUrls(flow.next.rakaIndex, flow.next.reciterServer));
+      if (flow.next.thenPose) {
+        groups.push(...this.announceGroups(flow.next.thenPose, flow.lang));
+      }
+    }
+
+    const segments: CueSegment[] = [];
+    for (const group of groups) {
+      if (group.length === 0) continue;
+      if (segments.length > 0) segments.push({ pauseMs: this.GAP_MS });
+      for (const url of group) segments.push({ url });
+    }
+    return segments;
+  }
+
+  /** The "next movement is" lead-in, the movement name, then its takbir/sami. */
+  private announceGroups(pose: string, lang: Lang): string[][] {
+    const prefixUrl = lang === 'ar' ? '/audio/prefix_ar.mp3' : '/audio/prefix.mp3';
+    const transitionUrl = pose === 'iqama' ? this.SAMI_ALLAH_URL : this.TAKBEER_URL;
+    return [[prefixUrl], [`/audio/${pose}.mp3`], [transitionUrl]];
+  }
+
+  /**
+   * Al-Fatiha (every rak'ah) plus, for the first two rak'ahs, a random short
+   * surah (86–114) that never repeats the one the previous rak'ah used.
+   */
+  private recitationUrls(rakaIndex: number, reciterServer: string | null): string[] {
+    const urls = [this.surahUrl(this.FATIHA, reciterServer)];
+    if (rakaIndex < 2) {
+      const span = this.SURAH_MAX - this.SURAH_MIN + 1;
+      let surah: number;
+      do {
+        surah = this.SURAH_MIN + Math.floor(Math.random() * span);
+      } while (surah === this.lastSurah);
+      this.lastSurah = surah;
+      urls.push(this.surahUrl(surah, reciterServer));
+    }
+    return urls;
+  }
+
+  // ─── Playback engine ────────────────────────────────────────────────────────
+
+  /** Plays segments strictly one-after-another; bails if a newer flow starts. */
+  private async runQueue(segments: CueSegment[]): Promise<void> {
+    this.stopCurrent();
+    const runId = ++this.queueRunId;
+    try {
+      const ctx = this.getCtx();
+      if (ctx.state === 'suspended') await ctx.resume();
+
+      for (const seg of segments) {
+        if (runId !== this.queueRunId) return; // superseded by a newer flow
+        if ('pauseMs' in seg) {
+          await this.delay(seg.pauseMs);
+          continue;
+        }
+        // A missing clip (e.g. recitation server down) is skipped, not fatal.
+        const buffer = await this.loadBuffer(seg.url).catch(() => null);
+        if (runId !== this.queueRunId) return;
+        if (buffer) await this.playBuffer(buffer);
+      }
+    } catch {
+      /* ignore playback failures */
+    }
+  }
+
+  private delay(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
   /** Fetches + decodes an MP3 into an AudioBuffer (cached after first load). */
   private async loadBuffer(url: string): Promise<AudioBuffer> {
     const cached = this.bufferCache.get(url);
@@ -94,139 +264,16 @@ class AudioManager {
     });
   }
 
-  /**
-   * Speaks the "next move is" lead-in followed by the movement name, using the
-   * pre-generated (male) MP3 clips bundled under /audio.
-   *
-   * The lead-in is language-aware: English uses `prefix.mp3`, Arabic uses
-   * `prefix_ar.mp3`. The movement-name clips (Arabic pronunciation) are shared
-   * by both languages. If a prefix clip is missing the name still plays, so
-   * there is always audio guidance.
-   *
-   * @param pose one of: ruku | iqama | sujood | juloos | tashahhud
-   * @param lang the active UI language
-   */
-  speakCue(pose: string, lang: Lang = 'en'): void {
-    if (typeof window === 'undefined') return;
-
-    // Stop any cue still playing so they don't overlap. Recitation lives on its
-    // own channel and is left alone here.
-    this.stopCurrent();
-
-    const prefixUrl = lang === 'ar' ? '/audio/prefix_ar.mp3' : '/audio/prefix.mp3';
-
-    void (async () => {
-      try {
-        const ctx = this.getCtx();
-        if (ctx.state === 'suspended') await ctx.resume();
-
-        // The movement name is required; the prefix is optional (so a missing
-        // localized prefix never silences the cue entirely).
-        const namePromise = this.loadBuffer(`/audio/${pose}.mp3`);
-        const prefix = await this.loadBuffer(prefixUrl).catch(() => null);
-        const name = await namePromise;
-
-        if (prefix) await this.playBuffer(prefix);
-        await this.playBuffer(name);
-      } catch {
-        /* ignore playback failures */
-      }
-    })();
-  }
-
-  /**
-   * Starts the qiyam recitation (Fatiha + optional surah) for the given rak'ah.
-   * Unlike the movement cues, qiyam is *not* announced by name — the spoken cue
-   * would clash with the reciter — so the learner just hears the recitation
-   * while standing. The qiyam pose itself is still scored on detection.
-   *
-   * Once the recitation finishes on its own, the next movement (`nextCue`, e.g.
-   * ruku') is announced so the guide never talks over the reciter. If the
-   * learner bows early, stopRecitation() leaves the recitation pending and the
-   * follow-up cue is never spoken (the move already happened).
-   */
-  reciteQiyam(
-    rakaIndex: number,
-    lang: Lang = 'en',
-    nextCue: string | null = null,
-    reciterServer: string | null = null,
-  ): void {
-    if (typeof window === 'undefined') return;
-    void (async () => {
-      try {
-        const ctx = this.getCtx();
-        if (ctx.state === 'suspended') await ctx.resume();
-        await this.playRecitation(rakaIndex, reciterServer);
-        if (nextCue) this.speakCue(nextCue, lang);
-      } catch {
-        /* ignore playback failures */
-      }
-    })();
-  }
-
-  /** Resets surah history and stops any recitation from a previous prayer. */
-  resetRecitation(): void {
-    this.lastSurah = null;
-    this.stopRecitation();
-  }
-
-  /** Stops the recitation channel (e.g. when the session ends). */
-  stopRecitation(): void {
-    if (this.recitationSource) {
-      try {
-        this.recitationSource.onended = null;
-        this.recitationSource.stop();
-      } catch {
-        /* already stopped */
-      }
-      this.recitationSource = null;
-    }
-  }
-
-
   private stopCurrent(): void {
     if (this.currentSource) {
       try {
+        // Leave onended attached so the awaiting sequence resolves and bails on
+        // its stale run id, instead of hanging on a promise that never settles.
         this.currentSource.stop();
       } catch {
         /* already stopped */
       }
       this.currentSource = null;
-    }
-  }
-
-  /** Plays a recitation clip on the dedicated channel; resolves when it ends. */
-  private playRecitationBuffer(buffer: AudioBuffer): Promise<void> {
-    const ctx = this.getCtx();
-    return new Promise((resolve) => {
-      const src = ctx.createBufferSource();
-      src.buffer = buffer;
-      src.connect(ctx.destination);
-      src.onended = () => resolve();
-      this.recitationSource = src;
-      src.start();
-    });
-  }
-
-  /**
-   * Recites Al-Fatiha (every rak'ah) and, for the first two rak'ahs, a random
-   * short surah (86–114) afterwards. The second rak'ah never repeats the surah
-   * the first one used. Runs on its own channel so movement cues don't cut it.
-   */
-  private async playRecitation(rakaIndex: number, reciterServer: string | null): Promise<void> {
-    this.stopRecitation(); // replace any recitation still playing
-    const fatiha = await this.loadBuffer(this.surahUrl(this.FATIHA, reciterServer));
-    await this.playRecitationBuffer(fatiha);
-
-    if (rakaIndex < 2) {
-      const span = this.SURAH_MAX - this.SURAH_MIN + 1;
-      let surah: number;
-      do {
-        surah = this.SURAH_MIN + Math.floor(Math.random() * span);
-      } while (surah === this.lastSurah);
-      this.lastSurah = surah;
-      const buffer = await this.loadBuffer(this.surahUrl(surah, reciterServer));
-      await this.playRecitationBuffer(buffer);
     }
   }
 
