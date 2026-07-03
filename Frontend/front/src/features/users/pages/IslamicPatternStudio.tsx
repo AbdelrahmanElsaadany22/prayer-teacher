@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useI18n } from '../../../shared/i18n/LanguageProvider';
 import { useBgPattern } from '../../../shared/theme/PatternProvider';
 import {
@@ -20,10 +20,13 @@ export default function IslamicPatternStudio() {
   const { params, applyParams } = useBgPattern();
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Every change applies immediately — both the studio preview and the
-  // site-wide background stay in lockstep with the sliders in real time.
+  // Sliders only edit this local draft — the studio preview follows it live,
+  // but the site-wide background doesn't change until "Apply" commits it
+  // (with a reveal animation).
+  const [draft, setDraft] = useState<PatternParams>(params);
+
   function set<K extends keyof PatternParams>(key: K, value: PatternParams[K]) {
-    applyParams({ ...params, [key]: value });
+    setDraft((d) => ({ ...d, [key]: value }));
   }
 
   useEffect(() => {
@@ -31,8 +34,8 @@ export default function IslamicPatternStudio() {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    paintPatternCanvas(ctx, params, PREVIEW_W, PREVIEW_H);
-  }, [params]);
+    paintPatternCanvas(ctx, draft, PREVIEW_W, PREVIEW_H);
+  }, [draft]);
 
   function handleExport() {
     const canvas = canvasRef.current;
@@ -43,7 +46,12 @@ export default function IslamicPatternStudio() {
     link.click();
   }
 
+  function handleApply() {
+    applyParams(draft);
+  }
+
   function handleReset() {
+    setDraft(DEFAULT_PATTERN_PARAMS);
     applyParams(DEFAULT_PATTERN_PARAMS);
   }
 
@@ -57,7 +65,7 @@ export default function IslamicPatternStudio() {
           <MaterialRow
             key={id}
             id={id}
-            active={params.material === id}
+            active={draft.material === id}
             label={t(`pattern.material.${id}`)}
             onClick={() => set('material', id)}
           />
@@ -70,7 +78,7 @@ export default function IslamicPatternStudio() {
           <button
             key={n}
             type="button"
-            className={`${css.segOpt}${params.geometry === n ? ` ${css.segOptActive}` : ''}`}
+            className={`${css.segOpt}${draft.geometry === n ? ` ${css.segOptActive}` : ''}`}
             onClick={() => set('geometry', n)}
           >
             {n}
@@ -78,24 +86,24 @@ export default function IslamicPatternStudio() {
         ))}
       </div>
 
-      <SliderRow label={t('pattern.complexity')} value={params.complexity} onChange={(v) => set('complexity', v)} />
-      <SliderRow label={t('pattern.density')} value={params.density} onChange={(v) => set('density', v)} />
-      <SliderRow label={t('pattern.spacing')} value={params.spacing} onChange={(v) => set('spacing', v)} />
+      <SliderRow label={t('pattern.complexity')} value={draft.complexity} onChange={(v) => set('complexity', v)} />
+      <SliderRow label={t('pattern.density')} value={draft.density} onChange={(v) => set('density', v)} />
+      <SliderRow label={t('pattern.spacing')} value={draft.spacing} onChange={(v) => set('spacing', v)} />
       <SliderRow
         label={t('pattern.rotation')}
-        value={params.rotation}
+        value={draft.rotation}
         max={90}
         onChange={(v) => set('rotation', v)}
       />
 
       <h4 className={css.sectionTitle}>{t('pattern.stonework')}</h4>
-      <SliderRow label={t('pattern.lineWeight')} value={params.lineWeight} onChange={(v) => set('lineWeight', v)} />
-      <SliderRow label={t('pattern.opacity')} value={params.opacity} onChange={(v) => set('opacity', v)} />
+      <SliderRow label={t('pattern.lineWeight')} value={draft.lineWeight} onChange={(v) => set('lineWeight', v)} />
+      <SliderRow label={t('pattern.opacity')} value={draft.opacity} onChange={(v) => set('opacity', v)} />
       <label className={css.checkboxRow}>
         <input
           type="checkbox"
           className={css.checkbox}
-          checked={params.border}
+          checked={draft.border}
           onChange={(e) => set('border', e.target.checked)}
         />
         <span className={css.checkboxLabel}>{t('pattern.border')}</span>
@@ -105,8 +113,11 @@ export default function IslamicPatternStudio() {
         <button type="button" className={css.resetBtn} onClick={handleReset}>
           {t('pattern.reset')}
         </button>
-        <button type="button" className={css.exportBtn} onClick={handleExport}>
+        <button type="button" className={css.resetBtn} onClick={handleExport}>
           {t('pattern.exportPng')}
+        </button>
+        <button type="button" className={css.applyBtn} onClick={handleApply}>
+          {t('pattern.apply')}
         </button>
       </div>
     </div>
