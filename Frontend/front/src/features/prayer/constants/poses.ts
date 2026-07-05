@@ -10,6 +10,8 @@ export const POSE_LABELS: Record<PoseType, string> = {
   iqama: "I'tidal",
   juloos: 'Juloos',
   tashahhud: 'Tashahhud',
+  salam_right: 'Tasleem (right)',
+  salam_left: 'Tasleem (left)',
 };
 
 export const POSE_LABELS_AR: Record<PoseType, string> = {
@@ -21,6 +23,8 @@ export const POSE_LABELS_AR: Record<PoseType, string> = {
   iqama: 'الاعتدال',
   juloos: 'الجلسة',
   tashahhud: 'التشهد',
+  salam_right: 'التسليم يمينًا',
+  salam_left: 'التسليم يسارًا',
 };
 
 export function getPoseLabel(pose: PoseType, lang: Lang = 'en'): string {

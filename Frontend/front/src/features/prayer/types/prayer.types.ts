@@ -6,7 +6,9 @@ export type PoseType =
   | 'sujood'
   | 'iqama'
   | 'juloos'
-  | 'tashahhud';
+  | 'tashahhud'
+  | 'salam_right'
+  | 'salam_left';
 
 export interface Prayer {
   id: string;

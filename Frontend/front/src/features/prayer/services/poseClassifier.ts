@@ -67,6 +67,11 @@ function detect(lm: Extracted): PoseType {
   const g = geometry(lm, vis);
 
   if (g.isSujood) return 'sujood';
+  // Tasleem: a clear head turn while seated. Checked before juloos (also seated)
+  // but only fires past the yaw threshold, so a forward-facing tashahhud/juloos
+  // still reads as 'juloos'.
+  if (g.salamRight) return 'salam_right';
+  if (g.salamLeft) return 'salam_left';
   if (g.sittingOnGround) return 'juloos';
   if ((g.isBowed || g.wristOnKnee) && !g.isUpright) return 'ruku';
   if (g.isUpright && g.wristsNearEars) return 'takbeer';
@@ -113,5 +118,24 @@ function geometry(lm: Extracted, vis: (pts: Lm[]) => boolean) {
     lm.nose.y > hipMidY - scale * 0.3 &&
     lm.nose.y > 0.55;
 
-  return { isUpright, isBowed, armsRaised, wristsNearEars, wristOnKnee, sittingOnGround, isSujood };
+  // Head yaw for the tasleem, measured with anatomical landmarks so it's
+  // independent of how the video is mirrored on screen: where the nose sits
+  // between the two shoulders. 0.5 = facing forward; < 0.5 = turned toward the
+  // learner's own right; > 0.5 = toward their left.
+  // NOTE: if right/left come out reversed on a real camera, flip TURN_SIGN.
+  const TURN_SIGN = 1;
+  const TURN_THRESHOLD = 0.15;
+  const shoulderSpanX = lm.lShoulder.x - lm.rShoulder.x;
+  const headYaw =
+    vis([lm.nose, lm.lShoulder, lm.rShoulder]) && Math.abs(shoulderSpanX) > 0.02
+      ? (lm.nose.x - lm.rShoulder.x) / shoulderSpanX
+      : 0.5;
+  const yawOffset = TURN_SIGN * (headYaw - 0.5);
+  const salamRight = sittingOnGround && yawOffset < -TURN_THRESHOLD;
+  const salamLeft = sittingOnGround && yawOffset > TURN_THRESHOLD;
+
+  return {
+    isUpright, isBowed, armsRaised, wristsNearEars, wristOnKnee,
+    sittingOnGround, isSujood, salamRight, salamLeft,
+  };
 }

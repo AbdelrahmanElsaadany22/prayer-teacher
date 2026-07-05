@@ -17,6 +17,8 @@ export const POSE: Record<string, PoseType> = {
   IQAMA: 'iqama',
   JULOOS: 'juloos',
   TASHAHHUD: 'tashahhud',
+  SALAM_RIGHT: 'salam_right',
+  SALAM_LEFT: 'salam_left',
 };
 
 export const LANDMARKS = {
@@ -81,6 +83,14 @@ export function buildRakaSequence(rakaIndex: number, totalRakas: number): PoseSt
 
   if (endsWithTashahhud) {
     seq.push({ pose: 'tashahhud', label: 'Tashahhud', labelAr: 'التشهد' });
+
+    // The final rak'ah closes with the tasleem: salam to the right, then left.
+    // Ordering matters, so they are two scored steps — turning left first is a
+    // mistake, caught the same way any out-of-order pose is.
+    if (isLast) {
+      seq.push({ pose: 'salam_right', label: 'Tasleem (right)', labelAr: 'التسليم يمينًا' });
+      seq.push({ pose: 'salam_left', label: 'Tasleem (left)', labelAr: 'التسليم يسارًا' });
+    }
   }
 
   return seq;

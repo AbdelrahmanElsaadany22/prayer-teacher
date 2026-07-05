@@ -7,7 +7,15 @@ import juloosDhikrUrl from '../../../assets/rb-eغfrly.mp3';
 import tashahhudAwsatUrl from '../../../assets/eltshahd-2l2wst.mp3';
 import tashahhudAkheerUrl from '../../../assets/eltshadhd-el2kher.mp3';
 import tasleemUrl from '../../../assets/taslem.mp3';
-import nextMovePrefixArUrl from '../../../assets/2lhrka-2lkadima.mp3';
+// Arabic "الحركة القادمة حركة …" announcements — one recorded clip per movement.
+import announceQiyamUrl from '../../../assets/hrkt-2lkyam-ar.mp3';
+import announceRukuUrl from '../../../assets/hrktelrkou3-ar.mp3';
+import announceIqamaUrl from '../../../assets/hrkt-2l23tdal.mp3';
+import announceSujoodUrl from '../../../assets/hrkt-2lsjoud.mp3';
+import announceJuloosUrl from '../../../assets/hrkt-glous-sagditen.mp3';
+import announceTashahhudAwsatUrl from '../../../assets/hrkt-2ltsh-2lawast.mp3';
+import announceTashahhudAkheerUrl from '../../../assets/hrkt-2ltsh-2lakheer.mp3';
+import announceTasleemUrl from '../../../assets/2ltasleem.mp3';
 
 /** Dhikr clips recited while holding a posture. */
 export type DhikrKey =
@@ -43,9 +51,6 @@ export interface CueFlow {
   onDone?: () => void;
 }
 
-/** A queued cue is a clip to play (recitation flagged) or a silent gap. */
-type CueSegment = { url: string; recitation?: boolean } | { pauseMs: number };
-
 class AudioManager {
   private ctx: AudioContext | null = null;
   private currentSource: AudioBufferSourceNode | null = null;
@@ -64,8 +69,8 @@ class AudioManager {
    */
   private queueRunId = 0;
 
-  /** True only while a qiyam recitation clip is actually sounding. */
-  private reciting = false;
+  /** True while the current posture's content (its dhikr or recitation) is sounding. */
+  private holding = false;
 
   /**
    * Recitation is streamed through our own backend proxy (`/recitation/:surah`)
@@ -98,6 +103,22 @@ class AudioManager {
     tashahhud_awsat: tashahhudAwsatUrl,
     tashahhud_akheer: tashahhudAkheerUrl,
     tasleem: tasleemUrl,
+  };
+
+  /**
+   * Arabic movement announcements: one recorded clip per movement that already
+   * says the full "الحركة القادمة حركة <name>". Keyed by the {@link CueFlow.announceNext}
+   * value (tashahhud is split into the middle/last variants, tasleem included).
+   */
+  private readonly AR_ANNOUNCE: Record<string, string> = {
+    qiyam: announceQiyamUrl,
+    ruku: announceRukuUrl,
+    iqama: announceIqamaUrl,
+    sujood: announceSujoodUrl,
+    juloos: announceJuloosUrl,
+    tashahhud_awsat: announceTashahhudAwsatUrl,
+    tashahhud_akheer: announceTashahhudAkheerUrl,
+    tasleem: announceTasleemUrl,
   };
 
   private getCtx(): AudioContext {
@@ -150,15 +171,18 @@ class AudioManager {
     void this.runQueue(this.buildFlow(flow), flow.onDone);
   }
 
-  /** Whether the qiyam recitation is currently sounding (used to reject an early ruku'). */
-  isReciting(): boolean {
-    return this.reciting;
+  /**
+   * Whether the current posture's content (its dhikr or the qiyam recitation) is
+   * still playing — used to reject moving on to the next posture too early.
+   */
+  isHolding(): boolean {
+    return this.holding;
   }
 
   /** Stops any cue or recitation currently playing or still queued. */
   stopCues(): void {
     this.queueRunId++;
-    this.reciting = false;
+    this.holding = false;
     this.stopCurrent();
   }
 
@@ -175,36 +199,33 @@ class AudioManager {
    * Clips inside a group (e.g. Fatiha + surah) play back-to-back; the gap only
    * sits between groups so the recitation itself isn't chopped up.
    */
-  private buildFlow(flow: CueFlow): CueSegment[] {
-    const groups: { urls: string[]; recitation?: boolean }[] = [];
+  private buildFlow(flow: CueFlow): string[][] {
+    const groups: string[][] = [];
 
     // 1) the movement made to reach this posture
     if (flow.transition) {
-      const url = flow.transition === 'sami' ? this.SAMI_ALLAH_URL : this.TAKBEER_URL;
-      groups.push({ urls: [url] });
+      groups.push([flow.transition === 'sami' ? this.SAMI_ALLAH_URL : this.TAKBEER_URL]);
     }
     // 2) what's said/recited while holding it
-    for (const key of flow.dhikr ?? []) groups.push({ urls: [this.DHIKR[key]] });
+    for (const key of flow.dhikr ?? []) groups.push([this.DHIKR[key]]);
     if (flow.recite) {
-      groups.push({
-        urls: this.recitationUrls(flow.recite.rakaIndex, flow.recite.reciterServer),
-        recitation: true,
-      });
+      groups.push(this.recitationUrls(flow.recite.rakaIndex, flow.recite.reciterServer));
     }
-    // 3) spoken guidance for the next movement (name only, no transition sound)
+    // 3) spoken guidance for the next movement. Arabic uses one recorded clip that
+    // already says "الحركة القادمة حركة <name>"; English stitches the "next movement
+    // is" lead-in and the movement name.
     if (flow.announceNext) {
-      const prefixUrl = flow.lang === 'ar' ? nextMovePrefixArUrl : '/audio/prefix.mp3';
-      groups.push({ urls: [prefixUrl] });
-      groups.push({ urls: [`/audio/${flow.announceNext}.mp3`] });
+      if (flow.lang === 'ar') {
+        const url = this.AR_ANNOUNCE[flow.announceNext];
+        if (url) groups.push([url]);
+      } else {
+        // The middle/last tashahhud announcements share the one English name clip.
+        const pose = flow.announceNext.startsWith('tashahhud') ? 'tashahhud' : flow.announceNext;
+        groups.push(['/audio/prefix.mp3'], [`/audio/${pose}.mp3`]);
+      }
     }
 
-    const segments: CueSegment[] = [];
-    for (const group of groups) {
-      if (group.urls.length === 0) continue;
-      if (segments.length > 0) segments.push({ pauseMs: this.GAP_MS });
-      for (const url of group.urls) segments.push({ url, recitation: group.recitation });
-    }
-    return segments;
+    return groups.filter((g) => g.length > 0);
   }
 
   /**
@@ -227,38 +248,40 @@ class AudioManager {
 
   // ─── Playback engine ────────────────────────────────────────────────────────
 
-  /** Plays segments strictly one-after-another; bails if a newer flow starts. */
-  private async runQueue(segments: CueSegment[], onDone?: () => void): Promise<void> {
+  /**
+   * Plays a flow's clip groups strictly one-after-another (a {@link GAP_MS} pause
+   * between groups, clips within a group back-to-back); bails if a newer flow
+   * starts. The posture counts as "held" for the *entire* flow — its whole audio,
+   * announcement included — so nothing is ever cut short and moving on before it
+   * finishes is caught as leaving early, the same in every posture.
+   */
+  private async runQueue(groups: string[][], onDone?: () => void): Promise<void> {
     this.stopCurrent();
     const runId = ++this.queueRunId;
-    this.reciting = false;
+    this.holding = groups.length > 0;
     try {
       const ctx = this.getCtx();
       if (ctx.state === 'suspended') await ctx.resume();
 
-      for (const seg of segments) {
-        if (runId !== this.queueRunId) return; // superseded by a newer flow
-        if ('pauseMs' in seg) {
-          await this.delay(seg.pauseMs);
-          continue;
+      for (let g = 0; g < groups.length; g++) {
+        if (g > 0) {
+          await this.delay(this.GAP_MS);
+          if (runId !== this.queueRunId) return;
         }
-        // A missing clip (e.g. recitation server down) is skipped, not fatal.
-        const buffer = await this.loadBuffer(seg.url).catch(() => null);
-        if (runId !== this.queueRunId) return;
-        if (buffer) {
-          // Flag while the recitation actually sounds; the run-id guard stops a
-          // superseded flow from clearing a newer one's flag.
-          if (seg.recitation) this.reciting = true;
-          await this.playBuffer(buffer);
-          if (runId === this.queueRunId) this.reciting = false;
+        for (const url of groups[g]) {
+          if (runId !== this.queueRunId) return; // superseded by a newer flow
+          // A missing clip (e.g. recitation server down) is skipped, not fatal.
+          const buffer = await this.loadBuffer(url).catch(() => null);
+          if (runId !== this.queueRunId) return;
+          if (buffer) await this.playBuffer(buffer);
         }
       }
     } catch {
       /* ignore playback failures */
     }
-    // Reached the end on our own (not superseded): clear the flag and signal done.
+    // Reached the end on our own (not superseded): release and signal done.
     if (runId === this.queueRunId) {
-      this.reciting = false;
+      this.holding = false;
       onDone?.();
     }
   }
