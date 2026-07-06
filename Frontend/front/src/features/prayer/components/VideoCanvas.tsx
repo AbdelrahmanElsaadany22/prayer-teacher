@@ -13,7 +13,7 @@ interface Props {
 }
 
 export function VideoCanvas({ videoRef, canvasRef, alert, detectedLabel, expectedLabel, countdown, children }: Props) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
 
   return (
     <div className={css.wrapper}>
@@ -47,8 +47,10 @@ export function VideoCanvas({ videoRef, canvasRef, alert, detectedLabel, expecte
         >
           {alert && (
             <div className={css.alertBox}>
-              <span className={css.alertAr}>{alert.ar}</span>
-              <span>{alert.en}</span>
+              {/* Show only the active language's message. */}
+              <span className={lang === 'ar' ? css.alertAr : undefined}>
+                {lang === 'ar' ? alert.ar : alert.en}
+              </span>
             </div>
           )}
         </div>
