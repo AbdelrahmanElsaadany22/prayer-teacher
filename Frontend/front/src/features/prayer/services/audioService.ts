@@ -16,6 +16,15 @@ import announceJuloosUrl from '../../../assets/hrkt-glous-sagditen.mp3';
 import announceTashahhudAwsatUrl from '../../../assets/hrkt-2ltsh-2lawast.mp3';
 import announceTashahhudAkheerUrl from '../../../assets/hrkt-2ltsh-2lakheer.mp3';
 import announceTasleemUrl from '../../../assets/2ltasleem.mp3';
+// English "the next movement is …" announcements — one recorded clip per movement.
+import enQiyamUrl from '../../../assets/en-moves-voice/en-qiam.mp3';
+import enRukuUrl from '../../../assets/en-moves-voice/en-rokou3.mp3';
+import enIqamaUrl from '../../../assets/en-moves-voice/en-e3tidal.mp3';
+import enSujoodUrl from '../../../assets/en-moves-voice/en-sojoud.mp3';
+import enJuloosUrl from '../../../assets/en-moves-voice/en-glous-between-soujouds.mp3';
+import enTashahhudAwsatUrl from '../../../assets/en-moves-voice/en-2ltashhoud-awst.mp3';
+import enTashahhudAkheerUrl from '../../../assets/en-moves-voice/en-2ltashhoud-2l2kheer.mp3';
+import enTasleemUrl from '../../../assets/en-moves-voice/en-tasleem.mp3';
 
 /** Dhikr clips recited while holding a posture. */
 export type DhikrKey =
@@ -121,6 +130,18 @@ class AudioManager {
     tasleem: announceTasleemUrl,
   };
 
+  /** English equivalent: one recorded "the next movement is <name>" clip each. */
+  private readonly EN_ANNOUNCE: Record<string, string> = {
+    qiyam: enQiyamUrl,
+    ruku: enRukuUrl,
+    iqama: enIqamaUrl,
+    sujood: enSujoodUrl,
+    juloos: enJuloosUrl,
+    tashahhud_awsat: enTashahhudAwsatUrl,
+    tashahhud_akheer: enTashahhudAkheerUrl,
+    tasleem: enTasleemUrl,
+  };
+
   private getCtx(): AudioContext {
     if (!this.ctx) {
       this.ctx = new AudioContext();
@@ -211,18 +232,12 @@ class AudioManager {
     if (flow.recite) {
       groups.push(this.recitationUrls(flow.recite.rakaIndex, flow.recite.reciterServer));
     }
-    // 3) spoken guidance for the next movement. Arabic uses one recorded clip that
-    // already says "الحركة القادمة حركة <name>"; English stitches the "next movement
-    // is" lead-in and the movement name.
+    // 3) spoken guidance for the next movement — one recorded clip per movement
+    // that already says the whole "next movement is <name>", per language.
     if (flow.announceNext) {
-      if (flow.lang === 'ar') {
-        const url = this.AR_ANNOUNCE[flow.announceNext];
-        if (url) groups.push([url]);
-      } else {
-        // The middle/last tashahhud announcements share the one English name clip.
-        const pose = flow.announceNext.startsWith('tashahhud') ? 'tashahhud' : flow.announceNext;
-        groups.push(['/audio/prefix.mp3'], [`/audio/${pose}.mp3`]);
-      }
+      const map = flow.lang === 'ar' ? this.AR_ANNOUNCE : this.EN_ANNOUNCE;
+      const url = map[flow.announceNext];
+      if (url) groups.push([url]);
     }
 
     return groups.filter((g) => g.length > 0);
