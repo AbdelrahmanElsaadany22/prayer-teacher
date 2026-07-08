@@ -6,7 +6,7 @@ import {
 import { useAuth } from '../hooks/useAuth';
 import { useUserSessions } from '../hooks/useUserSessions';
 import { useI18n } from '../../../shared/i18n/LanguageProvider';
-import { localizePrayerName } from '../../../shared/i18n/translations';
+import { localizePrayerName, localizeMoveLabel } from '../../../shared/i18n/translations';
 import css from './Dashboard.module.css';
 
 function formatDate(iso: string, locale: string): string {
@@ -85,7 +85,9 @@ export default function Dashboard() {
             </div>
             <div className={css.insightCard}>
               <span className={css.insightLabel}>{t('dash.mostMistakenMove')}</span>
-              <span className={css.insightValue}>{stats.mostMistakenMove ?? '—'}</span>
+              <span className={css.insightValue}>
+                {stats.mostMistakenMove ? localizeMoveLabel(stats.mostMistakenMove, lang) : '—'}
+              </span>
             </div>
           </div>
 

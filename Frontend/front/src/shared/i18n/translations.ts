@@ -21,6 +21,30 @@ export function localizePrayerName(name: string, lang: Lang): string {
   return name;
 }
 
+/**
+ * Arabic for the English movement labels stored on mistakes (see
+ * `buildRakaSequence`). Used to localize dashboard insights, which persist the
+ * English `stepLabel`. Numbered sujoods collapse to the same Arabic name.
+ */
+export const MOVE_LABELS_AR: Record<string, string> = {
+  Takbeer: 'تكبيرة الإحرام',
+  Qiyam: 'القيام',
+  "Ruku'": 'الركوع',
+  "I'tidal": 'الاعتدال',
+  'Sujood 1': 'السجود',
+  'Sujood 2': 'السجود',
+  Sujood: 'السجود',
+  Juloos: 'الجلسة',
+  Tashahhud: 'التشهد',
+  'Tasleem (right)': 'التسليم يمينًا',
+  'Tasleem (left)': 'التسليم يسارًا',
+};
+
+export function localizeMoveLabel(label: string, lang: Lang): string {
+  if (lang === 'ar') return MOVE_LABELS_AR[label] ?? label;
+  return label;
+}
+
 export const translations: Record<Lang, Dict> = {
   en: {
     'brand.name': 'Estaقِm',
