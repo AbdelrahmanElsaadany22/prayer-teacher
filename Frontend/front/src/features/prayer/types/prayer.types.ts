@@ -1,3 +1,5 @@
+import type { GifKey } from '../constants/poseGifs';
+
 export type PoseType =
   | 'unknown'
   | 'qiyam'
@@ -21,6 +23,8 @@ export interface PoseStep {
   pose: PoseType;
   label: string;
   labelAr: string;
+  /** Teacher-demo GIF shown while this movement is the one still expected. */
+  gif?: GifKey;
 }
 
 export interface Mistake {

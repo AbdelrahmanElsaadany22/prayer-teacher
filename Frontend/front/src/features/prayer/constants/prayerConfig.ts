@@ -60,36 +60,60 @@ export const MEDIAPIPE_CONFIG = {
   DELEGATE: 'GPU' as const,
 } as const;
 
+/** Whether a rak'ah at this index closes sitting in tashahhud. */
+function rakaEndsWithTashahhud(rakaIndex: number, totalRakas: number): boolean {
+  const isLast = rakaIndex === totalRakas - 1;
+  return (
+    isLast ||
+    (totalRakas === 3 && rakaIndex === 1) ||
+    (totalRakas >= 4 && rakaIndex === 1)
+  );
+}
+
 export function buildRakaSequence(rakaIndex: number, totalRakas: number): PoseStep[] {
   const isFirst = rakaIndex === 0;
   const isLast = rakaIndex === totalRakas - 1;
-  const endsWithTashahhud =
-    isLast ||
-    (totalRakas === 3 && rakaIndex === 1) ||
-    (totalRakas >= 4 && rakaIndex === 1);
+  const endsWithTashahhud = rakaEndsWithTashahhud(rakaIndex, totalRakas);
 
   const seq: PoseStep[] = [];
 
   if (isFirst) {
-    seq.push({ pose: 'takbeer', label: 'Takbeer', labelAr: 'تكبيرة الإحرام' });
+    seq.push({ pose: 'takbeer', label: 'Takbeer', labelAr: 'تكبيرة الإحرام', gif: 'takbeer' });
   }
 
-  seq.push({ pose: 'qiyam', label: 'Qiyam', labelAr: 'القيام' });
-  seq.push({ pose: 'ruku', label: "Ruku'", labelAr: 'الركوع' });
-  seq.push({ pose: 'iqama', label: "I'tidal", labelAr: 'الاعتدال' });
-  seq.push({ pose: 'sujood', label: 'Sujood 1', labelAr: 'السجود' });
-  seq.push({ pose: 'juloos', label: 'Juloos', labelAr: 'الجلسة' });
-  seq.push({ pose: 'sujood', label: 'Sujood 2', labelAr: 'السجود' });
+  // Rising into qiyam looks different depending on where the learner comes from:
+  // the very first one follows takbeerat al-ihram (still standing), later ones
+  // rise from the previous rak'ah's close — sitting (tashahhud) or the 2nd sujood.
+  const qiyamGif = isFirst
+    ? 'takbeer'
+    : rakaEndsWithTashahhud(rakaIndex - 1, totalRakas)
+      ? 'qiyamFromJuloos'
+      : 'qiyamFromSujood';
+
+  seq.push({ pose: 'qiyam', label: 'Qiyam', labelAr: 'القيام', gif: qiyamGif });
+  seq.push({ pose: 'ruku', label: "Ruku'", labelAr: 'الركوع', gif: 'ruku' });
+  seq.push({ pose: 'iqama', label: "I'tidal", labelAr: 'الاعتدال', gif: 'iqama' });
+  seq.push({ pose: 'sujood', label: 'Sujood 1', labelAr: 'السجود', gif: 'sujood' });
+  seq.push({ pose: 'juloos', label: 'Juloos', labelAr: 'الجلسة', gif: 'juloos' });
+  seq.push({ pose: 'sujood', label: 'Sujood 2', labelAr: 'السجود', gif: 'sujood' });
 
   if (endsWithTashahhud) {
-    seq.push({ pose: 'tashahhud', label: 'Tashahhud', labelAr: 'التشهد' });
+    // The middle tashahhud has no clip of its own, so it borrows the
+    // sitting-between-prostrations GIF; only the final one has a dedicated clip.
+    seq.push({
+      pose: 'tashahhud',
+      label: 'Tashahhud',
+      labelAr: 'التشهد',
+      gif: isLast ? 'tashahhud' : 'juloos',
+    });
 
     // The final rak'ah closes with the tasleem: salam to the right, then left.
     // Ordering matters, so they are two scored steps — turning left first is a
-    // mistake, caught the same way any out-of-order pose is.
+    // mistake, caught the same way any out-of-order pose is. Both are performed
+    // from the tashahhud sitting position, so they keep showing that GIF.
     if (isLast) {
-      seq.push({ pose: 'salam_right', label: 'Tasleem (right)', labelAr: 'التسليم يمينًا' });
-      seq.push({ pose: 'salam_left', label: 'Tasleem (left)', labelAr: 'التسليم يسارًا' });
+      seq.push({ pose: 'salam_right', label: 'Tasleem (right)', labelAr: 'التسليم يمينًا', gif: 'tashahhud' });
+      seq.push({ pose: 'salam_left', label: 'Tasleem (left)', labelAr: 'التسليم يسارًا', gif: 'tashahhud' });
     }
   }
 

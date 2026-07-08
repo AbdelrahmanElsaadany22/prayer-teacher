@@ -1,6 +1,7 @@
 import type { RefObject } from 'react';
 import type { PoseStep, PoseBadgeState } from '../types/prayer.types';
 import { useI18n } from '../../../shared/i18n/LanguageProvider';
+import { POSE_GIFS } from '../constants/poseGifs';
 import { VideoCanvas } from './VideoCanvas';
 import css from './SessionUI.module.css';
 
@@ -40,7 +41,12 @@ export function SessionUI({
   countdown,
   onEnd,
 }: Props) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
+
+  // The movement still expected right now — its GIF is the one the guide loops.
+  const currentStep = sequence[stepIndex];
+  const gifSrc = currentStep?.gif ? POSE_GIFS[currentStep.gif] : null;
+  const gifCaption = currentStep ? (lang === 'ar' ? currentStep.labelAr : currentStep.label) : '';
 
   return (
     <div className={css.session}>
@@ -62,15 +68,28 @@ export function SessionUI({
         </div>
       </div>
 
-      {/* Video fills all remaining height; seq + mistakes overlay on top of it */}
-      <VideoCanvas
-        videoRef={videoRef}
-        canvasRef={canvasRef}
-        alert={alert}
-        detectedLabel={detectedLabel}
-        expectedLabel={expectedLabel}
-        countdown={countdown}
-      >
+      {/* Split stage: the guide's GIF on one side, the live camera on the other */}
+      <div className={css.stage}>
+        <div className={css.teacher}>
+          <div className={css.panelTag}>{t('session.teacher')}</div>
+          {gifSrc ? (
+            /* key forces a fresh <img> per movement so the GIF restarts each time */
+            <img key={gifSrc} src={gifSrc} className={css.teacherGif} alt={gifCaption} />
+          ) : (
+            <div className={css.teacherGif} aria-hidden="true" />
+          )}
+          {gifCaption && <div className={css.teacherCaption}>{gifCaption}</div>}
+        </div>
+
+        {/* Video fills its half; seq + mistakes overlay on top of it */}
+        <VideoCanvas
+          videoRef={videoRef}
+          canvasRef={canvasRef}
+          alert={alert}
+          detectedLabel={detectedLabel}
+          expectedLabel={expectedLabel}
+          countdown={countdown}
+        >
         {/* Sequence progress bar overlaid at top of video */}
         <div className={css.seqBar} aria-label="Prayer sequence progress">
           {sequence.map((step, i) => (
@@ -99,7 +118,8 @@ export function SessionUI({
             </div>
           </div>
         )}
-      </VideoCanvas>
+        </VideoCanvas>
+      </div>
     </div>
   );
 }
