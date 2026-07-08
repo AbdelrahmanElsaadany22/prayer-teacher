@@ -1,13 +1,23 @@
 import type { RefObject } from 'react';
 import type { PoseStep, PoseBadgeState } from '../types/prayer.types';
+import type { Lang } from '../../../shared/i18n/translations';
 import { useI18n } from '../../../shared/i18n/LanguageProvider';
 import { POSE_GIFS } from '../constants/poseGifs';
 import { useRecitationAyah } from '../hooks/useRecitationAyah';
 import { VideoCanvas } from './VideoCanvas';
 import css from './SessionUI.module.css';
 
-function formatSeqLabel(label: string): string {
-  return label
+/** Short chip label for the sequence bar, abbreviating the long names per language. */
+function formatSeqLabel(step: PoseStep, lang: Lang): string {
+  if (lang === 'ar') {
+    const arShort: Record<string, string> = {
+      'تكبيرة الإحرام': 'التكبير',
+      'التسليم يمينًا': 'تسليم يمين',
+      'التسليم يسارًا': 'تسليم يسار',
+    };
+    return arShort[step.labelAr] ?? step.labelAr;
+  }
+  return step.label
     .replace('Sujood 1', 'Sj1')
     .replace('Sujood 2', 'Sj2')
     .replace('Tashahhud', 'Tsh')
@@ -118,10 +128,10 @@ export function SessionUI({
           {sequence.map((step, i) => (
             <span key={`${step.pose}-${i}`}>
               <span
-                title={step.label}
+                title={lang === 'ar' ? step.labelAr : step.label}
                 className={`${css.seqStep}${i < stepIndex ? ` ${css.done}` : i === stepIndex ? ` ${css.current}` : ''}`}
               >
-                {formatSeqLabel(step.label)}
+                {formatSeqLabel(step, lang)}
               </span>
               {i < sequence.length - 1 && (
                 <span className={css.seqArrow}>›</span>

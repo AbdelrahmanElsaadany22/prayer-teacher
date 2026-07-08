@@ -243,16 +243,16 @@
 
 .seqStep {
   flex-shrink: 0;
-  height: 24px;
-  padding: 0 8px;
-  border-radius: 6px;
+  height: 34px;
+  padding: 0 13px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.55rem;
+  font-size: 0.8rem;
   font-weight: 700;
   border: 1.5px solid rgba(255,255,255,0.15);
-  color: rgba(255,255,255,0.35);
+  color: rgba(255,255,255,0.4);
   transition: all 0.25s ease;
   text-align: center;
   line-height: 1;
@@ -278,8 +278,8 @@
 }
 
 .seqArrow {
-  color: rgba(255,255,255,0.18);
-  font-size: 0.6rem;
+  color: rgba(255,255,255,0.22);
+  font-size: 0.85rem;
   flex-shrink: 0;
 }
 
