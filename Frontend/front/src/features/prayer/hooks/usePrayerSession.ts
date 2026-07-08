@@ -4,6 +4,7 @@ import type {
   Mistake, PoseStep, ReportData,
 } from '../types/prayer.types';
 import { PRAYERS, POSE, buildRakaSequence } from '../constants/prayerConfig';
+import { DEFAULT_RECITER_SERVER } from '../api/reciters.api';
 import { getPoseLabel } from '../constants/poses';
 import { audioService, type DhikrKey, type Transition } from '../services/audioService';
 import { buildReportData } from '../services/prayerService';
@@ -303,9 +304,15 @@ export function usePrayerSession() {
     else transition = performedPose === POSE.IQAMA ? 'sami' : 'takbir';
 
     // Reaching qiyam plays the Qur'an recitation (chosen reciter) as its content.
+    // The default reciter's server is sent explicitly (not left null) so its audio
+    // never collides with the stale bare `/recitation/N` cache, and always matches
+    // the ayah-timing lookup, without depending on the backend's default.
     const recite =
       performedPose === POSE.QIYAM
-        ? { rakaIndex: s.rakaIndex, reciterServer: reciterRef.current?.server ?? null }
+        ? {
+            rakaIndex: s.rakaIndex,
+            reciterServer: reciterRef.current?.server ?? DEFAULT_RECITER_SERVER,
+          }
         : null;
 
     // Takbeerat al-ihram is the trigger that actually starts evaluation.
