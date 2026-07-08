@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import type { Reciter } from '../../features/prayer/api/reciters.api';
 
 interface ReciterContextValue {
-  /** null = use the app's built-in default reciter (Maher Al Muaiqly). */
+  /** null = use the app's built-in default reciter (Abdul Rashid Sufi). */
   reciter: Reciter | null;
   setReciter: (r: Reciter | null) => void;
 }

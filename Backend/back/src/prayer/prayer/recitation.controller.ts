@@ -3,7 +3,11 @@ import type { Request, Response } from 'express';
 import { Readable } from 'stream';
 import type { ReadableStream as NodeReadableStream } from 'stream/web';
 
-const RECITER_BASE = 'https://server12.mp3quran.net/maher';
+// Default reciter when the user hasn't picked one: Abdul Rashid Sufi (Hafs 'an
+// 'Asim). This moshaf has published ayah timing (read 258), so the "ayah being
+// recited" panel works out of the box. Keep in sync with the frontend's
+// DEFAULT_RECITER_SERVER so the on-screen ayah matches this audio.
+const RECITER_BASE = 'https://server16.mp3quran.net/soufi/Rewayat-Hafs-A-n-Assem';
 
 /** mp3quran.net hostnames look like server6.mp3quran.net, server12.mp3quran.net, etc. */
 const MP3QURAN_HOST = /^server\d+\.mp3quran\.net$/;

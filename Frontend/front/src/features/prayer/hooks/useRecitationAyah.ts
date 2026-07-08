@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { audioService } from '../services/audioService';
 import { getReadId, getAyahTiming, getSurahText, BASMALA, type AyahTiming } from '../services/ayahTiming';
+import { DEFAULT_RECITER_SERVER } from '../api/reciters.api';
 import { useReciter } from '../../../shared/reciter/ReciterProvider';
 
 export interface CurrentAyah {
@@ -28,7 +29,9 @@ export function useRecitationAyah(): CurrentAyah | null {
   useEffect(() => {
     let alive = true;
     readIdRef.current = null;
-    getReadId(reciter?.server ?? null).then((id) => {
+    // Fall back to the app's default reciter so the panel works even before the
+    // user picks one (the backend serves that same reciter's audio by default).
+    getReadId(reciter?.server ?? DEFAULT_RECITER_SERVER).then((id) => {
       if (alive) readIdRef.current = id;
     });
     return () => {
