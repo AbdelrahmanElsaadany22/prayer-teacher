@@ -72,9 +72,15 @@ export default function ReciterPicker() {
     setOpen(false);
   }
 
+  // The stored reciter name is frozen in whatever language it was picked in, so
+  // re-resolve it from the current-language list (by id) to keep it localized.
+  const currentName = reciter
+    ? reciters.find((r) => r.id === reciter.id)?.name ?? reciter.name
+    : t('reciter.default');
+
   return (
     <div className={css.picker} ref={containerRef} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
-      <div className={css.current}>{reciter?.name ?? t('reciter.default')}</div>
+      <div className={css.current}>{currentName}</div>
       <input
         className={css.input}
         value={query}
