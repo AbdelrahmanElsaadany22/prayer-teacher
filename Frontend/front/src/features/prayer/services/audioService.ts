@@ -87,6 +87,17 @@ class AudioManager {
   /** True while the current posture's content (its dhikr or recitation) is sounding. */
   private holding = false;
 
+  /** Which surah each recitation clip URL belongs to, so playback can be timed. */
+  private reciteSurahByUrl = new Map<string, number>();
+
+  /**
+   * The recitation clip playing right now: its surah and the AudioContext time it
+   * started at. Lets the UI look up, frame by frame, which ayah is being recited
+   * (start_time ≤ elapsed < end_time in that surah's ayah timing). Null whenever
+   * no recitation is sounding.
+   */
+  private reciteClock: { surah: number; startedAt: number } | null = null;
+
   /**
    * Recitation is streamed through our own backend proxy (`/recitation/:surah`)
    * so playback never depends on the upstream reciter server's CORS policy.
@@ -207,10 +218,24 @@ class AudioManager {
     return this.holding;
   }
 
+  /**
+   * The ayah currently being recited, expressed as {surah, elapsedMs} against
+   * that surah's audio, or null when no recitation is sounding. Callers match
+   * elapsedMs to the surah's ayah timing to find the exact ayah on screen.
+   */
+  getReciteClock(): { surah: number; elapsedMs: number } | null {
+    if (!this.reciteClock) return null;
+    return {
+      surah: this.reciteClock.surah,
+      elapsedMs: (this.getCtx().currentTime - this.reciteClock.startedAt) * 1000,
+    };
+  }
+
   /** Stops any cue or recitation currently playing or still queued. */
   stopCues(): void {
     this.queueRunId++;
     this.holding = false;
+    this.reciteClock = null;
     this.stopCurrent();
   }
 
@@ -231,6 +256,9 @@ class AudioManager {
     const groups: string[][] = [];
     let hasAnnounce = false;
 
+    // Each flow rebuilds the surah map so a clip is only ever timed to its own flow.
+    this.reciteSurahByUrl.clear();
+
     // 1) the movement made to reach this posture
     if (flow.transition) {
       groups.push([flow.transition === 'sami' ? this.SAMI_ALLAH_URL : this.TAKBEER_URL]);
@@ -238,7 +266,9 @@ class AudioManager {
     // 2) what's said/recited while holding it
     for (const key of flow.dhikr ?? []) groups.push([this.DHIKR[key]]);
     if (flow.recite) {
-      groups.push(this.recitationUrls(flow.recite.rakaIndex, flow.recite.reciterServer));
+      const clips = this.recitationClips(flow.recite.rakaIndex, flow.recite.reciterServer);
+      for (const c of clips) this.reciteSurahByUrl.set(c.url, c.surah);
+      groups.push(clips.map((c) => c.url));
     }
     // 3) spoken guidance for the next movement — one recorded clip per movement
     // that already says the whole "next movement is <name>", per language.
@@ -261,8 +291,11 @@ class AudioManager {
    * Al-Fatiha (every rak'ah) plus, for the first two rak'ahs, a random short
    * surah (86–114) that never repeats the one the previous rak'ah used.
    */
-  private recitationUrls(rakaIndex: number, reciterServer: string | null): string[] {
-    const urls = [this.surahUrl(this.FATIHA, reciterServer)];
+  private recitationClips(
+    rakaIndex: number,
+    reciterServer: string | null,
+  ): { url: string; surah: number }[] {
+    const clips = [{ url: this.surahUrl(this.FATIHA, reciterServer), surah: this.FATIHA }];
     if (rakaIndex < 2) {
       const span = this.SURAH_MAX - this.SURAH_MIN + 1;
       let surah: number;
@@ -270,9 +303,9 @@ class AudioManager {
         surah = this.SURAH_MIN + Math.floor(Math.random() * span);
       } while (surah === this.lastSurah);
       this.lastSurah = surah;
-      urls.push(this.surahUrl(surah, reciterServer));
+      clips.push({ url: this.surahUrl(surah, reciterServer), surah });
     }
-    return urls;
+    return clips;
   }
 
   // ─── Playback engine ────────────────────────────────────────────────────────
@@ -309,7 +342,11 @@ class AudioManager {
           // A missing clip (e.g. recitation server down) is skipped, not fatal.
           const buffer = await this.loadBuffer(url).catch(() => null);
           if (runId !== this.queueRunId) return;
-          if (buffer) await this.playBuffer(buffer);
+          // Recitation clips carry a surah so the on-screen ayah can track them;
+          // any other clip means nothing is being recited right now.
+          const surah = this.reciteSurahByUrl.get(url);
+          if (surah === undefined) this.reciteClock = null;
+          if (buffer) await this.playBuffer(buffer, surah);
         }
       }
     } catch {
@@ -318,6 +355,7 @@ class AudioManager {
     // Reached the end on our own (not superseded): release and signal done.
     if (runId === this.queueRunId) {
       this.holding = false;
+      this.reciteClock = null;
       onDone?.();
     }
   }
@@ -339,7 +377,7 @@ class AudioManager {
   }
 
   /** Plays a decoded buffer through Web Audio; resolves when it ends. */
-  private playBuffer(buffer: AudioBuffer): Promise<void> {
+  private playBuffer(buffer: AudioBuffer, surah?: number): Promise<void> {
     const ctx = this.getCtx();
     return new Promise((resolve) => {
       const src = ctx.createBufferSource();
@@ -348,6 +386,8 @@ class AudioManager {
       src.connect(ctx.destination);
       src.onended = () => resolve();
       this.currentSource = src;
+      // Anchor the ayah clock to the exact moment this recitation clip begins.
+      if (surah !== undefined) this.reciteClock = { surah, startedAt: ctx.currentTime };
       src.start();
     });
   }

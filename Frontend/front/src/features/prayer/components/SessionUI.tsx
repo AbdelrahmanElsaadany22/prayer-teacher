@@ -2,6 +2,7 @@ import type { RefObject } from 'react';
 import type { PoseStep, PoseBadgeState } from '../types/prayer.types';
 import { useI18n } from '../../../shared/i18n/LanguageProvider';
 import { POSE_GIFS } from '../constants/poseGifs';
+import { useRecitationAyah } from '../hooks/useRecitationAyah';
 import { VideoCanvas } from './VideoCanvas';
 import css from './SessionUI.module.css';
 
@@ -49,6 +50,9 @@ export function SessionUI({
   const gifSrc = demoStep?.gif ? POSE_GIFS[demoStep.gif] : null;
   const gifCaption = demoStep ? (lang === 'ar' ? demoStep.labelAr : demoStep.label) : '';
 
+  // The ayah being recited right now (during qiyam), tracked from the audio clock.
+  const currentAyah = useRecitationAyah();
+
   return (
     <div className={css.session}>
       {/* Topbar */}
@@ -73,13 +77,31 @@ export function SessionUI({
       <div className={css.stage}>
         <div className={css.teacher}>
           <div className={css.panelTag}>{t('session.teacher')}</div>
-          {gifSrc ? (
-            /* key forces a fresh <img> per movement so the GIF restarts each time */
-            <img key={gifSrc} src={gifSrc} className={css.teacherGif} alt={gifCaption} />
-          ) : (
-            <div className={css.teacherGif} aria-hidden="true" />
-          )}
-          {gifCaption && <div className={css.teacherCaption}>{gifCaption}</div>}
+
+          {/* Top half: the ayah being recited right now (empty between recitations) */}
+          <div className={css.ayahBox} dir="rtl" aria-live="polite">
+            {currentAyah ? (
+              <p key={`${currentAyah.surah}:${currentAyah.number}`} className={css.ayahText}>
+                {currentAyah.text}
+                {currentAyah.number > 0 && (
+                  <span className={css.ayahMark}> ﴿{currentAyah.number}﴾</span>
+                )}
+              </p>
+            ) : (
+              <span className={css.ayahIdle} aria-hidden="true">﷽</span>
+            )}
+          </div>
+
+          {/* Bottom half: the movement demo GIF */}
+          <div className={css.gifBox}>
+            {gifSrc ? (
+              /* key forces a fresh <img> per movement so the GIF restarts each time */
+              <img key={gifSrc} src={gifSrc} className={css.teacherGif} alt={gifCaption} />
+            ) : (
+              <div className={css.teacherGif} aria-hidden="true" />
+            )}
+            {gifCaption && <div className={css.teacherCaption}>{gifCaption}</div>}
+          </div>
         </div>
 
         {/* Video fills its half; seq + mistakes overlay on top of it */}

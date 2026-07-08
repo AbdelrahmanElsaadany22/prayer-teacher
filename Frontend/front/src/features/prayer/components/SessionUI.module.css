@@ -115,12 +115,60 @@
   position: relative;
   display: flex;
   flex-direction: column;
+  background: var(--surface, #111);
+  border-inline-end: 1px solid var(--border);
+}
+
+/* ── Top half: the ayah being recited ── */
+.ayahBox {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2.4rem 1.25rem 1rem;
+  border-bottom: 1px solid var(--border);
+  overflow-y: auto;
+  text-align: center;
+}
+
+.ayahText {
+  font-family: 'Noto Naskh Arabic', 'Amiri', serif;
+  font-size: clamp(1.15rem, 2.3vw, 2rem);
+  line-height: 2.1;
+  font-weight: 600;
+  color: var(--accent);
+  margin: 0;
+  animation: ayahFade 0.35s ease;
+}
+
+.ayahMark {
+  color: var(--muted);
+  font-size: 0.7em;
+}
+
+.ayahIdle {
+  font-family: 'Noto Naskh Arabic', 'Amiri', serif;
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  color: var(--border);
+  opacity: 0.6;
+}
+
+@keyframes ayahFade {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Bottom half: the movement demo GIF ── */
+.gifBox {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
   padding: 1rem;
-  background: var(--surface, #111);
-  border-inline-end: 1px solid var(--border);
 }
 
 .panelTag {
