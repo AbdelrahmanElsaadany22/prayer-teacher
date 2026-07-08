@@ -93,9 +93,11 @@ export function buildRakaSequence(rakaIndex: number, totalRakas: number): PoseSt
   seq.push({ pose: 'qiyam', label: 'Qiyam', labelAr: 'القيام', gif: qiyamGif });
   seq.push({ pose: 'ruku', label: "Ruku'", labelAr: 'الركوع', gif: 'ruku' });
   seq.push({ pose: 'iqama', label: "I'tidal", labelAr: 'الاعتدال', gif: 'iqama' });
+  // Sujood 1 is entered from standing (i'tidal); sujood 2 is entered from the
+  // sitting between the prostrations, so each shows the matching demo.
   seq.push({ pose: 'sujood', label: 'Sujood 1', labelAr: 'السجود', gif: 'sujood' });
   seq.push({ pose: 'juloos', label: 'Juloos', labelAr: 'الجلسة', gif: 'juloos' });
-  seq.push({ pose: 'sujood', label: 'Sujood 2', labelAr: 'السجود', gif: 'sujood' });
+  seq.push({ pose: 'sujood', label: 'Sujood 2', labelAr: 'السجود', gif: 'sujoodFromJuloos' });
 
   if (endsWithTashahhud) {
     // The middle tashahhud has no clip of its own, so it borrows the

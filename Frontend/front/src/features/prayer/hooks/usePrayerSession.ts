@@ -52,6 +52,13 @@ export interface SessionUIState {
   stepIndex: number;
   recentMistakes: string[];
   alert: { ar: string; en: string } | null;
+  /**
+   * The movement the guide GIF is currently demonstrating. Unlike {@link stepIndex}
+   * (which advances the instant a pose is reached), this only moves on to the next
+   * movement when its name is spoken — so while standing/reciting the guide keeps
+   * showing the current posture, not the upcoming one.
+   */
+  demoStep: PoseStep | null;
 }
 
 interface SessionRefs {
@@ -85,6 +92,7 @@ export function usePrayerSession() {
     stepIndex: 0,
     recentMistakes: [],
     alert: null,
+    demoStep: null,
   });
 
   // Session data accessed by callbacks (no stale closures)
@@ -268,6 +276,11 @@ export function usePrayerSession() {
     const step = seq?.[s.stepIndex];
     if (!step) return;
 
+    // The guide now demonstrates the pose just reached; it stays on this one until
+    // the "next movement is …" clip sounds (see onAnnounce below), never jumping
+    // ahead while the learner is still holding/reciting the current posture.
+    setUiState((prev) => ({ ...prev, demoStep: step }));
+
     // Capture the reached pose + its position before advancing, so the dhikr
     // (and middle-vs-last tashahhud) reflect what actually happened.
     const performedPose = step.pose;
@@ -352,6 +365,9 @@ export function usePrayerSession() {
       // Once this posture's content ends, the learner may already be holding the
       // next one — re-check and advance if so.
       onDone: () => reevalRef.current(),
+      // The instant the spoken "next movement is …" begins, switch the guide GIF
+      // to that movement — so its demo appears exactly on the announcement.
+      onAnnounce: () => setUiState((prev) => ({ ...prev, demoStep: upcoming ?? prev.demoStep })),
     });
 
     setUiState((prev) => ({
@@ -501,6 +517,7 @@ export function usePrayerSession() {
         stepIndex: 0,
         recentMistakes: [],
         alert: null,
+        demoStep: firstSeq?.[0] ?? null,
       });
 
       // Signal camera start, then switch screen.

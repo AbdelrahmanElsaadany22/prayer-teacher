@@ -58,6 +58,12 @@ export interface CueFlow {
   announceNext?: string | null;
   /** Called once the whole sequence finishes on its own (not when superseded). */
   onDone?: () => void;
+  /**
+   * Fired the instant the "next movement is …" clip starts sounding — used to
+   * flip the on-screen guide GIF to the announced movement exactly on the word,
+   * never before. Only fires when {@link announceNext} actually produced a clip.
+   */
+  onAnnounce?: () => void;
 }
 
 class AudioManager {
@@ -189,7 +195,8 @@ class AudioManager {
    * whatever was still playing.
    */
   playFlow(flow: CueFlow): void {
-    void this.runQueue(this.buildFlow(flow), flow.onDone);
+    const { groups, announceIndex } = this.buildFlow(flow);
+    void this.runQueue(groups, flow.onDone, announceIndex, flow.onAnnounce);
   }
 
   /**
@@ -220,8 +227,9 @@ class AudioManager {
    * Clips inside a group (e.g. Fatiha + surah) play back-to-back; the gap only
    * sits between groups so the recitation itself isn't chopped up.
    */
-  private buildFlow(flow: CueFlow): string[][] {
+  private buildFlow(flow: CueFlow): { groups: string[][]; announceIndex: number } {
     const groups: string[][] = [];
+    let hasAnnounce = false;
 
     // 1) the movement made to reach this posture
     if (flow.transition) {
@@ -237,10 +245,16 @@ class AudioManager {
     if (flow.announceNext) {
       const map = flow.lang === 'ar' ? this.AR_ANNOUNCE : this.EN_ANNOUNCE;
       const url = map[flow.announceNext];
-      if (url) groups.push([url]);
+      if (url) {
+        groups.push([url]);
+        hasAnnounce = true;
+      }
     }
 
-    return groups.filter((g) => g.length > 0);
+    // The announcement, when present, is always the last group; capture its index
+    // after dropping any empties so onAnnounce can be fired exactly as it starts.
+    const filtered = groups.filter((g) => g.length > 0);
+    return { groups: filtered, announceIndex: hasAnnounce ? filtered.length - 1 : -1 };
   }
 
   /**
@@ -270,7 +284,12 @@ class AudioManager {
    * announcement included — so nothing is ever cut short and moving on before it
    * finishes is caught as leaving early, the same in every posture.
    */
-  private async runQueue(groups: string[][], onDone?: () => void): Promise<void> {
+  private async runQueue(
+    groups: string[][],
+    onDone?: () => void,
+    announceIndex = -1,
+    onAnnounce?: () => void,
+  ): Promise<void> {
     this.stopCurrent();
     const runId = ++this.queueRunId;
     this.holding = groups.length > 0;
@@ -283,6 +302,8 @@ class AudioManager {
           await this.delay(this.GAP_MS);
           if (runId !== this.queueRunId) return;
         }
+        // Flip the guide GIF the moment the "next movement" clip begins.
+        if (g === announceIndex) onAnnounce?.();
         for (const url of groups[g]) {
           if (runId !== this.queueRunId) return; // superseded by a newer flow
           // A missing clip (e.g. recitation server down) is skipped, not fatal.

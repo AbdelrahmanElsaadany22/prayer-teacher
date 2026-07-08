@@ -2,6 +2,7 @@ import takbeerGif from '../../../assets/trainnee-gif/takber.gif';
 import rukuGif from '../../../assets/trainnee-gif/rukou3.gif';
 import iqamaGif from '../../../assets/trainnee-gif/qiam-from-rukou3.gif';
 import sujoodGif from '../../../assets/trainnee-gif/sujoud.gif';
+import sujoodFromJuloosGif from '../../../assets/trainnee-gif/sojoud-from-glous.gif';
 import juloosGif from '../../../assets/trainnee-gif/glous-ben-sjdatien.gif';
 import tashahhudGif from '../../../assets/trainnee-gif/tashahhud-akheer.gif';
 import qiyamFromJuloosGif from '../../../assets/trainnee-gif/qiam-from-glous.gif';
@@ -18,6 +19,7 @@ export type GifKey =
   | 'ruku'
   | 'iqama'
   | 'sujood'
+  | 'sujoodFromJuloos'
   | 'juloos'
   | 'tashahhud'
   | 'qiyamFromJuloos'
@@ -28,6 +30,7 @@ export const POSE_GIFS: Record<GifKey, string> = {
   ruku: rukuGif,
   iqama: iqamaGif,
   sujood: sujoodGif,
+  sujoodFromJuloos: sujoodFromJuloosGif,
   juloos: juloosGif,
   tashahhud: tashahhudGif,
   qiyamFromJuloos: qiyamFromJuloosGif,

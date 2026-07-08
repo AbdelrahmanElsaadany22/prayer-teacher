@@ -47,6 +47,7 @@ export function PrayerSession() {
         recentMistakes={uiState.recentMistakes}
         alert={uiState.alert}
         countdown={countdown}
+        demoStep={uiState.demoStep}
         onEnd={() => endPrayer({ stopAudio: true })}
       />
     );

@@ -28,6 +28,7 @@ interface Props {
   recentMistakes: string[];
   alert: { ar: string; en: string } | null;
   countdown: number | null;
+  demoStep: PoseStep | null;
   onEnd: () => void;
 }
 
@@ -38,15 +39,15 @@ export function SessionUI({
   sequence, stepIndex,
   detectedLabel, expectedLabel,
   recentMistakes, alert,
-  countdown,
+  countdown, demoStep,
   onEnd,
 }: Props) {
   const { t, lang } = useI18n();
 
-  // The movement still expected right now — its GIF is the one the guide loops.
-  const currentStep = sequence[stepIndex];
-  const gifSrc = currentStep?.gif ? POSE_GIFS[currentStep.gif] : null;
-  const gifCaption = currentStep ? (lang === 'ar' ? currentStep.labelAr : currentStep.label) : '';
+  // The movement the guide is demonstrating — held on the current posture until
+  // its successor's name is spoken (driven by demoStep, not the raw stepIndex).
+  const gifSrc = demoStep?.gif ? POSE_GIFS[demoStep.gif] : null;
+  const gifCaption = demoStep ? (lang === 'ar' ? demoStep.labelAr : demoStep.label) : '';
 
   return (
     <div className={css.session}>
