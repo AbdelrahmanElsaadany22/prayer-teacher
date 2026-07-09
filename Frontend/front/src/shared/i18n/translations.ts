@@ -57,7 +57,7 @@ export const translations: Record<Lang, Dict> = {
     'footer.brand': 'Estaقِm',
     'footer.privacy': 'Your camera data stays on your device.',
     'home.eyebrow': 'Private, client-side pose detection',
-    'home.title': 'Your prayer... more accurate than you think.',
+    'home.title': 'If your prayer is sound, you have truly succeeded.',
     'home.subtitle': 'Get real-time guidance on your device, then review your progress and recurring movement mistakes over time.',
     'home.ctaStart': 'Get started',
     'home.ctaDashboard': 'Open dashboard',
