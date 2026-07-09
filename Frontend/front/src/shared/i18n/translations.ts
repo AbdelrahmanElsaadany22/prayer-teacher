@@ -280,7 +280,7 @@ export const translations: Record<Lang, Dict> = {
   },
   ar: {
     'brand.name': 'إِسْتَقِمْ',
-    'nav.dashboard': 'لوحة المتابعة',
+    'nav.dashboard': 'رحلتي',
     'nav.friends': 'الأصدقاء',
     'nav.myProfile': 'ملفي',
     'nav.logout': 'تسجيل الخروج',
@@ -325,7 +325,7 @@ export const translations: Record<Lang, Dict> = {
     'verify.resentMessage': 'تم إرسال كود جديد على بريدك.',
     'verify.emailRequired': 'من فضلك أدخل بريدك الإلكتروني أولاً.',
     'verify.backToLogin': 'العودة لتسجيل الدخول',
-    'dash.eyebrow': 'لوحة المتابعة',
+    'dash.eyebrow': 'لوحة متابعتي',
     'dash.welcome': 'أهلاً بعودتك، {name}',
     'dash.subtitle': 'تابع جلسات صلاتك وطوّر أداءك مع الوقت.',
     'dash.loading': 'جارٍ التحميل…',
