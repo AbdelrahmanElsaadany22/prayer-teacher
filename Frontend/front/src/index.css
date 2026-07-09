@@ -871,6 +871,13 @@ main { display: grid; }
   letter-spacing: -0.04em;
 }
 
+/* Keep the Arabic hero title on a single line */
+[dir='rtl'] .home-page h1 {
+  max-width: none;
+  white-space: nowrap;
+  font-size: clamp(1.8rem, 5.5vw, 4rem);
+}
+
 .home-page p {
   max-width: 650px;
   margin: 28px auto 32px;
