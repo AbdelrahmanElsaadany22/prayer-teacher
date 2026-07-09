@@ -863,9 +863,9 @@ main { display: grid; }
 .home-page { text-align: center; }
 
 .home-page h1 {
-  max-width: 800px;
+  max-width: 820px;
   margin: 0 auto;
-  font-size: clamp(2.4rem, 6.5vw, 5rem);
+  font-size: clamp(2rem, 5vw, 3.5rem);
   line-height: 1.45;
   color: var(--text);
   letter-spacing: -0.04em;
