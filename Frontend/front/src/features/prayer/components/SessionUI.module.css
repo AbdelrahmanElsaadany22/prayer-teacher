@@ -161,7 +161,7 @@
 
 /* ── Bottom half: the movement demo GIF ── */
 .gifBox {
-  flex: 1;
+  flex: 1.5;
   min-height: 0;
   display: flex;
   flex-direction: column;

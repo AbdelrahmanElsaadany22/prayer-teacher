@@ -75,10 +75,10 @@ export function buildRakaSequence(rakaIndex: number, totalRakas: number): PoseSt
   const isLast = rakaIndex === totalRakas - 1;
   const endsWithTashahhud = rakaEndsWithTashahhud(rakaIndex, totalRakas);
 
-  const seq: PoseStep[] = [];
+  const seq: Omit<PoseStep, 'rakaIndex'>[] = [];
 
   if (isFirst) {
-    seq.push({ pose: 'takbeer', label: 'Takbeer', labelAr: 'تكبيرة الإحرام', gif: 'takbeer' });
+    seq.push({ pose: 'takbeer', label: 'Takbeer', labelAr: 'تكبيرة الإحرام', gif: 'takbeer', movement: 'takbeer' });
   }
 
   // Rising into qiyam looks different depending on where the learner comes from:
@@ -90,14 +90,14 @@ export function buildRakaSequence(rakaIndex: number, totalRakas: number): PoseSt
       ? 'qiyamFromJuloos'
       : 'qiyamFromSujood';
 
-  seq.push({ pose: 'qiyam', label: 'Qiyam', labelAr: 'القيام', gif: qiyamGif });
-  seq.push({ pose: 'ruku', label: "Ruku'", labelAr: 'الركوع', gif: 'ruku' });
-  seq.push({ pose: 'iqama', label: "I'tidal", labelAr: 'الاعتدال', gif: 'iqama' });
+  seq.push({ pose: 'qiyam', label: 'Qiyam', labelAr: 'القيام', gif: qiyamGif, movement: 'qiyam' });
+  seq.push({ pose: 'ruku', label: "Ruku'", labelAr: 'الركوع', gif: 'ruku', movement: 'ruku' });
+  seq.push({ pose: 'iqama', label: "I'tidal", labelAr: 'الاعتدال', gif: 'iqama', movement: 'iqama' });
   // Sujood 1 is entered from standing (i'tidal); sujood 2 is entered from the
   // sitting between the prostrations, so each shows the matching demo.
-  seq.push({ pose: 'sujood', label: 'Sujood 1', labelAr: 'السجود', gif: 'sujood' });
-  seq.push({ pose: 'juloos', label: 'Juloos', labelAr: 'الجلسة', gif: 'juloos' });
-  seq.push({ pose: 'sujood', label: 'Sujood 2', labelAr: 'السجود', gif: 'sujoodFromJuloos' });
+  seq.push({ pose: 'sujood', label: 'Sujood 1', labelAr: 'السجود', gif: 'sujood', movement: 'sujood1' });
+  seq.push({ pose: 'juloos', label: 'Juloos', labelAr: 'الجلسة', gif: 'juloos', movement: 'juloos' });
+  seq.push({ pose: 'sujood', label: 'Sujood 2', labelAr: 'السجود', gif: 'sujoodFromJuloos', movement: 'sujood2' });
 
   if (endsWithTashahhud) {
     // The middle tashahhud has no clip of its own, so it borrows the
@@ -107,6 +107,7 @@ export function buildRakaSequence(rakaIndex: number, totalRakas: number): PoseSt
       label: 'Tashahhud',
       labelAr: 'التشهد',
       gif: isLast ? 'tashahhud' : 'juloos',
+      movement: 'tashahhud',
     });
 
     // The final rak'ah closes with the tasleem: salam to the right, then left.
@@ -114,10 +115,20 @@ export function buildRakaSequence(rakaIndex: number, totalRakas: number): PoseSt
     // mistake, caught the same way any out-of-order pose is. Both are performed
     // from the tashahhud sitting position, so they keep showing that GIF.
     if (isLast) {
-      seq.push({ pose: 'salam_right', label: 'Tasleem (right)', labelAr: 'التسليم يمينًا', gif: 'tashahhud' });
-      seq.push({ pose: 'salam_left', label: 'Tasleem (left)', labelAr: 'التسليم يسارًا', gif: 'tashahhud' });
+      seq.push({
+        pose: 'salam_right', label: 'Tasleem (right)', labelAr: 'التسليم يمينًا',
+        gif: 'tashahhud', movement: 'salam_right',
+      });
+      seq.push({
+        pose: 'salam_left', label: 'Tasleem (left)', labelAr: 'التسليم يسارًا',
+        gif: 'tashahhud', movement: 'salam_left',
+      });
     }
   }
 
-  return seq;
+  // Tagged here (rather than per push above) so every step in this rak'ah's
+  // sequence always carries the raka it actually belongs to — needed because
+  // the session's live rak'ah counter advances to the next rak'ah as soon as a
+  // step is confirmed, before the guide has caught up to demonstrating it.
+  return seq.map((step) => ({ ...step, rakaIndex }));
 }

@@ -60,6 +60,12 @@ export interface SessionUIState {
    * showing the current posture, not the upcoming one.
    */
   demoStep: PoseStep | null;
+  /**
+   * Whether the learner has actually performed {@link demoStep} yet. False while it was
+   * only just announced (the guide is demonstrating it ahead of time); true once the
+   * learner has actually reached it (set alongside `stepIndex` advancing past it).
+   */
+  demoStepConfirmed: boolean;
 }
 
 interface SessionRefs {
@@ -82,6 +88,9 @@ export function usePrayerSession() {
   const [selectedPrayer, setSelectedPrayer] = useState<Prayer | null>(null);
   const [reportData, setReportData] = useState<ReportData | null>(null);
   const [countdown, setCountdown] = useState<number | null>(null);
+  // Flips true once the 5s countdown finishes and pose detection goes live — the 3D
+  // guide's demo animation waits for this instead of starting the moment it mounts.
+  const [detectionActive, setDetectionActive] = useState(false);
   const [uiState, setUiState] = useState<SessionUIState>({
     poseBadgeText: 'Detecting…',
     poseBadgeState: 'waiting',
@@ -94,6 +103,7 @@ export function usePrayerSession() {
     recentMistakes: [],
     alert: null,
     demoStep: null,
+    demoStepConfirmed: false,
   });
 
   // Session data accessed by callbacks (no stale closures)
@@ -279,8 +289,10 @@ export function usePrayerSession() {
 
     // The guide now demonstrates the pose just reached; it stays on this one until
     // the "next movement is …" clip sounds (see onAnnounce below), never jumping
-    // ahead while the learner is still holding/reciting the current posture.
-    setUiState((prev) => ({ ...prev, demoStep: step }));
+    // ahead while the learner is still holding/reciting the current posture. The
+    // learner just performed it, so it's confirmed — the 3D demo stops looping and
+    // holds on this movement's timestamp.
+    setUiState((prev) => ({ ...prev, demoStep: step, demoStepConfirmed: true }));
 
     // Capture the reached pose + its position before advancing, so the dhikr
     // (and middle-vs-last tashahhud) reflect what actually happened.
@@ -373,8 +385,13 @@ export function usePrayerSession() {
       // next one — re-check and advance if so.
       onDone: () => reevalRef.current(),
       // The instant the spoken "next movement is …" begins, switch the guide GIF
-      // to that movement — so its demo appears exactly on the announcement.
-      onAnnounce: () => setUiState((prev) => ({ ...prev, demoStep: upcoming ?? prev.demoStep })),
+      // to that movement — so its demo appears exactly on the announcement. It hasn't
+      // been performed yet, so the 3D demo loops the lead-up to it until it has.
+      onAnnounce: () => setUiState((prev) => ({
+        ...prev,
+        demoStep: upcoming ?? prev.demoStep,
+        demoStepConfirmed: upcoming ? false : prev.demoStepConfirmed,
+      })),
     });
 
     setUiState((prev) => ({
@@ -461,7 +478,7 @@ export function usePrayerSession() {
     startCamera()
       .then(() => {
         startRecording();
-        setCountdown(10); // begin 10-second countdown before detection starts
+        setCountdown(5); // begin 10-second countdown before detection starts
       })
       .catch((err) => {
         const msg = err instanceof Error ? err.message : String(err);
@@ -475,6 +492,7 @@ export function usePrayerSession() {
     if (countdown === null) return;
     if (countdown === 0) {
       setCountdown(null);
+      setDetectionActive(true);
       startLoop();
       return;
     }
@@ -506,6 +524,7 @@ export function usePrayerSession() {
       s.sessionStartTime = Date.now();
       s.selectedPrayer = prayer;
       s.prayerStarted = false;
+      setDetectionActive(false);
       audioService.resetRecitation(); // no surah carry-over between prayers
       s.rakaSequences = Array.from({ length: prayer.rakas }, (_, i) =>
         buildRakaSequence(i, prayer.rakas),
@@ -525,6 +544,7 @@ export function usePrayerSession() {
         recentMistakes: [],
         alert: null,
         demoStep: firstSeq?.[0] ?? null,
+        demoStepConfirmed: false,
       });
 
       // Signal camera start, then switch screen.
@@ -551,6 +571,7 @@ export function usePrayerSession() {
     uiState,
     reportData,
     countdown,
+    detectionActive,
     videoRef,
     canvasRef,
     selectPrayer,

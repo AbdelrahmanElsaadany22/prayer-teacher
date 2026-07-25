@@ -13,6 +13,7 @@ export function PrayerSession() {
     uiState,
     reportData,
     countdown,
+    detectionActive,
     videoRef,
     canvasRef,
     selectPrayer,
@@ -35,6 +36,7 @@ export function PrayerSession() {
       <SessionUI
         videoRef={videoRef}
         canvasRef={canvasRef}
+        prayerId={selectedPrayer?.id ?? null}
         prayerName={selectedPrayer?.ar ?? ''}
         rakaNum={uiState.rakaNum}
         rakaTotal={uiState.rakaTotal}
@@ -47,7 +49,9 @@ export function PrayerSession() {
         recentMistakes={uiState.recentMistakes}
         alert={uiState.alert}
         countdown={countdown}
+        detectionActive={detectionActive}
         demoStep={uiState.demoStep}
+        demoStepConfirmed={uiState.demoStepConfirmed}
         onEnd={() => endPrayer({ stopAudio: true })}
       />
     );

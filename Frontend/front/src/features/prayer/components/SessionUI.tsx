@@ -1,9 +1,9 @@
 import type { RefObject } from 'react';
-import type { PoseStep, PoseBadgeState } from '../types/prayer.types';
+import type { PoseStep, PoseBadgeState, PrayerId } from '../types/prayer.types';
 import type { Lang } from '../../../shared/i18n/translations';
 import { useI18n } from '../../../shared/i18n/LanguageProvider';
-import { POSE_GIFS } from '../constants/poseGifs';
 import { useRecitationAyah } from '../hooks/useRecitationAyah';
+import { PrayerModel3D } from './PrayerModel3D';
 import { VideoCanvas } from './VideoCanvas';
 import css from './SessionUI.module.css';
 
@@ -27,6 +27,7 @@ function formatSeqLabel(step: PoseStep, lang: Lang): string {
 interface Props {
   videoRef: RefObject<HTMLVideoElement | null>;
   canvasRef: RefObject<HTMLCanvasElement | null>;
+  prayerId: PrayerId | null;
   prayerName: string;
   rakaNum: number;
   rakaTotal: number;
@@ -39,25 +40,26 @@ interface Props {
   recentMistakes: string[];
   alert: { ar: string; en: string } | null;
   countdown: number | null;
+  detectionActive: boolean;
   demoStep: PoseStep | null;
+  demoStepConfirmed: boolean;
   onEnd: () => void;
 }
 
 export function SessionUI({
   videoRef, canvasRef,
-  prayerName, rakaNum, rakaTotal,
+  prayerId, prayerName, rakaNum, rakaTotal,
   poseBadgeText, poseBadgeState,
   sequence, stepIndex,
   detectedLabel, expectedLabel,
   recentMistakes, alert,
-  countdown, demoStep,
+  countdown, detectionActive, demoStep, demoStepConfirmed,
   onEnd,
 }: Props) {
   const { t, lang } = useI18n();
 
   // The movement the guide is demonstrating — held on the current posture until
   // its successor's name is spoken (driven by demoStep, not the raw stepIndex).
-  const gifSrc = demoStep?.gif ? POSE_GIFS[demoStep.gif] : null;
   const gifCaption = demoStep ? (lang === 'ar' ? demoStep.labelAr : demoStep.label) : '';
 
   // The ayah being recited right now (during qiyam), tracked from the audio clock.
@@ -102,14 +104,15 @@ export function SessionUI({
             )}
           </div>
 
-          {/* Bottom half: the movement demo GIF */}
+          {/* Bottom half: the 3D movement demo */}
           <div className={css.gifBox}>
-            {gifSrc ? (
-              /* key forces a fresh <img> per movement so the GIF restarts each time */
-              <img key={gifSrc} src={gifSrc} className={css.teacherGif} alt={gifCaption} />
-            ) : (
-              <div className={css.teacherGif} aria-hidden="true" />
-            )}
+            <PrayerModel3D
+              prayerId={prayerId}
+              movement={demoStep?.movement ?? null}
+              rakaIndex={demoStep?.rakaIndex ?? rakaNum - 1}
+              poseConfirmed={demoStepConfirmed}
+              active={detectionActive}
+            />
             {gifCaption && <div className={css.teacherCaption}>{gifCaption}</div>}
           </div>
         </div>
