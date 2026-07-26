@@ -22,6 +22,27 @@
   pointer-events: none;
 }
 
+/* Blurs the character's face — position/size set inline per-movement (see
+   FACE_POSITION_BY_MOVEMENT in PrayerModel3D.tsx). The mask feathers the blur's edge
+   into a soft ellipse instead of a hard-edged circle; the transition on left/top/width/
+   height is what makes it glide to the new spot instead of snapping when the movement
+   (and so the character's pose) changes. */
+.faceBlur {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  mask-image: radial-gradient(circle, #000 55%, transparent 100%);
+  -webkit-mask-image: radial-gradient(circle, #000 55%, transparent 100%);
+  pointer-events: none;
+  transition:
+    left 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+    top 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+    width 0.4s ease,
+    height 0.4s ease;
+}
+
 /* Sketchfab renders its own watermark badge in the iframe's bottom-right corner, and it
    can't be disabled via the ui_watermark init flag on the free tier. This patch sits above
    it and matches the panel's background so it reads as empty space instead of a logo. */

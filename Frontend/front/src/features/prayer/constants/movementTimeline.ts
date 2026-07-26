@@ -159,7 +159,6 @@ const RAKA_4_PLACEHOLDER: RakaTimeline = {
   salam_right: { start: '62:60', end: '64:00', loop: true },
   salam_left:  { start: '64:00', end: '66:10', loop: true },
 };
-
 export const MOVEMENT_TIMELINE: MovementTimelineConfig = {
   fajr: {
     1: RAKA_1_FAJR,

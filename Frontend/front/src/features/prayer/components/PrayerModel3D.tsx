@@ -8,8 +8,36 @@ import css from './PrayerModel3D.module.css';
 const SKETCHFAB_SCRIPT_SRC = 'https://static.sketchfab.com/api/sketchfab-viewer-1.12.1.js';
 const MODEL_UID = 'eb0f80a7278243b4988b159fc957bbd5';
 
+/** Fixed flat color for the character (skin, outfit, everything but the carpet) —
+ * unlike the carpet, this doesn't follow the app theme. */
+const CHARACTER_COLOR = '#000';
+
 /** How much further back from the model the camera sits, relative to its default distance. */
 const ZOOM_OUT_FACTOR = 1.0;
+
+/**
+ * Approximate on-screen position of the character's face for each movement, as a
+ * percentage of the canvas width/height (`xPct`/`yPct` = center, `widthPct`/`heightPct`
+ * = blur ellipse size). The Sketchfab Viewer API used here has no "project this 3D
+ * bone to screen space" call — only play/pause/seek/camera/materials — so per-frame
+ * tracking isn't possible. But the camera itself never moves (see `applyZoomOut`,
+ * called once on load); only the character's *pose* changes. So the face's screen
+ * position is really just a function of which movement is currently showing, and
+ * that's what this table encodes. Eyeballed against the model, not measured —
+ * nudge these if the blur doesn't sit on the face for a given movement.
+ */
+const FACE_POSITION_BY_MOVEMENT: Record<MovementName, { xPct: number; yPct: number; widthPct: number; heightPct: number }> = {
+  takbeer:     { xPct: 55.5, yPct: 15, widthPct: 4, heightPct: 9 },
+  qiyam:       { xPct: 56, yPct: 14, widthPct: 13, heightPct: 17 },
+  iqama:       { xPct: 56, yPct: 14, widthPct: 13, heightPct: 17 },
+  ruku:        { xPct: 50, yPct: 42, widthPct: 17, heightPct: 19 },
+  sujood1:     { xPct: 46, yPct: 70, widthPct: 17, heightPct: 17 },
+  juloos:      { xPct: 52, yPct: 52, widthPct: 15, heightPct: 17 },
+  sujood2:     { xPct: 46, yPct: 70, widthPct: 17, heightPct: 17 },
+  tashahhud:   { xPct: 52, yPct: 50, widthPct: 15, heightPct: 17 },
+  salam_right: { xPct: 54, yPct: 50, widthPct: 15, heightPct: 17 },
+  salam_left:  { xPct: 50, yPct: 50, widthPct: 15, heightPct: 17 },
+};
 
 /** How often (ms) to poll playback time while animating toward a target timestamp. */
 const ANIMATION_POLL_MS = 80;
@@ -26,12 +54,21 @@ interface MaterialChannel {
   enable?: boolean;
   color?: [number, number, number];
   factor?: number;
+  /** A baked texture map, if any. Texture and `color` are mutually exclusive in the
+   * Sketchfab API — a channel with a texture ignores `color` entirely, so forcing a flat
+   * color requires deleting this first. */
+  texture?: unknown;
 }
 
 interface SketchfabMaterial {
   id: number;
   name: string;
   channels: Record<string, MaterialChannel | undefined>;
+}
+
+/** A scene node as returned by `getNodeMap` — only the field this file touches. */
+interface SketchfabNode {
+  name?: string;
 }
 
 interface SketchfabApi {
@@ -50,6 +87,9 @@ interface SketchfabApi {
   ) => void;
   getMaterialList: (callback: (err: unknown, materials: SketchfabMaterial[]) => void) => void;
   setMaterial: (material: SketchfabMaterial, callback?: (err: unknown) => void) => void;
+  setEnvironment: (options: { shadowEnabled?: boolean }, callback?: (err: unknown) => void) => void;
+  getNodeMap: (callback: (err: unknown, nodes: Record<string, SketchfabNode>) => void) => void;
+  hide: (instanceId: string, callback?: (err: unknown) => void) => void;
   addEventListener: (event: 'viewerready', callback: () => void) => void;
 }
 
@@ -102,6 +142,35 @@ function loadSketchfabScript(): Promise<void> {
   return scriptPromise;
 }
 
+/** Turns off the scene's cast shadow (the dark patch the character throws onto the
+ * carpet/ground), via the Viewer API's environment settings. */
+function disableShadow(api: SketchfabApi): void {
+  api.setEnvironment({ shadowEnabled: false });
+}
+
+/** Name pattern for meshes whose raised/hollow geometry (eyeballs, mouth cavity) stays
+ * visible as a shape even after being recolored flat — recoloring only hides their
+ * texture detail, not the bump/cavity itself, so this hides the nodes outright instead. */
+const HIDE_NODE_PATTERN = /eye|teeth/i;
+
+/** Hides specific mesh nodes (found by name via getNodeMap) rather than just recoloring
+ * them, so their geometry disappears entirely instead of reading as a flat-colored bump. */
+function hideFacialFeatures(api: SketchfabApi): void {
+  api.getNodeMap((err, nodes) => {
+    if (err || !nodes) return;
+    // Left in deliberately, same reasoning as the materials debug in applyModelColors:
+    // node names aren't guaranteed to match material names, so this confirms/corrects
+    // HIDE_NODE_PATTERN against what the model's scene graph actually calls things.
+    console.debug('[PrayerModel3D] nodes:', Object.values(nodes).map((n) => n?.name));
+    Object.keys(nodes).forEach((instanceId) => {
+      const name = nodes[instanceId]?.name;
+      if (name && HIDE_NODE_PATTERN.test(name)) {
+        api.hide(instanceId);
+      }
+    });
+  });
+}
+
 /** Pulls the camera back from its default distance so the model reads a bit smaller/further away. */
 function applyZoomOut(api: SketchfabApi): void {
   api.getCameraLookAt((err, camera) => {
@@ -115,18 +184,16 @@ function applyZoomOut(api: SketchfabApi): void {
 }
 
 /**
- * Name patterns used to find each recolorable part of the model, case-insensitive — in
- * case the model's own naming (or a future re-upload) varies between e.g. "rug"/"carpet"
- * or "shirt"/"thobe". Adjust these if a part doesn't match — see the console.debug in
- * `applyModelColors` below, which prints every material name the model actually has.
+ * Name pattern used to pick out the carpet/rug material, case-insensitive — in case the
+ * model's own naming (or a future re-upload) varies between e.g. "rug"/"carpet"/"sajjad".
+ * Every *other* material in the model is treated as part of the character (the model has
+ * many separate materials — hands, face, feet, robe, headwear, etc. — with names that
+ * don't share a common pattern, so rather than trying to name-match each one, anything
+ * that isn't the carpet gets the same flat character color). Adjust this if the carpet
+ * stops matching — see the console.debug in `applyModelColors` below, which prints every
+ * material name the model actually has.
  */
-const MATERIAL_PATTERNS = {
-  carpet: /carpet|rug|saj+ad/i,
-  skin: /skin|body|head|face/i,
-  shirt: /shirt|thob|robe|dress|cloth|fabric/i,
-} as const;
-
-type ModelPart = keyof typeof MATERIAL_PATTERNS;
+const CARPET_PATTERN = /carpet|rug|saj+ad/i;
 
 /** '#rrggbb' -> normalized [r,g,b] in 0..1, as the Sketchfab material API expects. */
 function hexToRgb01(hex: string): [number, number, number] | null {
@@ -137,37 +204,69 @@ function hexToRgb01(hex: string): [number, number, number] | null {
 }
 
 /** Sets a material's base color and makes sure it's actually visible (some PBR channels
- * key their strength under a separate `factor` on top of `color`). */
-function setMaterialColor(api: SketchfabApi, material: SketchfabMaterial, rgb: [number, number, number]): void {
-  const channel = material.channels.AlbedoPBR ?? material.channels.Albedo ?? material.channels.diffuse;
-  if (!channel) return;
-  channel.enable = true;
-  channel.color = rgb;
-  if (channel.factor !== undefined) channel.factor = 1;
+ * key their strength under a separate `factor` on top of `color`). Texture and `color` are
+ * mutually exclusive per-channel in the Sketchfab API — a channel with a baked texture map
+ * ignores `color` entirely, so any channel this touches has its `texture` deleted first
+ * (this is why the carpet, which has no baked texture, recolored fine while the character's
+ * textured skin/outfit materials didn't change at all). When `flat` is set, also pins
+ * roughness to fully matte and metalness to fully non-metal, so the surface reads as a
+ * plain flat color instead of picking up bright specular highlights from the scene lighting
+ * — roughness at 0 (mirror-smooth) is what washes a flat color out toward white, not
+ * roughness at 1 (fully rough/matte). Channels are left enabled (not disabled) since
+ * disabling them made the shader fall back to a default appearance instead of respecting
+ * these factors. */
+function setMaterialColor(
+  api: SketchfabApi,
+  material: SketchfabMaterial,
+  rgb: [number, number, number],
+  flat = false,
+): void {
+  const albedo = material.channels.AlbedoPBR ?? material.channels.Albedo ?? material.channels.diffuse;
+  if (albedo) {
+    delete albedo.texture;
+    albedo.enable = true;
+    albedo.color = rgb;
+    if (albedo.factor !== undefined) albedo.factor = 1;
+  }
+  if (flat) {
+    const roughness = material.channels.RoughnessPBR;
+    if (roughness) {
+      delete roughness.texture;
+      roughness.enable = true;
+      if (roughness.factor !== undefined) roughness.factor = 1;
+    }
+    const metalness = material.channels.MetalnessPBR;
+    if (metalness) {
+      delete metalness.texture;
+      metalness.enable = true;
+      if (metalness.factor !== undefined) metalness.factor = 0;
+    }
+  }
   api.setMaterial(material);
 }
 
 /**
- * Recolors specific parts of the model (rug, skin, shirt) that are baked in as regular
- * materials, not separate DOM/CSS layers — so this goes through the Viewer API's material
- * list instead: https://sketchfab.com/developers/viewer/api (getMaterialList/setMaterial).
+ * Recolors the whole model to two flat colors: the carpet/rug (found by {@link
+ * CARPET_PATTERN}) and everything else (the character — skin, robe, headwear, etc.,
+ * however many separate materials those are split into), which is flattened to a single
+ * matte color with no roughness/metalness response. Goes through the Viewer API's material
+ * list rather than a scene graph, since the model isn't loaded locally:
+ * https://sketchfab.com/developers/viewer/api (getMaterialList/setMaterial).
  */
-function applyModelColors(api: SketchfabApi, colors: Partial<Record<ModelPart, string>>): void {
+function applyModelColors(api: SketchfabApi, colors: { carpet?: string; character?: string }): void {
   api.getMaterialList((err, materials) => {
     if (err || !materials) return;
-    // Left in deliberately: the only way to confirm/correct the patterns above is to see
+    // Left in deliberately: the only way to confirm/correct CARPET_PATTERN is to see
     // the model's actual material names, which aren't available outside a live viewer.
     console.debug('[PrayerModel3D] materials:', materials.map((m) => m.name));
-    (Object.keys(colors) as ModelPart[]).forEach((part) => {
-      const hex = colors[part];
-      const rgb = hex ? hexToRgb01(hex) : null;
-      if (!rgb) return;
-      const material = materials.find((m) => MATERIAL_PATTERNS[part].test(m.name));
-      if (!material) {
-        console.warn(`[PrayerModel3D] no "${part}" material found (pattern ${MATERIAL_PATTERNS[part]}).`);
-        return;
+    const carpetRgb = colors.carpet ? hexToRgb01(colors.carpet) : null;
+    const characterRgb = colors.character ? hexToRgb01(colors.character) : null;
+    materials.forEach((material) => {
+      if (CARPET_PATTERN.test(material.name)) {
+        if (carpetRgb) setMaterialColor(api, material, carpetRgb, false);
+      } else if (characterRgb) {
+        setMaterialColor(api, material, characterRgb, true);
       }
-      setMaterialColor(api, material, rgb);
     });
   });
 }
@@ -407,10 +506,12 @@ export function PrayerModel3D({ prayerId, movement, rakaIndex, poseConfirmed, ac
   activeRef.current = active;
   const animTokenRef = useRef(0);
 
-  // The rug's color follows the app's active theme (its accent color) rather than a
-  // fixed baked-in shade — see applyCarpetColor.
+  // The rug's color follows the app's active theme rather than a fixed baked-in shade —
+  // see applyModelColors. Uses --accent-dark (not --accent) since --accent itself is a
+  // fairly pale/pastel swatch in most themes and reads as washed-out on the rug; the
+  // "-dark" step of the theme's own color ramp gives a richer, more saturated fill.
   const { theme } = useTheme();
-  const accentHex = THEME_CONFIGS[theme].vars['--accent'];
+  const accentHex = THEME_CONFIGS[theme].vars['--accent-dark'];
   const accentHexRef = useRef(accentHex);
   accentHexRef.current = accentHex;
 
@@ -443,7 +544,9 @@ export function PrayerModel3D({ prayerId, movement, rakaIndex, poseConfirmed, ac
             apiRef.current = api;
             api.pause();
             applyZoomOut(api);
-            applyModelColors(api, { carpet: accentHexRef.current, shirt: accentHexRef.current });
+            disableShadow(api);
+            hideFacialFeatures(api);
+            applyModelColors(api, { carpet: accentHexRef.current, character: CHARACTER_COLOR });
             // Rest on a clean, deterministic frame while waiting out the countdown —
             // `autostart` may have already played it a little forward by the time this fires.
             api.seekTo(0, () => {
@@ -478,8 +581,10 @@ export function PrayerModel3D({ prayerId, movement, rakaIndex, poseConfirmed, ac
   // Re-tint the rug and shirt immediately if the user switches themes mid-session.
   useEffect(() => {
     if (!apiRef.current) return;
-    applyModelColors(apiRef.current, { carpet: accentHex, shirt: accentHex });
+    applyModelColors(apiRef.current, { carpet: accentHex, character: CHARACTER_COLOR });
   }, [accentHex]);
+
+  const facePosition = movement ? FACE_POSITION_BY_MOVEMENT[movement] : null;
 
   return (
     <div className={css.canvasWrap}>
@@ -490,6 +595,22 @@ export function PrayerModel3D({ prayerId, movement, rakaIndex, poseConfirmed, ac
         allow="autoplay; fullscreen; xr-spatial-tracking"
         allowFullScreen
       />
+      {/* Blurs the character's face — position looked up per-movement in
+          FACE_POSITION_BY_MOVEMENT, see its docstring for why (no screen-projection
+          API to track the actual 3D bone). Eases to the new spot on movement change
+          via the CSS transition on .faceBlur rather than jumping. */}
+      {facePosition && (
+        <div
+          className={css.faceBlur}
+          style={{
+            left: `${facePosition.xPct}%`,
+            top: `${facePosition.yPct}%`,
+            width: `${facePosition.widthPct}%`,
+            height: `${facePosition.heightPct}%`,
+          }}
+          aria-hidden="true"
+        />
+      )}
       {/* Sketchfab's own watermark badge can't be disabled via ui_watermark on the free
           tier (see class docstring above), so it's masked with a matching-background
           patch instead of being left visible. */}
