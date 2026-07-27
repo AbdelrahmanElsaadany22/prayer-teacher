@@ -1,43 +1,17 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { MovementName, PrayerId } from '../types/prayer.types';
 import { resolveMovementTiming } from '../constants/movementTimeline';
 import { useTheme } from '../../../shared/theme/ThemeProvider';
 import { THEME_CONFIGS } from '../../../shared/theme/themeVars';
+import { createModelPoseLandmarker } from '../services/mediapipeService';
+import { MODEL_POSE_MEDIAPIPE_CONFIG } from '../constants/prayerConfig';
 import css from './PrayerModel3D.module.css';
 
 const SKETCHFAB_SCRIPT_SRC = 'https://static.sketchfab.com/api/sketchfab-viewer-1.12.1.js';
 const MODEL_UID = 'eb0f80a7278243b4988b159fc957bbd5';
 
-/** Fixed flat color for the character (skin, outfit, everything but the carpet) —
- * unlike the carpet, this doesn't follow the app theme. */
-const CHARACTER_COLOR = '#000';
-
 /** How much further back from the model the camera sits, relative to its default distance. */
 const ZOOM_OUT_FACTOR = 1.0;
-
-/**
- * Approximate on-screen position of the character's face for each movement, as a
- * percentage of the canvas width/height (`xPct`/`yPct` = center, `widthPct`/`heightPct`
- * = blur ellipse size). The Sketchfab Viewer API used here has no "project this 3D
- * bone to screen space" call — only play/pause/seek/camera/materials — so per-frame
- * tracking isn't possible. But the camera itself never moves (see `applyZoomOut`,
- * called once on load); only the character's *pose* changes. So the face's screen
- * position is really just a function of which movement is currently showing, and
- * that's what this table encodes. Eyeballed against the model, not measured —
- * nudge these if the blur doesn't sit on the face for a given movement.
- */
-const FACE_POSITION_BY_MOVEMENT: Record<MovementName, { xPct: number; yPct: number; widthPct: number; heightPct: number }> = {
-  takbeer:     { xPct: 55.5, yPct: 15, widthPct: 4, heightPct: 9 },
-  qiyam:       { xPct: 56, yPct: 14, widthPct: 13, heightPct: 17 },
-  iqama:       { xPct: 56, yPct: 14, widthPct: 13, heightPct: 17 },
-  ruku:        { xPct: 50, yPct: 42, widthPct: 17, heightPct: 19 },
-  sujood1:     { xPct: 46, yPct: 70, widthPct: 17, heightPct: 17 },
-  juloos:      { xPct: 52, yPct: 52, widthPct: 15, heightPct: 17 },
-  sujood2:     { xPct: 46, yPct: 70, widthPct: 17, heightPct: 17 },
-  tashahhud:   { xPct: 52, yPct: 50, widthPct: 15, heightPct: 17 },
-  salam_right: { xPct: 54, yPct: 50, widthPct: 15, heightPct: 17 },
-  salam_left:  { xPct: 50, yPct: 50, widthPct: 15, heightPct: 17 },
-};
 
 /** How often (ms) to poll playback time while animating toward a target timestamp. */
 const ANIMATION_POLL_MS = 80;
@@ -90,6 +64,16 @@ interface SketchfabApi {
   setEnvironment: (options: { shadowEnabled?: boolean }, callback?: (err: unknown) => void) => void;
   getNodeMap: (callback: (err: unknown, nodes: Record<string, SketchfabNode>) => void) => void;
   hide: (instanceId: string, callback?: (err: unknown) => void) => void;
+  /** Captures a screenshot of the rendered viewer as a base64 data URL — the only way to
+   * get pixel data out of the Sketchfab canvas, since it lives in a cross-origin iframe
+   * (a plain `drawImage`/`getImageData` off it would be CORS-tainted). Used to feed frames
+   * to the face-tracking pose model (see the face-tracking effect in the component below). */
+  getScreenShot: (
+    width: number,
+    height: number,
+    mimetype: string,
+    callback: (err: unknown, dataUrl: string) => void
+  ) => void;
   addEventListener: (event: 'viewerready', callback: () => void) => void;
 }
 
@@ -450,6 +434,159 @@ function driveAnimation(
   else loopRange(api, timing.start, timing.end, tokenRef);
 }
 
+/** A face-covering rectangle in the same terms the overlay's CSS wants: percentage of
+ * the canvas width/height, `xPct`/`yPct` = center, `widthPct`/`heightPct` = size. */
+interface FaceRect {
+  xPct: number;
+  yPct: number;
+  widthPct: number;
+  heightPct: number;
+}
+
+/** How often (ms) to grab a fresh screenshot of the model and re-run pose detection.
+ * Each tick is a real round trip (postMessage screenshot + a WASM inference call), so
+ * this stays well below video frame rate; the CSS transition on the cover smooths the
+ * gaps between updates into what still reads as continuous tracking. */
+const FACE_TRACK_INTERVAL_MS = 30;
+
+/** How much of the character's own on-screen bounding box (whichever is larger, width or
+ * height — bowing/prostrating make the silhouette wide instead of tall) becomes the face
+ * cover's diameter. The model's face is only ~1-2% of the frame on its own — too small
+ * and orientation-dependent (BlazePose's facial landmarks collapse together in the fixed
+ * side-profile view this camera uses) to size the cover from directly — so this instead
+ * approximates a head-to-body ratio off the one measurement that stays reliable in any
+ * pose: the character's own silhouette, found the same way as the detection crop below. */
+const FACE_COVER_SIZE_FACTOR = 0.18;
+
+/**
+ * Grabs a screenshot of the current Sketchfab frame and decodes it into an `<img>`. The
+ * screenshot comes back as a same-origin `data:` URL over postMessage — unlike a direct
+ * `drawImage`/`getImageData` off the cross-origin iframe, decoding a `data:` URL isn't
+ * CORS-tainted, which is what makes reading pixels out of this iframe possible at all.
+ */
+function captureScreenshot(api: SketchfabApi, width: number, height: number): Promise<HTMLImageElement | null> {
+  return new Promise((resolve) => {
+    api.getScreenShot(width, height, 'image/png', (err, dataUrl) => {
+      if (err || !dataUrl) {
+        resolve(null);
+        return;
+      }
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => resolve(null);
+      img.src = dataUrl;
+    });
+  });
+}
+
+/** Pixel bounding box of the character (+ carpet, incidentally — it's a thin mat roughly
+ * as wide as the character's stance, so this doesn't meaningfully widen the box) within a
+ * screenshot, found via the alpha channel: the scene renders on a transparent background
+ * (`transparent: 1` at init), so anything that isn't the character/carpet is fully
+ * transparent. Returns null if nothing is found (e.g. a screenshot taken mid-transition). */
+function findOpaqueBoundingBox(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+): { minX: number; minY: number; maxX: number; maxY: number } | null {
+  const { data } = ctx.getImageData(0, 0, width, height);
+  let minX = width, minY = height, maxX = 0, maxY = 0;
+  let found = false;
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      if (data[(y * width + x) * 4 + 3] > 10) {
+        found = true;
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+    }
+  }
+  return found ? { minX, minY, maxX, maxY } : null;
+}
+
+/** Crop region computed by {@link cropAndFlattenToWhite}, in the *source* screenshot's own
+ * pixel coordinates — carried alongside the crop canvas so a landmark position detected
+ * within it can be converted back to full-frame coordinates afterward. */
+interface CropRegion {
+  canvas: HTMLCanvasElement;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+/**
+ * Crops a screenshot to a bounding box plus margin, flattens it onto a white background,
+ * and scales it up to a fixed square — the character reads as only a few percent of an
+ * uncropped screenshot, which is too small for MediaPipe's pose detector to find at all
+ * (it resizes whatever image it's given down to a small fixed resolution internally, so a
+ * tiny subject disappears regardless of the screenshot's own resolution). Cropping tight
+ * around the character first is what makes detection work; verified empirically — the
+ * same detector finds nothing on an uncropped frame but detects the pose with >0.99
+ * confidence once cropped this way. Flattening to white (rather than leaving the
+ * transparent background as-is) matters too: the screenshot's RGB channels are zeroed out
+ * wherever alpha is 0, so an unflattened crop would hand the detector a mostly-black image.
+ */
+function cropAndFlattenToWhite(
+  img: HTMLImageElement,
+  bbox: { minX: number; minY: number; maxX: number; maxY: number },
+  outSize: number,
+): CropRegion {
+  const marginX = (bbox.maxX - bbox.minX) * 0.6;
+  const marginY = (bbox.maxY - bbox.minY) * 0.35;
+  const x = Math.max(0, bbox.minX - marginX);
+  const y = Math.max(0, bbox.minY - marginY);
+  const w = Math.min(img.naturalWidth, bbox.maxX + marginX) - x;
+  const h = Math.min(img.naturalHeight, bbox.maxY + marginY) - y;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = outSize;
+  canvas.height = outSize;
+  const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, outSize, outSize);
+  ctx.drawImage(img, x, y, w, h, 0, 0, outSize, outSize);
+  return { canvas, x, y, w, h };
+}
+
+/** A single BlazePose landmark, as returned by PoseLandmarker — only the fields used here. */
+interface PoseLandmarkPoint {
+  x: number;
+  y: number;
+}
+
+/**
+ * Turns a detected body's landmarks into a face-covering rect in full-frame percentage
+ * terms. Centered on the nose (BlazePose index {@link MODEL_POSE_MEDIAPIPE_CONFIG.NOSE_INDEX});
+ * sized off the character's overall silhouette (see {@link FACE_COVER_SIZE_FACTOR}) rather
+ * than the spread between facial landmarks, since those collapse together in this camera's
+ * fixed side-profile view and would badly underestimate head size.
+ */
+function faceRectFromPose(
+  landmarks: PoseLandmarkPoint[],
+  crop: CropRegion,
+  bbox: { minX: number; minY: number; maxX: number; maxY: number },
+  frameWidth: number,
+  frameHeight: number,
+): FaceRect | null {
+  const nose = landmarks[MODEL_POSE_MEDIAPIPE_CONFIG.NOSE_INDEX];
+  if (!nose) return null;
+
+  const noseFullPxX = crop.x + nose.x * crop.w;
+  const noseFullPxY = crop.y + nose.y * crop.h;
+  const bodyExtentPx = Math.max(bbox.maxX - bbox.minX, bbox.maxY - bbox.minY);
+  const sizeFullPx = bodyExtentPx * FACE_COVER_SIZE_FACTOR;
+
+  return {
+    xPct: (noseFullPxX / frameWidth) * 100,
+    yPct: (noseFullPxY / frameHeight) * 100,
+    widthPct: (sizeFullPx / frameWidth) * 100,
+    heightPct: (sizeFullPx / frameHeight) * 100,
+  };
+}
+
 interface Props {
   /** Which prayer is being performed — selects the right table in {@link MOVEMENT_TIMELINE}. */
   prayerId: PrayerId | null;
@@ -515,6 +652,9 @@ export function PrayerModel3D({ prayerId, movement, rakaIndex, poseConfirmed, ac
   const accentHexRef = useRef(accentHex);
   accentHexRef.current = accentHex;
 
+  const poseLandmarkerRef = useRef<Awaited<ReturnType<typeof createModelPoseLandmarker>> | null>(null);
+  const [faceCoverRect, setFaceCoverRect] = useState<FaceRect | null>(null);
+
   useEffect(() => {
     let cancelled = false;
 
@@ -546,7 +686,7 @@ export function PrayerModel3D({ prayerId, movement, rakaIndex, poseConfirmed, ac
             applyZoomOut(api);
             disableShadow(api);
             hideFacialFeatures(api);
-            applyModelColors(api, { carpet: accentHexRef.current, character: CHARACTER_COLOR });
+            applyModelColors(api, { carpet: accentHexRef.current });
             // Rest on a clean, deterministic frame while waiting out the countdown —
             // `autostart` may have already played it a little forward by the time this fires.
             api.seekTo(0, () => {
@@ -581,10 +721,68 @@ export function PrayerModel3D({ prayerId, movement, rakaIndex, poseConfirmed, ac
   // Re-tint the rug and shirt immediately if the user switches themes mid-session.
   useEffect(() => {
     if (!apiRef.current) return;
-    applyModelColors(apiRef.current, { carpet: accentHex, character: CHARACTER_COLOR });
+    applyModelColors(apiRef.current, { carpet: accentHex });
   }, [accentHex]);
 
-  const facePosition = movement ? FACE_POSITION_BY_MOVEMENT[movement] : null;
+  // Loads the model's own pose landmarker once, then polls screenshots of the live
+  // Sketchfab frame to keep the face cover tracking the character's actual on-screen
+  // face for as long as the session is active — see captureScreenshot/
+  // findOpaqueBoundingBox/cropAndFlattenToWhite/faceRectFromPose above for how a
+  // screenshot becomes a tracked rect. A detection that fails on a given tick (e.g. a
+  // screenshot caught mid-transition) just leaves the cover wherever it last was, rather
+  // than hiding it — the next tick, 250ms later, corrects it.
+  useEffect(() => {
+    let cancelled = false;
+    let timeoutId: number | undefined;
+
+    createModelPoseLandmarker()
+      .then((landmarker) => {
+        if (!cancelled) poseLandmarkerRef.current = landmarker;
+      })
+      .catch((err) => console.error('Model pose landmarker failed to load', err));
+
+    const tick = async () => {
+      if (cancelled) return;
+      const api = apiRef.current;
+      const landmarker = poseLandmarkerRef.current;
+      const iframe = iframeRef.current;
+
+      if (activeRef.current && api && landmarker && iframe) {
+        const bounds = iframe.getBoundingClientRect();
+        const frameWidth = Math.max(160, Math.round(bounds.width));
+        const frameHeight = Math.max(120, Math.round(bounds.height));
+        const img = await captureScreenshot(api, frameWidth, frameHeight);
+
+        if (!cancelled && img) {
+          const fullCanvas = document.createElement('canvas');
+          fullCanvas.width = frameWidth;
+          fullCanvas.height = frameHeight;
+          const fullCtx = fullCanvas.getContext('2d') as CanvasRenderingContext2D;
+          fullCtx.drawImage(img, 0, 0, frameWidth, frameHeight);
+          const bbox = findOpaqueBoundingBox(fullCtx, frameWidth, frameHeight);
+
+          if (bbox) {
+            const crop = cropAndFlattenToWhite(img, bbox, 384);
+            const result = landmarker.detect(crop.canvas);
+            const landmarks = result?.landmarks?.[0] as PoseLandmarkPoint[] | undefined;
+            const rect = landmarks
+              ? faceRectFromPose(landmarks, crop, bbox, frameWidth, frameHeight)
+              : null;
+            if (rect) setFaceCoverRect(rect);
+          }
+        }
+      }
+
+      if (!cancelled) timeoutId = window.setTimeout(tick, FACE_TRACK_INTERVAL_MS);
+    };
+
+    tick();
+
+    return () => {
+      cancelled = true;
+      if (timeoutId !== undefined) window.clearTimeout(timeoutId);
+    };
+  }, []);
 
   return (
     <div className={css.canvasWrap}>
@@ -595,18 +793,18 @@ export function PrayerModel3D({ prayerId, movement, rakaIndex, poseConfirmed, ac
         allow="autoplay; fullscreen; xr-spatial-tracking"
         allowFullScreen
       />
-      {/* Blurs the character's face — position looked up per-movement in
-          FACE_POSITION_BY_MOVEMENT, see its docstring for why (no screen-projection
-          API to track the actual 3D bone). Eases to the new spot on movement change
-          via the CSS transition on .faceBlur rather than jumping. */}
-      {facePosition && (
+      {/* Covers the character's face — position/size come from a live pose-landmarker
+          tracking the model's own screenshots (see the face-tracking effect above),
+          centered on the detected nose and sized off the character's own silhouette.
+          Eases to a new spot via the CSS transition on .faceCover rather than jumping. */}
+      {faceCoverRect && (
         <div
-          className={css.faceBlur}
+          className={css.faceCover}
           style={{
-            left: `${facePosition.xPct}%`,
-            top: `${facePosition.yPct}%`,
-            width: `${facePosition.widthPct}%`,
-            height: `${facePosition.heightPct}%`,
+            left: `${faceCoverRect.xPct}%`,
+            top: `${faceCoverRect.yPct}%`,
+            width: `${faceCoverRect.widthPct}%`,
+            height: `${faceCoverRect.heightPct}%`,
           }}
           aria-hidden="true"
         />

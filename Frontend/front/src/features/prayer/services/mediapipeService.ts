@@ -1,5 +1,5 @@
 import type { PoseLandmarker, DrawingUtils, FilesetResolver } from '@mediapipe/tasks-vision';
-import { MEDIAPIPE_CONFIG } from '../constants/prayerConfig';
+import { MEDIAPIPE_CONFIG, MODEL_POSE_MEDIAPIPE_CONFIG } from '../constants/prayerConfig';
 
 type VisionMod = {
   PoseLandmarker: typeof PoseLandmarker;
@@ -45,4 +45,23 @@ export async function createDrawingUtils(ctx: CanvasRenderingContext2D): Promise
 
 export function getPoseConnections(): PoseConnections | null {
   return poseConnections;
+}
+
+/** Pose landmarker for the 3D demo model's own face-covering tracker (PrayerModel3D) —
+ * see MODEL_POSE_MEDIAPIPE_CONFIG for why this is a separate IMAGE-mode instance rather
+ * than reusing the learner's VIDEO-mode tracker above. */
+export async function createModelPoseLandmarker(): Promise<PoseLandmarker> {
+  const { PoseLandmarker, FilesetResolver } = await getModule();
+  const vision = await FilesetResolver.forVisionTasks(MODEL_POSE_MEDIAPIPE_CONFIG.WASM_URL);
+  return PoseLandmarker.createFromOptions(vision, {
+    baseOptions: {
+      modelAssetPath: MODEL_POSE_MEDIAPIPE_CONFIG.MODEL_URL,
+      delegate: MODEL_POSE_MEDIAPIPE_CONFIG.DELEGATE,
+    },
+    runningMode: MODEL_POSE_MEDIAPIPE_CONFIG.RUNNING_MODE,
+    numPoses: MODEL_POSE_MEDIAPIPE_CONFIG.NUM_POSES,
+    minPoseDetectionConfidence: MODEL_POSE_MEDIAPIPE_CONFIG.MIN_DETECTION_CONFIDENCE,
+    minPosePresenceConfidence: MODEL_POSE_MEDIAPIPE_CONFIG.MIN_PRESENCE_CONFIDENCE,
+    minTrackingConfidence: MODEL_POSE_MEDIAPIPE_CONFIG.MIN_TRACKING_CONFIDENCE,
+  });
 }

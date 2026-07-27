@@ -60,6 +60,25 @@ export const MEDIAPIPE_CONFIG = {
   DELEGATE: 'GPU' as const,
 } as const;
 
+/** Config for the 3D demo model's own face-covering tracker (PrayerModel3D) — a separate
+ * PoseLandmarker instance from the learner's own body-pose tracker above, run in IMAGE mode
+ * against a tightly-cropped screenshot of the Sketchfab canvas (the model reads too small
+ * in an uncropped frame for any detector to find at all — see PrayerModel3D.tsx). The full
+ * (not lite) model is used since this only runs a few times a second, not per video frame. */
+export const MODEL_POSE_MEDIAPIPE_CONFIG = {
+  MODEL_URL:
+    'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task',
+  WASM_URL: MEDIAPIPE_CONFIG.WASM_URL,
+  RUNNING_MODE: 'IMAGE' as const,
+  NUM_POSES: 1,
+  MIN_DETECTION_CONFIDENCE: 0.3,
+  MIN_PRESENCE_CONFIDENCE: 0.3,
+  MIN_TRACKING_CONFIDENCE: 0.3,
+  DELEGATE: 'GPU' as const,
+  /** BlazePose landmark index for the nose — the anchor the face cover centers on. */
+  NOSE_INDEX: 0,
+} as const;
+
 /** Whether a rak'ah at this index closes sitting in tashahhud. */
 function rakaEndsWithTashahhud(rakaIndex: number, totalRakas: number): boolean {
   const isLast = rakaIndex === totalRakas - 1;
