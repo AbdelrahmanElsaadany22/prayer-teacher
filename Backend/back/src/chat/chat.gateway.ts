@@ -6,7 +6,11 @@ import { NotificationGateway } from '../notification/notification.gateway';
 
 
 
-@WebSocketGateway()
+@WebSocketGateway({
+  cors:{
+    origin:"*"
+  }
+})
 export class ChatGateway implements OnGatewayConnection,OnGatewayDisconnect{
   constructor(private chatService:ChatService,
     private jwtService:JwtService,

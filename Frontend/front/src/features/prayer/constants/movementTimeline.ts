@@ -123,42 +123,6 @@ const RAKA_4_4: RakaTimeline = {
 
 
 
-/**
- * Placeholder rak'ah, chained on from rak'ah 2's tashahhud hold (t=34.00) — the
- * point every 3rd+ rak'ah rises from (maghrib, zuhr, asr, isha all hold their
- * middle rak'ah's tashahhud there). Each movement reuses rak'ah 1's duration,
- * just chained forward instead of restarting at rak'ah 1's own (lower) absolute
- * timestamps — still a placeholder until motion-checked, but doesn't play
- * backward. Only maghrib's 3rd rak'ah is actually last, so only it reads the
- * tashahhud/salam entries here; zuhr/asr/isha's 3rd rak'ah never reaches them.
- */
-const RAKA_3_PLACEHOLDER: RakaTimeline = {
-  qiyam:       { start: '34:00', end: '34:30', loop: true },
-  ruku:        { start: '34:30', end: '37:10', loop: true },
-  iqama:       { start: '37:10', end: '39:80', loop: true },
-  sujood1:     { start: '39:80', end: '42:20', loop: true },
-  juloos:      { start: '42:20', end: '43:60', loop: true },
-  sujood2:     { start: '43:60', end: '46:00', loop: true },
-  tashahhud:   { start: '46:00', end: '50:60', loop: true },
-  salam_right: { start: '50:60', end: '52:00', loop: true },
-  salam_left:  { start: '52:00', end: '54:10', loop: true },
-};
-
-/** Placeholder rak'ah, chained on from rak'ah 3's 2nd sujood hold (t=46.00) —
- * only reached by zuhr/asr/isha, whose 4th rak'ah is the one that's actually
- * last (so it's the one that reads the tashahhud/salam entries here). Same
- * duration-reuse approach as {@link RAKA_3_PLACEHOLDER} above. */
-const RAKA_4_PLACEHOLDER: RakaTimeline = {
-  qiyam:       { start: '46:00', end: '46:30', loop: true },
-  ruku:        { start: '46:30', end: '49:10', loop: true },
-  iqama:       { start: '49:10', end: '51:80', loop: true },
-  sujood1:     { start: '51:80', end: '54:20', loop: true },
-  juloos:      { start: '54:20', end: '55:60', loop: true },
-  sujood2:     { start: '55:60', end: '58:00', loop: true },
-  tashahhud:   { start: '58:00', end: '62:60', loop: true },
-  salam_right: { start: '62:60', end: '64:00', loop: true },
-  salam_left:  { start: '64:00', end: '66:10', loop: true },
-};
 export const MOVEMENT_TIMELINE: MovementTimelineConfig = {
   fajr: {
     1: RAKA_1_FAJR,
