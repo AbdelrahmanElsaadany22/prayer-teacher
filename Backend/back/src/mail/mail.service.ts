@@ -10,11 +10,21 @@ interface SmtpConfig {
   pass: string;
 }
 
+/** The sender, split the way Brevo's API wants it. */
+interface Sender {
+  email: string;
+  name?: string;
+}
+
+const BREVO_ENDPOINT = 'https://api.brevo.com/v3/smtp/email';
+
 @Injectable()
 export class MailService implements OnModuleInit {
   private readonly logger = new Logger(MailService.name);
+  private brevoKey: string | null = null;
   private smtp: SmtpConfig | null = null;
   private fromAddress = '';
+  private sender: Sender = { email: 'no-reply@prayer.app' };
 
   constructor(private readonly config: ConfigService) {}
 
@@ -26,11 +36,21 @@ export class MailService implements OnModuleInit {
 
     this.fromAddress =
       this.config.get<string>('SMTP_FROM') ?? user ?? 'no-reply@prayer.app';
+    this.sender = parseSender(this.fromAddress);
+
+    // Brevo goes out over HTTPS, so it works on hosts that block SMTP ports
+    // outright (Render's free tier blocks 25/465/587). Preferred when present.
+    this.brevoKey = this.config.get<string>('BREVO_API_KEY') ?? null;
+    if (this.brevoKey) {
+      this.logger.log(`Email via Brevo HTTP API (from=${this.sender.email})`);
+      return;
+    }
 
     if (!host || !user || !pass) {
       this.logger.warn(
-        'SMTP is not fully configured (SMTP_HOST/SMTP_USER/SMTP_PASS). ' +
-          'Verification emails will be logged to the console instead of sent.',
+        'No email transport configured (set BREVO_API_KEY, or ' +
+          'SMTP_HOST/SMTP_USER/SMTP_PASS). Verification emails will be logged ' +
+          'to the console instead of sent.',
       );
       return;
     }
@@ -99,26 +119,75 @@ export class MailService implements OnModuleInit {
     const text = `Your verification code is ${code}. It expires in 10 minutes.`;
     const html = this.buildVerificationHtml(code);
 
-    if (!this.smtp) {
-      // Dev fallback: no SMTP configured, so surface the code in the logs.
-      this.logger.log(`[DEV] Verification code for ${to}: ${code}`);
-      return;
-    }
-
     try {
-      const transporter = await this.createTransporter();
-      const info = await transporter.sendMail({
-        from: this.fromAddress,
-        to,
-        subject,
-        text,
-        html,
-      });
-      this.logger.log(`Verification email sent to ${to} (id=${info.messageId})`);
+      if (this.brevoKey) {
+        await this.sendViaBrevo(to, subject, text, html);
+      } else if (this.smtp) {
+        await this.sendViaSmtp(to, subject, text, html);
+      } else {
+        // Dev fallback: nothing configured, so surface the code in the logs.
+        this.logger.log(`[DEV] Verification code for ${to}: ${code}`);
+      }
     } catch (error) {
       // Swallow here (callers fire-and-forget): log so the cause is visible.
       this.logger.error(`Failed to send verification email to ${to}`, error);
     }
+  }
+
+  /** Sends over Brevo's REST API — a plain HTTPS call, no SMTP ports involved. */
+  private async sendViaBrevo(
+    to: string,
+    subject: string,
+    text: string,
+    html: string,
+  ): Promise<void> {
+    const response = await fetch(BREVO_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'api-key': this.brevoKey!,
+        'content-type': 'application/json',
+        accept: 'application/json',
+      },
+      body: JSON.stringify({
+        sender: this.sender,
+        to: [{ email: to }],
+        subject,
+        textContent: text,
+        htmlContent: html,
+      }),
+      // Don't let a hanging request tie up the signup that triggered it.
+      signal: AbortSignal.timeout(15_000),
+    });
+
+    if (!response.ok) {
+      // Brevo puts the useful part (unverified sender, bad key, quota) in the body.
+      const detail = await response.text().catch(() => '');
+      throw new Error(`Brevo returned ${response.status}: ${detail}`);
+    }
+
+    const body = (await response.json().catch(() => ({}))) as {
+      messageId?: string;
+    };
+    this.logger.log(
+      `Verification email sent to ${to} (id=${body.messageId ?? 'unknown'})`,
+    );
+  }
+
+  private async sendViaSmtp(
+    to: string,
+    subject: string,
+    text: string,
+    html: string,
+  ): Promise<void> {
+    const transporter = await this.createTransporter();
+    const info = await transporter.sendMail({
+      from: this.fromAddress,
+      to,
+      subject,
+      text,
+      html,
+    });
+    this.logger.log(`Verification email sent to ${to} (id=${info.messageId})`);
   }
 
   private buildVerificationHtml(code: string): string {
@@ -131,4 +200,18 @@ export class MailService implements OnModuleInit {
       </div>
     `;
   }
+}
+
+/**
+ * Splits a `From` value into the {name, email} pair Brevo expects. Accepts both
+ * a bare address and the `Display Name <address>` form that SMTP_FROM usually
+ * carries; anything unrecognisable is passed through as the address itself.
+ */
+function parseSender(from: string): Sender {
+  const match = /^\s*(.*?)\s*<\s*([^>]+)\s*>\s*$/.exec(from);
+  if (!match) return { email: from.trim() };
+
+  const name = match[1].replace(/^["']|["']$/g, '').trim();
+  const email = match[2].trim();
+  return name ? { name, email } : { email };
 }
