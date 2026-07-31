@@ -1,5 +1,10 @@
 import { api } from '../../../shared/api/axios';
-import type { FriendProfile, FriendRequest, UserFull } from '../types/friends.types';
+import type {
+  FriendProfile,
+  FriendRequest,
+  FriendRequestOutcome,
+  UserFull,
+} from '../types/friends.types';
 
 export async function sendFriendRequest(receiverId: string) {
   const res = await api.post(`/friend-request/${receiverId}`);
@@ -8,6 +13,16 @@ export async function sendFriendRequest(receiverId: string) {
 
 export async function getIncomingRequests(): Promise<FriendRequest[]> {
   const res = await api.get<FriendRequest[]>('/friend-request');
+  return res.data;
+}
+
+export async function getUnseenOutcomes(): Promise<FriendRequestOutcome[]> {
+  const res = await api.get<FriendRequestOutcome[]>('/friend-request/outcomes');
+  return res.data;
+}
+
+export async function markOutcomesSeen() {
+  const res = await api.patch('/friend-request/outcomes/seen');
   return res.data;
 }
 

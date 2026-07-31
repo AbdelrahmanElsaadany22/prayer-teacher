@@ -4,7 +4,9 @@ import { useAuth } from '../../auth/hooks/useAuth';
 import {
   acceptFriendRequest,
   getIncomingRequests,
+  getUnseenOutcomes,
   getUserProfile,
+  markOutcomesSeen,
   rejectFriendRequest,
 } from '../../friends/api/friends.api';
 import type { FriendRequest } from '../../friends/types/friends.types';
@@ -29,6 +31,28 @@ export function NotificationsProvider({ children }: PropsWithChildren) {
   const load = useCallback(async () => {
     try {
       setRequests(await getIncomingRequests());
+    } catch {
+      // ignore — keep last known state
+    }
+    try {
+      // Outcomes of our own requests, kept server-side until read, so an accept
+      // or reject that landed while we were away still shows up in the bell.
+      const outcomes = await getUnseenOutcomes();
+      setActivity((prev) => {
+        const seen = new Set(prev.map((a) => a.id));
+        const fromServer = outcomes
+          .filter((o) => !seen.has(o._id))
+          .map((o) => ({
+            id: o._id,
+            type:
+              o.status === 'accepted'
+                ? ('FRIEND_REQUEST_ACCEPTED' as const)
+                : ('FRIEND_REQUEST_REJECTED' as const),
+            senderName: o.receiver?.name ?? 'Someone',
+            createdAt: o.updatedAt,
+          }));
+        return [...fromServer, ...prev];
+      });
     } catch {
       // ignore — keep last known state
     }
@@ -124,6 +148,11 @@ export function NotificationsProvider({ children }: PropsWithChildren) {
 
   const dismiss = useCallback((id: string) => {
     setActivity((prev) => prev.filter((a) => a.id !== id));
+    // Dismissing means the bell was read, so clear the server-side backlog too;
+    // otherwise every outcome would come straight back on the next load.
+    void markOutcomesSeen().catch(() => {
+      /* best-effort: it stays unseen and reappears next time */
+    });
   }, []);
 
   const dismissMessage = useCallback((senderId: string) => {

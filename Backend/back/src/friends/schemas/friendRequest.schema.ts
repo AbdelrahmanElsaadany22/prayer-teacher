@@ -26,5 +26,11 @@ receiver!: Types.ObjectId
         default:Status.PENDING
     })
     status!:Status
+
+/** Whether the sender has seen that this request was accepted or rejected.
+ * The outcome is only pushed over the socket, which reaches nobody who was
+ * offline at the time, so it is kept here until the sender actually reads it. */
+@Prop({ default: false })
+senderSeen!: boolean
 }
 export const friendRequestSchema = SchemaFactory.createForClass(friendRequest);

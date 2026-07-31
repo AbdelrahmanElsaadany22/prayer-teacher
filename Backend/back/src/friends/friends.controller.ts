@@ -17,6 +17,16 @@ export class FriendsController {
     return this.friendReqService.getFriendRequests(req.user.id);
   }
 
+  @Get('outcomes')
+  getUnseenOutcomes(@Req() req) {
+    return this.friendReqService.getUnseenOutcomes(req.user.id);
+  }
+
+  @Patch('outcomes/seen')
+  markOutcomesSeen(@Req() req) {
+    return this.friendReqService.markOutcomesSeen(req.user.id);
+  }
+
   @Patch('accept/:requestId')
   acceptRequest(@Req() req, @Param('requestId') requestId: string) {
     return this.friendReqService.acceptRequest(req.user.id, requestId);

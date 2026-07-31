@@ -26,7 +26,11 @@ export class FriendsService {
       throw new BadRequestException("You Can't Send Friend Request To Yourself!");
     }
 
+    // Only a request still awaiting an answer blocks a new one. Matching any
+    // status would let a single rejection close the pair off permanently, since
+    // rejected rows are kept as history.
     const ifFound = await this.friendRequestModel.findOne({
+      status: Status.PENDING,
       $or: [
         { sender: senderId, receiver: receiverId },
         { sender: receiverId, receiver: senderId },
@@ -65,6 +69,35 @@ export class FriendsService {
     return await this.friendRequestModel
       .find({ receiver: currentUserId, status: Status.PENDING })
       .populate('sender');
+  }
+
+  /**
+   * Requests this user sent that have since been answered and whose outcome
+   * they haven't seen yet. The live socket push only reaches a user who was
+   * connected at that moment, so this is what surfaces the outcome to everyone
+   * else the next time they open the app.
+   */
+  async getUnseenOutcomes(currentUserId: string) {
+    return await this.friendRequestModel
+      .find({
+        sender: currentUserId,
+        status: { $in: [Status.ACCEPTED, Status.REJECTED] },
+        senderSeen: false,
+      })
+      .sort({ updatedAt: -1 })
+      .populate('receiver');
+  }
+
+  async markOutcomesSeen(currentUserId: string) {
+    await this.friendRequestModel.updateMany(
+      {
+        sender: currentUserId,
+        status: { $in: [Status.ACCEPTED, Status.REJECTED] },
+        senderSeen: false,
+      },
+      { $set: { senderSeen: true } },
+    );
+    return { message: 'outcomes marked as seen' };
   }
 
   async acceptRequest(userId: string, RequestId: string) {
@@ -159,6 +192,16 @@ export class FriendsService {
       { _id: friendId },
       { $pull: { friends: userId } },
     );
+
+    // Drop the accepted request too — it recorded a friendship that no longer
+    // exists, and leaving it behind would misreport the pair's history.
+    await this.friendRequestModel.deleteMany({
+      status: Status.ACCEPTED,
+      $or: [
+        { sender: userId, receiver: friendId },
+        { sender: friendId, receiver: userId },
+      ],
+    });
 
     return { message: 'Friend removed successfully' };
   }
