@@ -435,8 +435,12 @@ export function usePrayerSession() {
         // The current posture isn't "done" until its entry phrase + dhikr/recitation
         // finish — moving on before then is a mistake, not an advance. Once it ends,
         // reeval() picks up the pose the learner is now in.
-        if (audioService.isHolding() && !afterTakbeer) {
-          registerMistake(s, step, pose, true);
+        if (audioService.isHolding()) {
+          // Standing through takbeerat al-ihram is the natural start, never moving
+          // on early — but the opening takbir is still sounding, and accepting the
+          // step now would cut it off mid-word to start the recitation. Wait it out
+          // either way; its onDone → reeval() advances as soon as it finishes.
+          if (!afterTakbeer) registerMistake(s, step, pose, true);
           return;
         }
         acceptStep();
