@@ -1,0 +1,37 @@
+services:
+  - type: web
+    name: prayer-teacher-api
+    runtime: node
+    plan: free
+    region: frankfurt
+    rootDir: Backend/back
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: node dist/main
+    healthCheckPath: /
+    envVars:
+      # Node 20 to match what the app is built and tested against locally.
+      - key: NODE_VERSION
+        value: 20.19.4
+      # Secrets are entered in the Render dashboard, never committed here.
+      - key: MONG0_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: SMTP_FROM
+        sync: false
