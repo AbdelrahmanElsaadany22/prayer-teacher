@@ -279,7 +279,7 @@ export const translations: Record<Lang, Dict> = {
   },
   ar: {
     'brand.name': 'إِسْتَقِمْ',
-    'nav.dashboard': 'رحلتي',
+    'nav.dashboard': 'لوحة المتابعة',
     'nav.friends': 'الأصدقاء',
     'nav.myProfile': 'ملفي',
     'nav.logout': 'تسجيل الخروج',
