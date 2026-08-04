@@ -123,6 +123,7 @@ export default function MainLayout() {
 
       <footer className="site-footer">
         <span>{t('footer.brand')}</span>
+        <span className="footer-copy">{t('footer.copyright')}</span>
         <span>{t('footer.privacy')}</span>
       </footer>
     </div>

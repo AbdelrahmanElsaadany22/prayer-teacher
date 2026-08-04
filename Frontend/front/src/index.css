@@ -917,6 +917,7 @@ main { display: grid; }
 
 .site-footer {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
   gap: 20px;
@@ -933,6 +934,13 @@ main { display: grid; }
 
 [data-theme="light"] .site-footer {
   background: rgba(248, 242, 232, 0.82);
+}
+
+/* Sits between the brand and the privacy note; centred on its own row once the
+ * three of them stop fitting side by side. */
+.site-footer .footer-copy {
+  flex: 1 1 auto;
+  text-align: center;
 }
 
 /* ── Mobile ───────────────────────────────────────────────────────────────── */
