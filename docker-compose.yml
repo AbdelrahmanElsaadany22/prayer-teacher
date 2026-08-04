@@ -1,0 +1,65 @@
+# Runs the whole project locally: database, API, and the web app.
+#
+#   cp .env.docker.example .env && docker compose up --build
+#
+# Then open http://localhost:8080. The API is on http://localhost:3000.
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+    # Not published by default — only the API needs it. Uncomment to inspect
+    # the database with a local client.
+    # ports:
+    #   - "27017:27017"
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  api:
+    build:
+      context: ./Backend/back
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      # Note the zero in MONG0_URL — the code reads exactly this name.
+      MONG0_URL: mongodb://mongo:27017/prayer
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env}
+      PORT: 3000
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:8080}
+      # Optional. Without Cloudinary, avatar uploads fail; without an email
+      # transport, verification codes are printed to these logs instead.
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-}
+      BREVO_API_KEY: ${BREVO_API_KEY:-}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM: ${SMTP_FROM:-}
+    ports:
+      # Override API_PORT if something already holds 3000 on the host.
+      - "${API_PORT:-3000}:3000"
+
+  web:
+    build:
+      context: ./Frontend/front
+      args:
+        # Baked into the bundle at build time, so this is the address the
+        # browser will call — localhost, not the compose service name.
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:3000}
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "${WEB_PORT:-8080}:80"
+
+volumes:
+  mongo-data:

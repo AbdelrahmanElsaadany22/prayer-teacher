@@ -173,6 +173,24 @@ Chat is otherwise driven over the websocket — `joinRoom`, `sendMessage`, `getM
 
 ---
 
+### With Docker
+
+Brings up the database, the API, and the web app together — no Node or MongoDB
+installed on the host:
+
+```bash
+cp .env.docker.example .env
+# set JWT_SECRET, then:
+docker compose up --build
+```
+
+The app is on <http://localhost:8080>, the API on <http://localhost:3000>. Set
+`API_PORT` / `WEB_PORT` in `.env` if either is already taken.
+
+`VITE_API_URL` is a **build** argument, not a runtime one — Vite inlines it into
+the bundle, so pointing the app at a different API means rebuilding the `web`
+image, not just restarting it.
+
 ## Deployment
 
 The frontend is a static bundle and deploys anywhere — the repo carries a `vercel.json` with the SPA rewrite already in it.
