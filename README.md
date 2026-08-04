@@ -183,5 +183,13 @@ The backend is a long-lived process, not a serverless function: the chat and not
 
 ## Authors
 
-- [**@AbdelrahmanElsaadany22**](https://github.com/AbdelrahmanElsaadany22)
-- [**@abdallah7absa**](https://github.com/abdallah7absa)
+- **Abdelrahman Elsayed** — [@AbdelrahmanElsaadany22](https://github.com/AbdelrahmanElsaadany22)
+- **Abdallah Habsa** — [@abdallah7absa](https://github.com/abdallah7absa)
+
+## License
+
+Copyright © 2026 Abdelrahman Elsayed and Abdallah Habsa. **All rights reserved.**
+
+The source is public so it can be read and evaluated — not reused. Copying,
+modifying, deploying, or building on any part of it requires written permission
+from both authors. See [LICENSE](LICENSE) for the full terms.
