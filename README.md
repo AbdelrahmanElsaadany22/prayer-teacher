@@ -173,23 +173,95 @@ Chat is otherwise driven over the websocket — `joinRoom`, `sendMessage`, `getM
 
 ---
 
-### With Docker
+---
 
-Brings up the database, the API, and the web app together — no Node or MongoDB
-installed on the host:
+## Running it with Docker
+
+The whole project — database, API, and web app — in one command. Nothing but
+Docker needs to be installed; no Node, no MongoDB.
 
 ```bash
 cp .env.docker.example .env
-# set JWT_SECRET, then:
+```
+
+Open `.env` and set `JWT_SECRET` to any long random string. Everything else has
+a working default. Then:
+
+```bash
 docker compose up --build
 ```
 
-The app is on <http://localhost:8080>, the API on <http://localhost:3000>. Set
-`API_PORT` / `WEB_PORT` in `.env` if either is already taken.
+| | |
+|---|---|
+| App | <http://localhost:8080> |
+| API | <http://localhost:3000> |
+| MongoDB | inside the network, not published |
 
-`VITE_API_URL` is a **build** argument, not a runtime one — Vite inlines it into
-the bundle, so pointing the app at a different API means rebuilding the `web`
-image, not just restarting it.
+First build takes a few minutes; afterwards it starts in seconds. Stop with
+`Ctrl+C`, or `docker compose down`.
+
+### What comes up
+
+```
+web    nginx serving the built bundle          :8080 → :80
+api    NestJS on Node 20                       :3000
+mongo  MongoDB 7, data kept in a named volume
+```
+
+`api` waits for `mongo` to pass its healthcheck before starting, so the first
+run doesn't race the database. Database contents survive restarts in the
+`mongo-data` volume — `docker compose down -v` is what wipes it.
+
+### Everyday commands
+
+```bash
+docker compose up -d --build      # start in the background
+docker compose logs -f api        # follow the API logs
+docker compose ps                 # what's running
+docker compose restart api        # restart one service
+docker compose down               # stop, keeping the database
+docker compose down -v            # stop and delete the database
+```
+
+Building the images on their own, without compose:
+
+```bash
+docker build -t prayer-api ./Backend/back
+docker build -t prayer-web ./Frontend/front --build-arg VITE_API_URL=http://localhost:3000
+```
+
+### Two things worth knowing
+
+**`VITE_API_URL` is a build argument, not a runtime one.** Vite inlines it into
+the JavaScript when the bundle is built, so setting it on a running container
+does nothing at all. Point the app at a different API by rebuilding:
+
+```bash
+docker compose build --build-arg VITE_API_URL=https://your-api.example.com web
+```
+
+**Ports are overridable.** If a dev server already holds 3000, put `API_PORT` /
+`WEB_PORT` in `.env` rather than editing the compose file:
+
+```bash
+API_PORT=3001
+WEB_PORT=8081
+VITE_API_URL=http://localhost:3001   # must match API_PORT
+FRONTEND_URL=http://localhost:8081   # must match WEB_PORT — this is the CORS origin
+```
+
+Those last two matter: `VITE_API_URL` is where the browser looks for the API,
+and `FRONTEND_URL` is the origin the API allows through CORS. If they disagree
+with the published ports, the pages load but every request fails.
+
+### Optional services
+
+Left blank, the stack still runs — with two gaps:
+
+| Missing | Effect |
+|---|---|
+| `CLOUDINARY_*` | Avatar uploads fail; the rest works |
+| `BREVO_API_KEY` and `SMTP_*` | Verification codes are printed to `docker compose logs api` instead of emailed — enough to complete signup locally |
 
 ## Deployment
 
