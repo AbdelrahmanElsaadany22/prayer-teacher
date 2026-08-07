@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ReferenceLine,
@@ -7,6 +8,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useUserSessions } from '../hooks/useUserSessions';
 import { useI18n } from '../../../shared/i18n/LanguageProvider';
 import { localizePrayerName, localizeMoveLabel } from '../../../shared/i18n/translations';
+import { getChatAdmin } from '../../chat/api/chat.api';
 import css from './Dashboard.module.css';
 
 function formatDate(iso: string, locale: string): string {
@@ -24,7 +26,28 @@ export default function Dashboard() {
   const { sessions, stats, total, page, totalPages, goToPage, loading, error } =
     useUserSessions();
   const { t, lang } = useI18n();
+  const navigate = useNavigate();
   const locale = lang === 'ar' ? 'ar-EG' : 'en-GB';
+
+  const [openingIjazah, setOpeningIjazah] = useState(false);
+  const [ijazahError, setIjazahError] = useState<string | null>(null);
+
+  /**
+   * Takes the learner straight into a chat with the teacher to send their
+   * Fatiha recitation. The admin's id isn't known to the client, so it is
+   * looked up when asked for rather than on every dashboard load.
+   */
+  async function openIjazahChat() {
+    setOpeningIjazah(true);
+    setIjazahError(null);
+    try {
+      const admin = await getChatAdmin();
+      navigate(`/chat/${admin._id}`);
+    } catch {
+      setIjazahError(t('ijazah.noAdmin'));
+      setOpeningIjazah(false);
+    }
+  }
 
   return (
     <div className={css.page}>
@@ -33,7 +56,19 @@ export default function Dashboard() {
         <span className={css.eyebrow}>{t('dash.eyebrow')}</span>
         <h1 className={css.title}>{t('dash.welcome', { name: user?.name ?? '' })}</h1>
         <p className={css.subtitle}>{t('dash.subtitle')}</p>
-        <Link className="primary-link" to="/prayer">{t('dash.startSession')}</Link>
+        <div className={css.headerActions}>
+          <Link className="primary-link" to="/prayer">{t('dash.startSession')}</Link>
+          <button
+            type="button"
+            className={css.ijazahBtn}
+            onClick={() => void openIjazahChat()}
+            disabled={openingIjazah}
+            title={t('ijazah.description')}
+          >
+            {openingIjazah ? t('ijazah.opening') : t('ijazah.button')}
+          </button>
+        </div>
+        {ijazahError && <p className={css.ijazahError}>{ijazahError}</p>}
       </div>
 
       {loading && total === 0 && <div className={css.loader}>{t('dash.loading')}</div>}

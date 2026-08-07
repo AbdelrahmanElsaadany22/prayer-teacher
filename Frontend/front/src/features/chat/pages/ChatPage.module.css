@@ -327,3 +327,31 @@
   font-size: 0.82rem;
   text-align: center;
 }
+
+/* Admin-only: the header identity doubles as a link to that user's admin page. */
+.friendLink {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 4px 6px;
+  margin: -4px -6px;
+  border-radius: var(--radius);
+  color: inherit;
+  text-decoration: none;
+}
+
+.friendLink:hover { background: rgba(255, 255, 255, 0.04); }
+.friendLink:hover .friendName { color: var(--accent); }
+
+.viewProfileHint {
+  margin-inline-start: 8px;
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 400;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.friendLink:hover .viewProfileHint { opacity: 1; }

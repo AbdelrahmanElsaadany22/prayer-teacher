@@ -434,3 +434,33 @@
 @media (max-width: 420px) {
   .statsGrid { grid-template-columns: 1fr; }
 }
+
+/* Header actions — start a session, or ask for the Fatiha ijazah. */
+.headerActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.ijazahBtn {
+  padding: 10px 20px;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--accent);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.ijazahBtn:hover:not(:disabled) { background: rgba(232, 196, 106, 0.12); }
+.ijazahBtn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.ijazahError {
+  margin: 10px 0 0;
+  color: #e08b8b;
+  font-size: 0.82rem;
+}

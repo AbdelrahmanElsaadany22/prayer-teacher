@@ -91,6 +91,7 @@ export default function ChatPage() {
   }, [recorder.error, t]);
 
   const isRtl = lang === 'ar';
+  const isAdmin = user?.role === 'admin';
   const friendPic = avatarUrl(friend?.profilePicture);
   const friendInitial = friend?.name?.[0]?.toUpperCase() ?? '?';
 
@@ -108,17 +109,41 @@ export default function ChatPage() {
           >
             {isRtl ? '→' : '←'}
           </Link>
-          <div className={css.friendAv}>
-            {friendPic
-              ? <img src={friendPic} alt={friend?.name} />
-              : friendInitial}
-          </div>
-          <div className={css.friendInfo}>
-            <span className={css.friendName}>{friend?.name ?? '…'}</span>
-            <span className={`${css.status} ${isOnline ? css.online : css.offline}`}>
-              {isOnline ? t('chat.online') : t('chat.offline')}
-            </span>
-          </div>
+          {/* For an admin the avatar and name open that user's admin page, so a
+              recitation can be judged against the sender's record without
+              hunting for them in the user list. */}
+          {isAdmin ? (
+            <Link to={`/admin/users/${friendId}`} className={css.friendLink}>
+              <div className={css.friendAv}>
+                {friendPic
+                  ? <img src={friendPic} alt={friend?.name} />
+                  : friendInitial}
+              </div>
+              <div className={css.friendInfo}>
+                <span className={css.friendName}>
+                  {friend?.name ?? '…'}
+                  <span className={css.viewProfileHint}>{t('chat.viewProfile')}</span>
+                </span>
+                <span className={`${css.status} ${isOnline ? css.online : css.offline}`}>
+                  {isOnline ? t('chat.online') : t('chat.offline')}
+                </span>
+              </div>
+            </Link>
+          ) : (
+            <>
+              <div className={css.friendAv}>
+                {friendPic
+                  ? <img src={friendPic} alt={friend?.name} />
+                  : friendInitial}
+              </div>
+              <div className={css.friendInfo}>
+                <span className={css.friendName}>{friend?.name ?? '…'}</span>
+                <span className={`${css.status} ${isOnline ? css.online : css.offline}`}>
+                  {isOnline ? t('chat.online') : t('chat.offline')}
+                </span>
+              </div>
+            </>
+          )}
         </div>
 
         {/* ── Messages ── */}
