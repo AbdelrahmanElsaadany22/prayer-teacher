@@ -14,6 +14,9 @@ import FriendsPage from './features/friends/pages/FriendsPage';
 import ChatPage from './features/chat/pages/ChatPage';
 import UserProfilePage from './features/users/pages/UserProfilePage';
 import MyProfilePage from './features/users/pages/MyProfilePage';
+import AdminRoute from './features/admin/components/AdminRoute';
+import AdminUsersPage from './features/admin/pages/AdminUsersPage';
+import AdminUserDetailPage from './features/admin/pages/AdminUserDetailPage';
 
 export const router = createBrowserRouter([
   {
@@ -31,6 +34,13 @@ export const router = createBrowserRouter([
           { path: '/friends', element: <FriendsPage /> },
           { path: '/profile', element: <MyProfilePage /> },
           { path: '/users/:userId', element: <UserProfilePage /> },
+        ],
+      },
+      {
+        element: <AdminRoute />,
+        children: [
+          { path: '/admin/users', element: <AdminUsersPage /> },
+          { path: '/admin/users/:userId', element: <AdminUserDetailPage /> },
         ],
       },
     ],

@@ -3,6 +3,11 @@ import mongoose, { HydratedDocument, Types } from 'mongoose';
 
 export type UserDocument = HydratedDocument<User>;
 
+export enum Role {
+  USER = 'user',
+  ADMIN = 'admin',
+}
+
 @Schema({ timestamps: true })
 export class User {
   @Prop({
@@ -34,6 +39,12 @@ export class User {
   @Prop({ type: Boolean, default: false })
   isVerified!: boolean;
 
+  // Checked against the database on every admin request rather than read from
+  // the JWT, so revoking an admin takes effect immediately instead of waiting
+  // for their existing token to expire.
+  @Prop({ type: String, enum: Role, default: Role.USER })
+  role!: Role;
+
   @Prop({ type: String, select: false, default: null })
   verificationCode?: string | null;
 
@@ -50,6 +61,11 @@ export class User {
     default: [],
   })
   friends!: Types.ObjectId[];
+
+  // Maintained by `timestamps: true` above. Declared (without @Prop, which
+  // would redefine them) so TypeScript knows they exist on a fetched document.
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

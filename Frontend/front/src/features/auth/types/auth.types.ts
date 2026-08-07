@@ -14,6 +14,8 @@ export type User = {
   name: string;
   email: string;
   profilePicture?: string | null;
+  /** Absent on older tokens/responses — treat anything but 'admin' as a normal user. */
+  role?: 'user' | 'admin';
 };
 
 export type AuthResponse = {

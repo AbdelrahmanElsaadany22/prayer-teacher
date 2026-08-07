@@ -9,6 +9,7 @@ import { PrayerModule } from './prayer/prayer/prayer.module';
 import { FriendsModule } from './friends/friends.module';
 import { ChatModule } from './chat/chat.module';
 import { NotificationModule } from './notification/notification.module';
+import { AdminModule } from './admin/admin.module';
 
 
 
@@ -24,6 +25,7 @@ import { NotificationModule } from './notification/notification.module';
     FriendsModule,
     ChatModule,
     NotificationModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],

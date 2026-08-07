@@ -61,6 +61,9 @@ export default function MainLayout() {
               <div className="nav-start">
                 <NavLink to="/dashboard">{t('nav.dashboard')}</NavLink>
                 <NavLink to="/friends">{t('nav.friends')}</NavLink>
+                {user?.role === 'admin' && (
+                  <NavLink to="/admin/users">{t('nav.admin')}</NavLink>
+                )}
               </div>
               <div className="nav-center">
                 <UserSearch />
