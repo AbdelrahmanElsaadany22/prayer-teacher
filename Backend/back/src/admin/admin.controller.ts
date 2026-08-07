@@ -10,7 +10,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { AdminService } from './admin.service';
 import { AdminGuard } from './admin.guard';
-import { PaginationQueryDto } from '../prayer/prayer/dto/pagination-query.dto';
+import { AdminUsersQueryDto } from './dto/admin-users-query.dto';
 
 interface AuthRequest {
   user: { id: string; email: string };
@@ -24,8 +24,8 @@ export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
   @Get('users')
-  listUsers(@Query() query: PaginationQueryDto) {
-    return this.adminService.listUsers(query.page, query.limit);
+  listUsers(@Query() query: AdminUsersQueryDto) {
+    return this.adminService.listUsers(query.page, query.limit, query.q);
   }
 
   @Get('users/:userId')

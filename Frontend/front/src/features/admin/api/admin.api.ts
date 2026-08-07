@@ -4,9 +4,11 @@ import type { AdminUserDashboard, AdminUsersPage } from '../types/admin.types';
 export async function getAdminUsers(
   page: number,
   limit: number,
+  q?: string,
 ): Promise<AdminUsersPage> {
   const res = await api.get<AdminUsersPage>('/admin/users', {
-    params: { page, limit },
+    // Omit `q` entirely when empty; the DTO rejects unknown/blank extras.
+    params: q ? { page, limit, q } : { page, limit },
   });
   return res.data;
 }

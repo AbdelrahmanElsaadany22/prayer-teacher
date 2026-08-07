@@ -66,7 +66,10 @@ export default function MainLayout() {
                 )}
               </div>
               <div className="nav-center">
-                <UserSearch />
+                {/* Admins search from inside the admin page instead — the navbar
+                    search opens the public profile, which offers to add the
+                    person as a friend, and that isn't what an admin wants. */}
+                {user?.role !== 'admin' && <UserSearch />}
               </div>
               <div className="nav-end">
                 <NotificationBell />

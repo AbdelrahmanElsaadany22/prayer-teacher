@@ -98,19 +98,31 @@ export class AdminService implements OnModuleInit {
    * this page's users, rather than one query per user — twenty rows would
    * otherwise mean twenty-one round trips.
    */
-  async listUsers(page: number, limit: number) {
+  async listUsers(page: number, limit: number, q?: string) {
     const skip = (page - 1) * limit;
+
+    // A search term matches either field. Regex metacharacters are escaped so a
+    // query like "a.b" is looked for literally instead of as a pattern.
+    const term = q?.trim();
+    const filter: Record<string, unknown> = {};
+    if (term) {
+      const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      filter.$or = [
+        { name: { $regex: escaped, $options: 'i' } },
+        { email: { $regex: escaped, $options: 'i' } },
+      ];
+    }
 
     const [users, total] = await Promise.all([
       this.userModel
-        .find()
+        .find(filter)
         .select('name email profilePicture role isVerified createdAt')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .lean()
         .exec(),
-      this.userModel.countDocuments().exec(),
+      this.userModel.countDocuments(filter).exec(),
     ]);
 
     const ids = users.map((u) => u._id);

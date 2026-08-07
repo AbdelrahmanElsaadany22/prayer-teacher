@@ -1,22 +1,17 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { getApiErrorMessage } from '../../../shared/api/axios';
+import { useI18n } from '../../../shared/i18n/LanguageProvider';
+import { localizePrayerName } from '../../../shared/i18n/translations';
 import { avatarUrl } from '../../../shared/utils/avatar';
 import { deleteAdminUser, getAdminUserDashboard } from '../api/admin.api';
 import type { AdminUserDashboard } from '../types/admin.types';
 import css from './AdminUserDetailPage.module.css';
 
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-}
-
 export default function AdminUserDetailPage() {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
+  const { t, lang } = useI18n();
 
   const [data, setData] = useState<AdminUserDashboard | null>(null);
   const [loading, setLoading] = useState(true);
@@ -24,6 +19,15 @@ export default function AdminUserDetailPage() {
   const [confirming, setConfirming] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  // Dates follow the active language, not the browser's locale, so the page
+  // doesn't end up half Arabic and half English.
+  const formatDate = (iso: string) =>
+    new Date(iso).toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-GB', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
 
   useEffect(() => {
     if (!userId) return;
@@ -50,16 +54,22 @@ export default function AdminUserDetailPage() {
     }
   }
 
-  if (loading) return <div className={css.page}><p className={css.muted}>Loading…</p></div>;
-  if (error) return <div className={css.page}><div className={css.error}>{error}</div></div>;
+  const dir = lang === 'ar' ? 'rtl' : 'ltr';
+
+  if (loading) {
+    return <div className={css.page} dir={dir}><p className={css.muted}>{t('admin.loading')}</p></div>;
+  }
+  if (error) {
+    return <div className={css.page} dir={dir}><div className={css.error}>{error}</div></div>;
+  }
   if (!data) return null;
 
   const { user, stats, perPrayer, sessions } = data;
   const src = avatarUrl(user.profilePicture);
 
   return (
-    <div className={css.page}>
-      <Link to="/admin/users" className={css.back}>← All users</Link>
+    <div className={css.page} dir={dir}>
+      <Link to="/admin/users" className={css.back}>{t('admin.backToUsers')}</Link>
 
       <header className={css.header}>
         <div className={css.avatar}>
@@ -68,13 +78,17 @@ export default function AdminUserDetailPage() {
         <div className={css.identity}>
           <h1 className={css.title}>
             {user.name}
-            {user.role === 'admin' && <span className={css.badge}>admin</span>}
+            {user.role === 'admin' && <span className={css.badge}>{t('admin.badge')}</span>}
           </h1>
           <p className={css.email}>{user.email}</p>
           <p className={css.meta}>
-            Joined {formatDate(user.createdAt)} · {user.friendsCount}{' '}
-            {user.friendsCount === 1 ? 'friend' : 'friends'} ·{' '}
-            {user.isVerified ? 'verified' : 'unverified'}
+            {t('admin.joined', { date: formatDate(user.createdAt) })}
+            {' · '}
+            {user.friendsCount === 1
+              ? t('admin.friendsCountOne')
+              : t('admin.friendsCount', { n: user.friendsCount })}
+            {' · '}
+            {user.isVerified ? t('admin.verified') : t('admin.unverified')}
           </p>
         </div>
       </header>
@@ -82,64 +96,76 @@ export default function AdminUserDetailPage() {
       <section className={css.tiles}>
         <div className={css.tile}>
           <span className={css.tileValue}>{stats.totalPrayers}</span>
-          <span className={css.tileLabel}>Prayers</span>
+          <span className={css.tileLabel}>{t('admin.tilePrayers')}</span>
         </div>
         <div className={css.tile}>
           <span className={css.tileValue}>{stats.avgAccuracy}%</span>
-          <span className={css.tileLabel}>Avg accuracy</span>
+          <span className={css.tileLabel}>{t('admin.tileAccuracy')}</span>
         </div>
         <div className={css.tile}>
           <span className={css.tileValue}>{stats.totalMistakes}</span>
-          <span className={css.tileLabel}>Total mistakes</span>
+          <span className={css.tileLabel}>{t('admin.tileMistakes')}</span>
         </div>
       </section>
 
       <section className={css.section}>
-        <h2 className={css.sectionTitle}>By prayer</h2>
+        <h2 className={css.sectionTitle}>{t('admin.byPrayer')}</h2>
         {perPrayer.length === 0 ? (
-          <p className={css.muted}>No prayers recorded.</p>
-        ) : (
-          <table className={css.table}>
-            <thead>
-              <tr>
-                <th>Prayer</th><th>Count</th><th>Avg accuracy</th><th>Mistakes</th>
-              </tr>
-            </thead>
-            <tbody>
-              {perPrayer.map((p) => (
-                <tr key={p.prayerName}>
-                  <td>{p.prayerName}</td>
-                  <td>{p.count}</td>
-                  <td>{p.avgAccuracy}%</td>
-                  <td>{p.totalMistakes}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </section>
-
-      <section className={css.section}>
-        <h2 className={css.sectionTitle}>Sessions ({sessions.length})</h2>
-        {sessions.length === 0 ? (
-          <p className={css.muted}>No sessions recorded.</p>
+          <p className={css.muted}>{t('admin.noPrayers')}</p>
         ) : (
           <div className={css.tableWrap}>
             <table className={css.table}>
               <thead>
                 <tr>
-                  <th>Date</th><th>Prayer</th><th>Rak'ahs</th>
-                  <th>Accuracy</th><th>Duration</th><th>Mistakes</th>
+                  <th>{t('admin.colPrayer')}</th>
+                  <th>{t('admin.colCount')}</th>
+                  <th>{t('admin.colAvgAccuracy')}</th>
+                  <th>{t('admin.colMistakes')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {perPrayer.map((p) => (
+                  <tr key={p.prayerName}>
+                    <td>{localizePrayerName(p.prayerName, lang)}</td>
+                    <td>{p.count}</td>
+                    <td>{p.avgAccuracy}%</td>
+                    <td>{p.totalMistakes}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+
+      <section className={css.section}>
+        <h2 className={css.sectionTitle}>
+          {t('admin.sessionsTitle', { n: sessions.length })}
+        </h2>
+        {sessions.length === 0 ? (
+          <p className={css.muted}>{t('admin.noSessions')}</p>
+        ) : (
+          <div className={css.tableWrap}>
+            <table className={css.table}>
+              <thead>
+                <tr>
+                  <th>{t('admin.colDate')}</th>
+                  <th>{t('admin.colPrayer')}</th>
+                  <th>{t('admin.colRakas')}</th>
+                  <th>{t('admin.colAvgAccuracy')}</th>
+                  <th>{t('admin.colDuration')}</th>
+                  <th>{t('admin.colMistakes')}</th>
                 </tr>
               </thead>
               <tbody>
                 {sessions.map((s) => (
                   <tr key={s._id}>
                     <td>{formatDate(s.createdAt)}</td>
-                    <td>{s.prayerName}</td>
+                    <td>{localizePrayerName(s.prayerName, lang)}</td>
                     <td>{s.rakas}</td>
                     <td>{s.accuracy}%</td>
-                    <td>{s.duration}</td>
+                    {/* Durations stay LTR so "04:31" doesn't render reversed. */}
+                    <td dir="ltr">{s.duration}</td>
                     <td>{s.mistakes}</td>
                   </tr>
                 ))}
@@ -150,11 +176,9 @@ export default function AdminUserDetailPage() {
       </section>
 
       <section className={css.danger}>
-        <h2 className={css.dangerTitle}>Delete this user</h2>
+        <h2 className={css.dangerTitle}>{t('admin.deleteTitle')}</h2>
         <p className={css.dangerText}>
-          Permanently removes {user.name}, along with their {sessions.length}{' '}
-          {sessions.length === 1 ? 'session' : 'sessions'}, their messages, and
-          their friend connections. This cannot be undone.
+          {t('admin.deleteWarning', { name: user.name })}
         </p>
 
         {deleteError && <div className={css.error}>{deleteError}</div>}
@@ -166,18 +190,22 @@ export default function AdminUserDetailPage() {
             onClick={() => setConfirming(true)}
             disabled={user.role === 'admin'}
           >
-            {user.role === 'admin' ? 'Admin accounts cannot be deleted' : 'Delete user'}
+            {user.role === 'admin'
+              ? t('admin.deleteAdminBlocked')
+              : t('admin.deleteBtn')}
           </button>
         ) : (
           <div className={css.confirmRow}>
-            <span className={css.confirmText}>Delete {user.name}?</span>
+            <span className={css.confirmText}>
+              {t('admin.deleteConfirm', { name: user.name })}
+            </span>
             <button
               type="button"
               className={css.deleteBtn}
               onClick={() => void handleDelete()}
               disabled={deleting}
             >
-              {deleting ? 'Deleting…' : 'Yes, delete'}
+              {deleting ? t('admin.deleting') : t('admin.deleteYes')}
             </button>
             <button
               type="button"
@@ -185,7 +213,7 @@ export default function AdminUserDetailPage() {
               onClick={() => setConfirming(false)}
               disabled={deleting}
             >
-              Cancel
+              {t('admin.cancel')}
             </button>
           </div>
         )}
