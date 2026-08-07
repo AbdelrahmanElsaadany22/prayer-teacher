@@ -7,6 +7,7 @@ import { useTheme, type Theme } from '../../../shared/theme/ThemeProvider';
 import { useCorners } from '../../../shared/theme/RadiusProvider';
 import { api, getApiErrorMessage } from '../../../shared/api/axios';
 import { uploadProfilePicture, updateName, changePassword } from '../api/users.api';
+import { getChatAdmin } from '../../chat/api/chat.api';
 import { avatarUrl } from '../../../shared/utils/avatar';
 import IslamicPatternStudio from './IslamicPatternStudio';
 import ReciterPicker from '../components/ReciterPicker';
@@ -30,6 +31,25 @@ export default function MyProfilePage() {
   const [nameValue, setNameValue] = useState('');
   const [savingName, setSavingName] = useState(false);
   const [nameMsg, setNameMsg] = useState<Msg | null>(null);
+  const [openingIjazah, setOpeningIjazah] = useState(false);
+  const [ijazahError, setIjazahError] = useState<string | null>(null);
+
+  /**
+   * Sends the learner straight into a chat with the teacher. The admin's id
+   * isn't known to the client, so it's looked up on demand rather than being
+   * hardcoded or fetched on every profile visit.
+   */
+  async function openIjazahChat() {
+    setOpeningIjazah(true);
+    setIjazahError(null);
+    try {
+      const admin = await getChatAdmin();
+      navigate(`/chat/${admin._id}`);
+    } catch {
+      setIjazahError(t('ijazah.noAdmin'));
+      setOpeningIjazah(false);
+    }
+  }
 
   const [activeTab, setActiveTab] = useState<'profile' | 'preferences'>('profile');
 
@@ -228,6 +248,21 @@ export default function MyProfilePage() {
             {nameMsg && (
               <p className={nameMsg.type === 'ok' ? css.successMsg : css.errorMsg}>{nameMsg.text}</p>
             )}
+          </div>
+
+          {/* ── Al-Fatiha ijazah card ── */}
+          <div className={`${css.card} ${css.cardSpaced}`}>
+            <p className={css.sectionHeading}>{t('ijazah.title')}</p>
+            <p className={css.ijazahText}>{t('ijazah.description')}</p>
+            {ijazahError && <p className={css.errorMsg}>{ijazahError}</p>}
+            <button
+              type="button"
+              className={css.ijazahBtn}
+              onClick={() => void openIjazahChat()}
+              disabled={openingIjazah}
+            >
+              {openingIjazah ? t('ijazah.opening') : t('ijazah.button')}
+            </button>
           </div>
 
           {/* ── Change password card ── */}

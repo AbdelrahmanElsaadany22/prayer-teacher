@@ -60,9 +60,15 @@ export default function MainLayout() {
             <>
               <div className="nav-start">
                 <NavLink to="/dashboard">{t('nav.dashboard')}</NavLink>
-                <NavLink to="/friends">{t('nav.friends')}</NavLink>
-                {user?.role === 'admin' && (
-                  <NavLink to="/admin/users">{t('nav.admin')}</NavLink>
+                {/* An admin manages users rather than befriending them, so the
+                    social entry points are left out of their navbar. */}
+                {user?.role === 'admin' ? (
+                  <>
+                    <NavLink to="/admin/users">{t('nav.admin')}</NavLink>
+                    <NavLink to="/admin/messages">{t('nav.messages')}</NavLink>
+                  </>
+                ) : (
+                  <NavLink to="/friends">{t('nav.friends')}</NavLink>
                 )}
               </div>
               <div className="nav-center">

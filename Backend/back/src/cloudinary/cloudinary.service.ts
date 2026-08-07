@@ -29,4 +29,26 @@ export class CloudinaryService {
       upload.end(file.buffer);
     });
   }
+
+  /**
+   * Uploads a voice recording and returns its URL. Cloudinary has no separate
+   * audio resource type — audio is handled under `video`, which is why that is
+   * what's passed here.
+   */
+  uploadAudio(file: Express.Multer.File, folder = 'voice-messages'): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const upload = cloudinary.uploader.upload_stream(
+        { folder, resource_type: 'video' },
+        (error, result?: UploadApiResponse) => {
+          if (error || !result) {
+            return reject(
+              new InternalServerErrorException('Failed to upload recording'),
+            );
+          }
+          resolve(result.secure_url);
+        },
+      );
+      upload.end(file.buffer);
+    });
+  }
 }

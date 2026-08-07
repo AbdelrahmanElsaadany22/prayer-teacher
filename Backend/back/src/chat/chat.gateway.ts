@@ -62,8 +62,9 @@ export class ChatGateway implements OnGatewayConnection,OnGatewayDisconnect{
     @MessageBody() data:any
   ){
     const senderId=currentSocket.data.user.id
-    const isFriend=await this.chatService.checkFriends(senderId,data.receiver)
-    if(!isFriend){
+    // Friends, or either side being an admin — see ChatService.canMessage.
+    const allowed=await this.chatService.canMessage(senderId,data.receiver)
+    if(!allowed){
       throw new WsException("You Can Only Message Friends")
     }
     const message=await this.chatService.storeMessages(senderId,data.receiver,data.text)
@@ -82,6 +83,23 @@ export class ChatGateway implements OnGatewayConnection,OnGatewayDisconnect{
   }
 
 
+
+
+  /**
+   * Delivers a message that was created outside the socket — the voice upload
+   * arrives over HTTP, since multipart is a poor fit for a websocket frame.
+   * Emitted to the whole room (the sender included, unlike the socket path
+   * which excludes them); the client de-duplicates by message id.
+   */
+  emitStoredMessage(senderId:string,receiverId:string,message:unknown,preview:string){
+    const room=[senderId,receiverId].sort().join("_")
+    this.server.to(room).emit("newMessage",message)
+    this.notificationGateway.sendToUser(receiverId,"newNotification",{
+      type:"NEW_MESSAGE",
+      message:preview,
+      sender:senderId,
+    })
+  }
 
 
   @SubscribeMessage("getMessages")

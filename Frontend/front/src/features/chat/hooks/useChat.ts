@@ -41,7 +41,11 @@ export function useChat(friendId: string, currentUserId: string) {
     }
 
     function onNewMessage(msg: Message) {
-      setMessages((prev) => [...prev, msg]);
+      // Voice messages are delivered to the whole room, sender included, so the
+      // one who uploaded also receives their own back — keep the first copy.
+      setMessages((prev) =>
+        prev.some((m) => m._id === msg._id) ? prev : [...prev, msg],
+      );
       socket.emit('markSeen', { friendId });
     }
 
@@ -92,5 +96,12 @@ export function useChat(friendId: string, currentUserId: string) {
     [socket, friendId, currentUserId],
   );
 
-  return { messages, isOnline, loading, sendMessage };
+  /** Adds a message this client created over HTTP (a voice upload). */
+  const appendMessage = useCallback((msg: Message) => {
+    setMessages((prev) =>
+      prev.some((m) => m._id === msg._id) ? prev : [...prev, msg],
+    );
+  }, []);
+
+  return { messages, isOnline, loading, sendMessage, appendMessage };
 }

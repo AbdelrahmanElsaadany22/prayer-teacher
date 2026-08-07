@@ -28,6 +28,19 @@ message!:string;
  default:false
 })
 seen!:boolean;
+
+/** 'text' for a typed message, 'audio' for a recorded one (e.g. a Fatiha
+ * recitation sent to the admin for the ijazah). Older documents predate this
+ * field, so anything without it is treated as text. */
+@Prop({ type: String, enum: ['text', 'audio'], default: 'text' })
+type!: 'text' | 'audio';
+
+/** Cloudinary URL of the recording; only set when type is 'audio'. */
+@Prop({ type: String, default: null })
+audioUrl?: string | null;
+
+createdAt?: Date;
+updatedAt?: Date;
 }
 
 

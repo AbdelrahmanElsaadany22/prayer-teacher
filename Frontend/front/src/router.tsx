@@ -17,6 +17,7 @@ import MyProfilePage from './features/users/pages/MyProfilePage';
 import AdminRoute from './features/admin/components/AdminRoute';
 import AdminUsersPage from './features/admin/pages/AdminUsersPage';
 import AdminUserDetailPage from './features/admin/pages/AdminUserDetailPage';
+import AdminInboxPage from './features/admin/pages/AdminInboxPage';
 
 export const router = createBrowserRouter([
   {
@@ -41,6 +42,7 @@ export const router = createBrowserRouter([
         children: [
           { path: '/admin/users', element: <AdminUsersPage /> },
           { path: '/admin/users/:userId', element: <AdminUserDetailPage /> },
+          { path: '/admin/messages', element: <AdminInboxPage /> },
         ],
       },
     ],

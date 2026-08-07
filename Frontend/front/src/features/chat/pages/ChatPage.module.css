@@ -251,3 +251,79 @@
   opacity: 0.3;
   cursor: default;
 }
+
+/* ── Voice messages ───────────────────────────────────────────────────────── */
+
+.audio {
+  display: block;
+  width: min(260px, 60vw);
+  height: 38px;
+}
+
+.micBtn {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.micBtn:hover:not(:disabled) { color: var(--accent); border-color: var(--accent); }
+.micBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.uploadingDots { font-size: 1.2rem; line-height: 1; }
+
+/* Recording bar — replaces the composer while the mic is live. */
+.recDot {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #d9736b;
+  animation: recPulse 1.1s ease-in-out infinite;
+}
+
+@keyframes recPulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.25; }
+}
+
+.recTimer {
+  flex: none;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.recHint {
+  flex: 1 1 auto;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.cancelRecBtn {
+  flex: none;
+  padding: 7px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.cancelRecBtn:hover { color: var(--text); }
+
+.sendError {
+  padding: 8px 16px 12px;
+  color: #e08b8b;
+  font-size: 0.82rem;
+  text-align: center;
+}
