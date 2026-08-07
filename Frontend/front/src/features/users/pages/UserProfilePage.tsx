@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { getApiErrorMessage } from '../../../shared/api/axios';
+import { useAuth } from '../../auth/hooks/useAuth';
 import { useI18n } from '../../../shared/i18n/LanguageProvider';
 import { cancelFriendRequest, removeFriend, sendFriendRequest } from '../../friends/api/friends.api';
 import { useNotifications } from '../../notifications/context/NotificationsContext';
@@ -11,6 +12,7 @@ import css from './UserProfilePage.module.css';
 
 export default function UserProfilePage() {
   const { userId } = useParams<{ userId: string }>();
+  const { user: currentUser } = useAuth();
   const { accept, reject, eventTick } = useNotifications();
   const { t } = useI18n();
 
@@ -178,8 +180,14 @@ export default function UserProfilePage() {
             </div>
           </div>
 
-          <Link to="/friends" className={css.backLink}>
-            {t('profile.backToFriends')}
+          {/* Admins have no friends list to return to. */}
+          <Link
+            to={currentUser?.role === 'admin' ? '/admin/users' : '/friends'}
+            className={css.backLink}
+          >
+            {currentUser?.role === 'admin'
+              ? t('admin.backToUsers')
+              : t('profile.backToFriends')}
           </Link>
         </>
       )}

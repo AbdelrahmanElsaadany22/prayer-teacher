@@ -100,7 +100,12 @@ export default function ChatPage() {
 
         {/* ── Header ── */}
         <div className={css.chatHeader}>
-          <Link to="/friends" className={css.back}>
+          {/* Back goes where this chat was opened from: the admin's inbox, or
+              the friends list for everyone else. */}
+          <Link
+            to={user?.role === 'admin' ? '/admin/messages' : '/friends'}
+            className={css.back}
+          >
             {isRtl ? '→' : '←'}
           </Link>
           <div className={css.friendAv}>

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getApiErrorMessage } from '../../../shared/api/axios';
 import { useI18n } from '../../../shared/i18n/LanguageProvider';
+import { useAuth } from '../../auth/hooks/useAuth';
 import { useNotifications } from '../context/NotificationsContext';
 import css from './NotificationBell.module.css';
 
@@ -26,6 +27,8 @@ export default function NotificationBell() {
   const [error, setError] = useState<string | null>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
 
   useEffect(() => {
     function onDocClick(e: MouseEvent) {
@@ -175,15 +178,17 @@ export default function NotificationBell() {
             </ul>
           )}
 
+          {/* Admins have no friends list to manage; their equivalent is the
+              inbox, so the footer points there instead. */}
           <button
             type="button"
             className={css.viewAll}
             onClick={() => {
               setOpen(false);
-              navigate('/friends');
+              navigate(isAdmin ? '/admin/messages' : '/friends');
             }}
           >
-            {t('notif.manageFriends')}
+            {isAdmin ? t('nav.messages') : t('notif.manageFriends')}
           </button>
         </div>
       )}

@@ -5,6 +5,7 @@ import Home from './app/pages/Home';
 import NotFound from './app/pages/NotFound';
 import GuestRoute from './features/auth/components/GuestRoute';
 import ProtectedRoute from './features/auth/components/ProtectedRoute';
+import NonAdminRoute from './features/auth/components/NonAdminRoute';
 import Dashboard from './features/auth/pages/Dashboard';
 import Login from './features/auth/pages/Login';
 import Signup from './features/auth/pages/Signup';
@@ -32,10 +33,13 @@ export const router = createBrowserRouter([
         element: <ProtectedRoute />,
         children: [
           { path: '/dashboard', element: <Dashboard /> },
-          { path: '/friends', element: <FriendsPage /> },
           { path: '/profile', element: <MyProfilePage /> },
           { path: '/users/:userId', element: <UserProfilePage /> },
         ],
+      },
+      {
+        element: <NonAdminRoute />,
+        children: [{ path: '/friends', element: <FriendsPage /> }],
       },
       {
         element: <AdminRoute />,
