@@ -225,14 +225,11 @@
   color: var(--muted);
 }
 
+/* BackLink supplies the chevron and base styling; this keeps the accent
+ * treatment this page already used, plus its spacing. */
 .backLink {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
   margin-top: 2rem;
-  font-size: 0.84rem;
   color: var(--accent);
-  text-decoration: none;
   font-weight: 600;
   transition: opacity 0.15s;
 }

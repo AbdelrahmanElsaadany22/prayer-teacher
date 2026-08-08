@@ -1,0 +1,20 @@
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.back:hover { color: var(--accent); }
+
+.chevron {
+  flex: none;
+  width: 18px;
+  height: 18px;
+}
+
+/* The glyph points left; under RTL "back" is rightwards, so mirror it. */
+[dir='rtl'] .chevron { transform: scaleX(-1); }

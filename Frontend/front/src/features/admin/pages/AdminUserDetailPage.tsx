@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { getApiErrorMessage } from '../../../shared/api/axios';
 import { useI18n } from '../../../shared/i18n/LanguageProvider';
 import { localizePrayerName } from '../../../shared/i18n/translations';
 import { avatarUrl } from '../../../shared/utils/avatar';
 import { deleteAdminUser, getAdminUserDashboard, setFatihaIjazah } from '../api/admin.api';
 import type { AdminUserDashboard } from '../types/admin.types';
+import BackLink from '../../../shared/components/BackLink';
 import css from './AdminUserDetailPage.module.css';
 
 export default function AdminUserDetailPage() {
@@ -98,7 +99,7 @@ export default function AdminUserDetailPage() {
 
   return (
     <div className={css.page} dir={dir}>
-      <Link to="/admin/users" className={css.back}>{t('admin.backToUsers')}</Link>
+      <BackLink to="/admin/users" label={t('admin.backToUsers')} className={css.back} />
 
       <header className={css.header}>
         <div className={css.avatar}>

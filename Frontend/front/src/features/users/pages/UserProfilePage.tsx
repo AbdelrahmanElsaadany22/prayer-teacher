@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { getApiErrorMessage } from '../../../shared/api/axios';
 import { useAuth } from '../../auth/hooks/useAuth';
 import { useI18n } from '../../../shared/i18n/LanguageProvider';
@@ -8,6 +8,7 @@ import { useNotifications } from '../../notifications/context/NotificationsConte
 import { getUserProfileWithStats } from '../api/users.api';
 import type { UserProfileWithStats } from '../types/users.types';
 import { avatarUrl } from '../../../shared/utils/avatar';
+import BackLink from '../../../shared/components/BackLink';
 import css from './UserProfilePage.module.css';
 
 export default function UserProfilePage() {
@@ -198,14 +199,15 @@ export default function UserProfilePage() {
           </div>
 
           {/* Admins have no friends list to return to. */}
-          <Link
+          <BackLink
             to={currentUser?.role === 'admin' ? '/admin/users' : '/friends'}
+            label={
+              currentUser?.role === 'admin'
+                ? t('admin.backToUsers')
+                : t('profile.backToFriends')
+            }
             className={css.backLink}
-          >
-            {currentUser?.role === 'admin'
-              ? t('admin.backToUsers')
-              : t('profile.backToFriends')}
-          </Link>
+          />
         </>
       )}
     </div>

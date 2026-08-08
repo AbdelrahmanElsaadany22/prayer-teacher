@@ -217,10 +217,13 @@
 
 .chevron {
   flex: none;
+  width: 18px;
+  height: 18px;
   color: var(--muted);
-  font-size: 1.4rem;
-  line-height: 1;
 }
+
+/* Points along the reading direction, so it flips with the layout. */
+[dir='rtl'] .chevron { transform: scaleX(-1); }
 
 .pager {
   display: flex;

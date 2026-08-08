@@ -11,12 +11,15 @@ interface Props {
 }
 
 export function PrayerSetup({ prayers, selected, onSelect, onStart }: Props) {
-  const { t, lang } = useI18n();
+  const { t } = useI18n();
 
   return (
     <div className={css.setup}>
       <Link to="/dashboard" className={css.back}>
-        {lang === 'ar' ? '→' : '←'}
+        <svg className={css.backChevron} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M15 5l-7 7 7 7" stroke="currentColor" strokeWidth="2"
+            strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
       </Link>
       <div className={css.logo}>{t('setup.logo')}</div>
       <div className={css.sub}>{t('setup.sub')}</div>

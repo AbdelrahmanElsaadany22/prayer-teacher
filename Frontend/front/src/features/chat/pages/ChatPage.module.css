@@ -34,15 +34,8 @@
   flex-shrink: 0;
 }
 
-.back {
-  color: var(--muted);
-  font-size: 1.2rem;
-  line-height: 1;
-  text-decoration: none;
-  flex-shrink: 0;
-  transition: color 0.15s;
-}
-.back:hover { color: var(--accent); }
+/* Colour, size and hover belong to BackLink; only the layout is page-specific. */
+.back { flex-shrink: 0; }
 
 .friendAv {
   width: 40px;

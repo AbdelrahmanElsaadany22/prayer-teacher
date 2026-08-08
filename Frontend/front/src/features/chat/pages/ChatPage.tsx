@@ -9,6 +9,7 @@ import { sendVoiceMessage } from '../api/chat.api';
 import { getApiErrorMessage } from '../../../shared/api/axios';
 import { useI18n } from '../../../shared/i18n/LanguageProvider';
 import { avatarUrl } from '../../../shared/utils/avatar';
+import BackLink from '../../../shared/components/BackLink';
 import css from './ChatPage.module.css';
 
 function formatSeconds(total: number): string {
@@ -103,12 +104,11 @@ export default function ChatPage() {
         <div className={css.chatHeader}>
           {/* Back goes where this chat was opened from: the admin's inbox, or
               the friends list for everyone else. */}
-          <Link
-            to={user?.role === 'admin' ? '/admin/messages' : '/friends'}
+          <BackLink
+            to={isAdmin ? '/admin/messages' : '/friends'}
+            label={t('chat.back')}
             className={css.back}
-          >
-            {isRtl ? '→' : '←'}
-          </Link>
+          />
           {/* For an admin the avatar and name open that user's admin page, so a
               recitation can be judged against the sender's record without
               hunting for them in the user list. */}
@@ -249,7 +249,7 @@ export default function ChatPage() {
               className={css.sendBtn}
               onClick={handleSend}
               disabled={!text.trim() || uploading}
-              aria-label="Send"
+              aria-label={t('chat.send')}
             >
               <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
                 <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>

@@ -10,15 +10,8 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
-.back {
-  display: inline-block;
-  margin-bottom: 22px;
-  color: var(--muted);
-  font-size: 0.85rem;
-  text-decoration: none;
-}
-
-.back:hover { color: var(--accent); }
+/* BackLink owns the look; this only places it on the page. */
+.back { margin-bottom: 22px; }
 
 .header {
   display: flex;

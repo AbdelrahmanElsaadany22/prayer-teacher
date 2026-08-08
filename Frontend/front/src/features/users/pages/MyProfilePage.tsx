@@ -338,10 +338,14 @@ export default function MyProfilePage() {
                 </button>
               </div>
             </div>
-            <div className={css.infoRow}>
-              <span className={css.infoLabel}>{t('myProfile.reciter')}</span>
-              <ReciterPicker />
-            </div>
+            {/* The reciter is only heard during a prayer session, which an
+                admin never runs — so the choice isn't offered to them. */}
+            {user?.role !== 'admin' && (
+              <div className={css.infoRow}>
+                <span className={css.infoLabel}>{t('myProfile.reciter')}</span>
+                <ReciterPicker />
+              </div>
+            )}
           </div>
 
           <div className={`${css.card} ${css.cardSpaced}`}>

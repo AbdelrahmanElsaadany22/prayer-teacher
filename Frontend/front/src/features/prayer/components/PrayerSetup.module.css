@@ -150,3 +150,11 @@
 @media (max-width: 480px) {
   .grid { grid-template-columns: repeat(2, 1fr); }
 }
+
+.backChevron {
+  width: 20px;
+  height: 20px;
+}
+
+/* The glyph points left; "back" is rightwards under RTL. */
+[dir='rtl'] .backChevron { transform: scaleX(-1); }
