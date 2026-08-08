@@ -13,8 +13,10 @@
 /* ── Header ── */
 .header { margin-bottom: 2.75rem; }
 
+/* The spacing above belongs to the row, not to one button inside it — leaving
+ * it on .primary-link pushed that button down while its neighbour stayed put.
+ * Padding is matched here so both keep the same width. */
 .header :global(.primary-link) {
-  margin-top: 2rem;
   padding: 0 2.5rem;
 }
 
@@ -439,9 +441,9 @@
 .headerActions {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: stretch;
   gap: 12px;
-  margin-top: 18px;
+  margin-top: 2rem;
 }
 
 /* Mirrors .primary-link's box exactly (min-height, min-width, padding, type)
@@ -453,7 +455,7 @@
   justify-content: center;
   min-height: 50px;
   min-width: 150px;
-  padding: 0 28px;
+  padding: 0 2.5rem;
   border: 1px solid var(--accent);
   border-radius: var(--radius-sm);
   background: transparent;
