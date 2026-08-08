@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import { useForm } from 'react-hook-form';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { homeFor } from '../homeFor';
 import { getApiErrorMessage } from '../../../shared/api/axios';
 import { useI18n } from '../../../shared/i18n/LanguageProvider';
 import AuthInput from '../components/Authinput';
@@ -32,9 +33,9 @@ export default function Login() {
 
   async function onSubmit(data: LoginData) {
     try {
-      await login(data);
+      const loggedIn = await login(data);
       const state = location.state as LoginLocationState | null;
-      navigate(state?.from?.pathname ?? '/dashboard', { replace: true });
+      navigate(state?.from?.pathname ?? homeFor(loggedIn), { replace: true });
     } catch (error) {
       // An unverified account is rejected with 403 — send them to verify.
       if (axios.isAxiosError(error) && error.response?.status === 403) {

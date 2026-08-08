@@ -59,16 +59,19 @@ export default function MainLayout() {
           {isAuthenticated ? (
             <>
               <div className="nav-start">
-                <NavLink to="/dashboard">{t('nav.dashboard')}</NavLink>
-                {/* An admin manages users rather than befriending them, so the
-                    social entry points are left out of their navbar. */}
+                {/* The dashboard charts a person's own prayer history, and the
+                    friends list is for learners — an admin has neither, so their
+                    navbar is only the two admin screens. */}
                 {user?.role === 'admin' ? (
                   <>
                     <NavLink to="/admin/users">{t('nav.admin')}</NavLink>
                     <NavLink to="/admin/messages">{t('nav.messages')}</NavLink>
                   </>
                 ) : (
-                  <NavLink to="/friends">{t('nav.friends')}</NavLink>
+                  <>
+                    <NavLink to="/dashboard">{t('nav.dashboard')}</NavLink>
+                    <NavLink to="/friends">{t('nav.friends')}</NavLink>
+                  </>
                 )}
               </div>
               <div className="nav-center">

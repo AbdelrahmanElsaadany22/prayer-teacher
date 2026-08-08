@@ -1,9 +1,10 @@
+import { homeFor } from '../../features/auth/homeFor';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../features/auth/hooks/useAuth';
 import { useI18n } from '../../shared/i18n/LanguageProvider';
 
 export default function Home() {
-  const { isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const { t } = useI18n();
 
   return (
@@ -13,7 +14,7 @@ export default function Home() {
       <p>{t('home.subtitle')}</p>
       <Link
         className="primary-link"
-        to={isAuthenticated ? '/dashboard' : '/signup'}
+        to={isAuthenticated ? homeFor(user) : '/signup'}
       >
         {isAuthenticated ? t('home.ctaDashboard') : t('home.ctaStart')}
       </Link>

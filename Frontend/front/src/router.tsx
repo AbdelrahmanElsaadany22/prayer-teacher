@@ -32,14 +32,16 @@ export const router = createBrowserRouter([
       {
         element: <ProtectedRoute />,
         children: [
-          { path: '/dashboard', element: <Dashboard /> },
           { path: '/profile', element: <MyProfilePage /> },
           { path: '/users/:userId', element: <UserProfilePage /> },
         ],
       },
       {
         element: <NonAdminRoute />,
-        children: [{ path: '/friends', element: <FriendsPage /> }],
+        children: [
+          { path: '/dashboard', element: <Dashboard /> },
+          { path: '/friends', element: <FriendsPage /> },
+        ],
       },
       {
         element: <AdminRoute />,

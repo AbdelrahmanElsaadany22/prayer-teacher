@@ -2,9 +2,10 @@ import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 
 /**
- * For pages that only make sense for a learner. An admin has no friends list,
- * so reaching /friends — by typing it, or by a stale link — sends them to their
- * inbox rather than showing a page with nothing on it for them.
+ * For pages that only make sense for a learner — their own prayer dashboard and
+ * their friends list. An admin reaching one, by typing the URL or following a
+ * stale link, is sent to the admin home instead of a page with nothing on it
+ * for them.
  */
 export default function NonAdminRoute() {
   const { user, isAuthenticated, isInitializing } = useAuth();
@@ -14,7 +15,7 @@ export default function NonAdminRoute() {
   }
 
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-  if (user?.role === 'admin') return <Navigate to="/admin/messages" replace />;
+  if (user?.role === 'admin') return <Navigate to="/admin/users" replace />;
 
   return <Outlet />;
 }
