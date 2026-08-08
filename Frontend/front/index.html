@@ -2,7 +2,9 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="public/logo.png" />
+    <!-- Files in public/ are served from the root, so the folder isn't part of
+         the URL. With it, the icon 404s in a production build. -->
+    <link rel="icon" type="image/png" href="/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Estaقِm</title>
   </head>
