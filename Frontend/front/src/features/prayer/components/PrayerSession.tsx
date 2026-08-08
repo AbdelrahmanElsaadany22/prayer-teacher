@@ -1,10 +1,13 @@
+import { useAuth } from '../../auth/hooks/useAuth';
 import { usePrayerSession } from '../hooks/usePrayerSession';
+import IjazahRequired from './IjazahRequired';
 import { PrayerSetup } from './PrayerSetup';
 import { SessionUI } from './SessionUI';
 import { PrayerReport } from './PrayerReport';
 import css from './PrayerSession.module.css';
 
 export function PrayerSession() {
+  const { user } = useAuth();
   const {
     screen,
     loadingMsg,
@@ -21,6 +24,13 @@ export function PrayerSession() {
     endPrayer,
     restart,
   } = usePrayerSession();
+
+  // The gate sits here rather than on the route so someone arriving by link or
+  // bookmark gets told what to do, instead of being redirected with no reason.
+  // Admins are exempt: they grant the ijazah, they don't sit for it.
+  if (user && user.role !== 'admin' && !user.fatihaIjazah) {
+    return <IjazahRequired />;
+  }
 
   if (screen === 'loading') {
     return (

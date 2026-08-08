@@ -1,0 +1,139 @@
+.page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 48px 20px;
+}
+
+.card {
+  width: min(560px, 100%);
+  padding: 38px 34px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg, 16px);
+  background: var(--surface);
+  text-align: center;
+  animation: fadeInUp 0.3s ease both;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.icon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 18px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(232, 196, 106, 0.12);
+  color: var(--accent);
+}
+
+.icon svg { width: 28px; height: 28px; }
+
+.eyebrow {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--accent);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 0 0 10px;
+  font-size: clamp(1.4rem, 3.2vw, 1.9rem);
+  color: var(--text);
+  letter-spacing: -0.02em;
+}
+
+.lead {
+  margin: 0 0 26px;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.7;
+}
+
+.steps {
+  margin: 0 0 26px;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: start;
+}
+
+.step {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.stepNum {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #1a1008;
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+.stepText {
+  color: var(--text);
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+.primaryBtn {
+  min-height: 46px;
+  padding: 0 26px;
+  border: 0;
+  border-radius: var(--radius-sm, 10px);
+  background: var(--accent);
+  color: #17140d;
+  font: inherit;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.primaryBtn:hover:not(:disabled) { filter: brightness(1.07); }
+.primaryBtn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.ghostLink {
+  color: var(--muted);
+  font-size: 0.86rem;
+  text-decoration: none;
+}
+
+.ghostLink:hover { color: var(--accent); }
+
+.error {
+  margin: 0 0 14px;
+  color: #e08b8b;
+  font-size: 0.85rem;
+}
+
+.note {
+  margin: 22px 0 0;
+  color: var(--muted);
+  font-size: 0.76rem;
+  line-height: 1.6;
+}

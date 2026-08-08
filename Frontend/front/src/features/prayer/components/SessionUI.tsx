@@ -90,7 +90,10 @@ export function SessionUI({
       {/* Split stage: the guide's GIF on one side, the live camera on the other */}
       <div className={`${css.stage}${panels.camera ? '' : ` ${css.stageSolo}`}`}>
         {(panels.recitation || panels.model) && (
-        <div className={css.teacher}>
+        /* With the camera off, the verse and the guide are the only two panels
+           left — they sit side by side rather than stacked, so each keeps a
+           usable share of the screen instead of half the height each. */
+        <div className={`${css.teacher}${!panels.camera && panels.recitation && panels.model ? ` ${css.teacherSideBySide}` : ''}`}>
           <div className={css.panelTag}>{t('session.teacher')}</div>
 
           {/* Top half: the ayah being recited right now (empty between recitations) */}

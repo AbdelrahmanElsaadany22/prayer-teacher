@@ -16,6 +16,8 @@ export type User = {
   profilePicture?: string | null;
   /** Absent on older tokens/responses — treat anything but 'admin' as a normal user. */
   role?: 'user' | 'admin';
+  /** Certified for Al-Fatiha; required before a prayer session can be started. */
+  fatihaIjazah?: boolean;
 };
 
 export type AuthResponse = {

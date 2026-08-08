@@ -192,6 +192,9 @@ export class AuthService {
       name: user.name,
       email: user.email,
       role: user.role,
+      // The client gates the prayer session on this, so it travels with the
+      // session rather than needing a separate lookup on every page.
+      fatihaIjazah: user.fatihaIjazah ?? false,
     };
   }
 }

@@ -359,3 +359,25 @@
 
 /* With the camera hidden, whatever remains takes the whole stage. */
 .stageSolo > :first-child { flex: 1; }
+
+/**
+ * Camera off with both other panels on: lay them across instead of down. The
+ * verse reads better wide, and the 3D guide keeps a taller frame than it would
+ * with two stacked halves.
+ */
+.teacherSideBySide {
+  flex-direction: row;
+  border-inline-end: none;
+}
+
+.teacherSideBySide > .ayahBox {
+  flex: 1;
+  min-width: 0;
+  border-bottom: none;
+  border-inline-end: 1px solid var(--border);
+}
+
+.teacherSideBySide > .gifBox {
+  flex: 1;
+  min-width: 0;
+}
