@@ -10,6 +10,11 @@ import { uploadProfilePicture, updateName, changePassword } from '../api/users.a
 import { avatarUrl } from '../../../shared/utils/avatar';
 import IslamicPatternStudio from './IslamicPatternStudio';
 import ReciterPicker from '../components/ReciterPicker';
+import {
+  MIN_ENABLED_PANELS,
+  SESSION_PANELS,
+  useSessionPanels,
+} from '../../../shared/session/SessionPanelsProvider';
 import css from './MyProfilePage.module.css';
 
 type Msg = { type: 'ok' | 'err'; text: string };
@@ -20,6 +25,7 @@ export default function MyProfilePage() {
   const { t, lang, setLang } = useI18n();
   const { theme, setTheme } = useTheme();
   const { corners, setCorners } = useCorners();
+  const { panels, togglePanel, enabledCount, canDisable } = useSessionPanels();
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [picUrl, setPicUrl] = useState<string | null>(null);
@@ -31,7 +37,7 @@ export default function MyProfilePage() {
   const [savingName, setSavingName] = useState(false);
   const [nameMsg, setNameMsg] = useState<Msg | null>(null);
 
-  const [activeTab, setActiveTab] = useState<'profile' | 'preferences'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'preferences' | 'session'>('profile');
 
   const [currentPwd, setCurrentPwd] = useState('');
   const [newPwd, setNewPwd] = useState('');
@@ -144,6 +150,16 @@ export default function MyProfilePage() {
         >
           {t('myProfile.tabPreferences')}
         </button>
+        {/* An admin never runs a prayer session, so the tab isn't offered. */}
+        {user?.role !== 'admin' && (
+          <button
+            type="button"
+            className={`${css.tab}${activeTab === 'session' ? ` ${css.tabActive}` : ''}`}
+            onClick={() => setActiveTab('session')}
+          >
+            {t('myProfile.tabSession')}
+          </button>
+        )}
       </div>
 
       {activeTab === 'profile' && (
@@ -338,14 +354,6 @@ export default function MyProfilePage() {
                 </button>
               </div>
             </div>
-            {/* The reciter is only heard during a prayer session, which an
-                admin never runs — so the choice isn't offered to them. */}
-            {user?.role !== 'admin' && (
-              <div className={css.infoRow}>
-                <span className={css.infoLabel}>{t('myProfile.reciter')}</span>
-                <ReciterPicker />
-              </div>
-            )}
           </div>
 
           <div className={`${css.card} ${css.cardSpaced}`}>
@@ -354,6 +362,64 @@ export default function MyProfilePage() {
           </div>
 
           <p className={css.credits}>Themes inspired by onyx-shell creators</p>
+        </div>
+      )}
+
+      {activeTab === 'session' && user?.role !== 'admin' && (
+        <div className={css.prefsWrap}>
+          {/* ── Reciter ── */}
+          <div className={css.card}>
+            <p className={css.sectionHeading}>{t('myProfile.reciter')}</p>
+            <p className={css.sessionHint}>{t('session.reciterHint')}</p>
+            <ReciterPicker />
+          </div>
+
+          {/* ── What's on screen during a session ── */}
+          <div className={`${css.card} ${css.cardSpaced}`}>
+            <p className={css.sectionHeading}>{t('session.panelsTitle')}</p>
+            <p className={css.sessionHint}>
+              {t('session.panelsHint', { min: MIN_ENABLED_PANELS })}
+            </p>
+
+            <div className={css.panelList}>
+              {SESSION_PANELS.map((panel) => {
+                const on = panels[panel];
+                // The last two can't be unchecked — shown as disabled rather
+                // than letting the click quietly do nothing.
+                const locked = on && !canDisable(panel);
+                return (
+                  <label
+                    key={panel}
+                    className={`${css.panelRow}${locked ? ` ${css.panelRowLocked}` : ''}`}
+                  >
+                    <input
+                      type="checkbox"
+                      className={css.panelCheck}
+                      checked={on}
+                      disabled={locked}
+                      onChange={() => togglePanel(panel)}
+                    />
+                    <span className={css.panelBox} aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M5 12.5l4.5 4.5L19 7.5" stroke="currentColor"
+                          strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </span>
+                    <span className={css.panelInfo}>
+                      <span className={css.panelName}>{t(`session.panel.${panel}`)}</span>
+                      <span className={css.panelDesc}>{t(`session.panelDesc.${panel}`)}</span>
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+
+            {enabledCount <= MIN_ENABLED_PANELS && (
+              <p className={css.panelNote}>
+                {t('session.panelsMinNote', { min: MIN_ENABLED_PANELS })}
+              </p>
+            )}
+          </div>
         </div>
       )}
 

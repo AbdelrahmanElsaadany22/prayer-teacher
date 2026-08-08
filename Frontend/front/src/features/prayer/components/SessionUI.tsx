@@ -3,6 +3,7 @@ import type { PoseStep, PoseBadgeState, PrayerId } from '../types/prayer.types';
 import type { Lang } from '../../../shared/i18n/translations';
 import { useI18n } from '../../../shared/i18n/LanguageProvider';
 import { useRecitationAyah } from '../hooks/useRecitationAyah';
+import { useSessionPanels } from '../../../shared/session/SessionPanelsProvider';
 import { PrayerModel3D } from './PrayerModel3D';
 import { VideoCanvas } from './VideoCanvas';
 import css from './SessionUI.module.css';
@@ -64,6 +65,7 @@ export function SessionUI({
 
   // The ayah being recited right now (during qiyam), tracked from the audio clock.
   const currentAyah = useRecitationAyah();
+  const { panels } = useSessionPanels();
 
   return (
     <div className={css.session}>
@@ -86,11 +88,13 @@ export function SessionUI({
       </div>
 
       {/* Split stage: the guide's GIF on one side, the live camera on the other */}
-      <div className={css.stage}>
+      <div className={`${css.stage}${panels.camera ? '' : ` ${css.stageSolo}`}`}>
+        {(panels.recitation || panels.model) && (
         <div className={css.teacher}>
           <div className={css.panelTag}>{t('session.teacher')}</div>
 
           {/* Top half: the ayah being recited right now (empty between recitations) */}
+          {panels.recitation && (
           <div className={css.ayahBox} dir="rtl" aria-live="polite">
             {currentAyah ? (
               <p key={`${currentAyah.surah}:${currentAyah.number}`} className={css.ayahText}>
@@ -103,8 +107,10 @@ export function SessionUI({
               <span className={css.ayahIdle} aria-hidden="true">﷽</span>
             )}
           </div>
+          )}
 
           {/* Bottom half: the 3D movement demo */}
+          {panels.model && (
           <div className={css.gifBox}>
             <PrayerModel3D
               prayerId={prayerId}
@@ -115,9 +121,15 @@ export function SessionUI({
             />
             {gifCaption && <div className={css.teacherCaption}>{gifCaption}</div>}
           </div>
+          )}
         </div>
+        )}
 
-        {/* Video fills its half; seq + mistakes overlay on top of it */}
+        {/* The camera panel can be switched off, but the <video> behind it must
+            stay mounted and playing — MediaPipe reads its frames, so removing
+            it would stop detection altogether. Hidden here means moved out of
+            sight, never unmounted or display:none (which stops decoding). */}
+        <div className={panels.camera ? css.cameraPane : css.cameraHidden}>
         <VideoCanvas
           videoRef={videoRef}
           canvasRef={canvasRef}
@@ -155,6 +167,7 @@ export function SessionUI({
           </div>
         )}
         </VideoCanvas>
+        </div>
       </div>
     </div>
   );

@@ -330,3 +330,32 @@
     justify-content: space-between;
   }
 }
+
+/* ── Optional session panels ──────────────────────────────────────────────── */
+
+.cameraPane {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+}
+
+.cameraPane > * { flex: 1; min-width: 0; }
+
+/**
+ * The camera panel switched off. The element is pulled out of view rather than
+ * hidden with display:none or visibility:hidden — browsers stop decoding frames
+ * for those, and MediaPipe reads this very <video>, so detection would stop
+ * with it. One pixel off-screen keeps it playing at full intrinsic resolution,
+ * which is what the pose model actually samples.
+ */
+.cameraHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* With the camera hidden, whatever remains takes the whole stage. */
+.stageSolo > :first-child { flex: 1; }

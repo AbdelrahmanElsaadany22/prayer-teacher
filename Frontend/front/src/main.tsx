@@ -8,6 +8,7 @@ import { ThemeProvider } from './shared/theme/ThemeProvider';
 import { RadiusProvider } from './shared/theme/RadiusProvider';
 import { PatternProvider } from './shared/theme/PatternProvider';
 import { ReciterProvider } from './shared/reciter/ReciterProvider';
+import { SessionPanelsProvider } from './shared/session/SessionPanelsProvider';
 import './index.css';
 import './theme-switcher.css';
 import { router } from './router.tsx';
@@ -18,6 +19,7 @@ createRoot(document.getElementById('root')!).render(
       <RadiusProvider>
       <PatternProvider>
       <ReciterProvider>
+      <SessionPanelsProvider>
       <LanguageProvider>
         <AuthProvider>
           <NotificationsProvider>
@@ -25,6 +27,7 @@ createRoot(document.getElementById('root')!).render(
           </NotificationsProvider>
         </AuthProvider>
       </LanguageProvider>
+      </SessionPanelsProvider>
       </ReciterProvider>
       </PatternProvider>
       </RadiusProvider>
