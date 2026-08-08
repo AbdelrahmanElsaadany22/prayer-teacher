@@ -20,7 +20,7 @@ import type {
 import { NotificationsContext } from './NotificationsContext';
 
 export function NotificationsProvider({ children }: PropsWithChildren) {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const currentUserId = user?.id;
 
   const [requests, setRequests] = useState<FriendRequest[]>([]);
@@ -109,6 +109,27 @@ export function NotificationsProvider({ children }: PropsWithChildren) {
           },
           ...prev,
         ]);
+      } else if (
+        payload.type === 'IJAZAH_GRANTED' ||
+        payload.type === 'IJAZAH_REVOKED'
+      ) {
+        // Captured before the await: TypeScript drops the narrowing on
+        // payload.type across it, and this branch is the only place that knows
+        // the value is one of the two ijazah kinds.
+        const kind = payload.type;
+        // The prayer session is gated on the ijazah flag carried by the signed-in
+        // user, so pull a fresh copy — otherwise the lock would only lift on the
+        // next reload.
+        await refreshUser().catch(() => {});
+        setActivity((prev) => [
+          {
+            id: `${kind}_${Date.now()}`,
+            type: kind,
+            senderName: '',
+            createdAt: new Date().toISOString(),
+          },
+          ...prev,
+        ]);
       } else if (payload.type === 'NEW_MESSAGE') {
         // Don't badge a chat the user is currently reading (it's marked seen).
         if (window.location.pathname !== `/chat/${payload.sender}`) {
@@ -132,7 +153,7 @@ export function NotificationsProvider({ children }: PropsWithChildren) {
       socket.disconnect();
       window.removeEventListener('focus', onFocus);
     };
-  }, [currentUserId, load]);
+  }, [currentUserId, load, refreshUser]);
 
   const accept = useCallback(async (requestId: string) => {
     await acceptFriendRequest(requestId);

@@ -13,9 +13,11 @@ import {
   friendRequestSchema,
 } from '../friends/schemas/friendRequest.schema';
 import { Message, MessageSchema } from '../chat/schemas/chat.schema';
+import { NotificationModule } from '../notification/notification.module';
 
 @Module({
   imports: [
+    NotificationModule,
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: PrayerSession.name, schema: PrayerSessionSchema },

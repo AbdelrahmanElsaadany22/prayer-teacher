@@ -16,6 +16,7 @@ import {
 } from '../prayer/prayer/entities/prayer-session.schema';
 import { friendRequest } from '../friends/schemas/friendRequest.schema';
 import { Message } from '../chat/schemas/chat.schema';
+import { NotificationGateway } from '../notification/notification.gateway';
 
 const BCRYPT_SALT_ROUNDS = 12;
 
@@ -46,6 +47,7 @@ export class AdminService implements OnModuleInit {
     @InjectModel(Message.name)
     private readonly messageModel: Model<Message>,
     private readonly config: ConfigService,
+    private readonly notificationGateway: NotificationGateway,
   ) {}
 
   /**
@@ -261,7 +263,7 @@ export class AdminService implements OnModuleInit {
    * Grants or revokes the Al-Fatiha ijazah. The timestamp is set on granting
    * and cleared on revoking, so a stale date can never outlive the badge.
    */
-  async setFatihaIjazah(userId: string, granted: boolean) {
+  async setFatihaIjazah(userId: string, granted: boolean, actingAdminId: string) {
     if (!Types.ObjectId.isValid(userId)) {
       throw new NotFoundException('User not found');
     }
@@ -272,6 +274,14 @@ export class AdminService implements OnModuleInit {
     user.fatihaIjazah = granted;
     user.fatihaIjazahAt = granted ? new Date() : null;
     await user.save();
+
+    // Tell the learner straight away. Their session gate reads this flag, so
+    // without the push they'd stay locked out until they happened to reload.
+    this.notificationGateway.sendToUser(userId, 'newNotification', {
+      type: granted ? 'IJAZAH_GRANTED' : 'IJAZAH_REVOKED',
+      message: granted ? 'Al-Fatiha ijazah granted' : 'Al-Fatiha ijazah revoked',
+      sender: actingAdminId,
+    });
 
     return {
       fatihaIjazah: user.fatihaIjazah,

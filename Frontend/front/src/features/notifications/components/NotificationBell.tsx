@@ -152,16 +152,28 @@ export default function NotificationBell() {
                   <li key={a.id} className={css.item}>
                     <div
                       className={`${css.avatar} ${
-                        a.type === 'FRIEND_REQUEST_ACCEPTED' ? css.avatarOk : css.avatarNo
+                        a.type === 'FRIEND_REQUEST_ACCEPTED' || a.type === 'IJAZAH_GRANTED'
+                          ? css.avatarOk
+                          : css.avatarNo
                       }`}
                     >
-                      {a.type === 'FRIEND_REQUEST_ACCEPTED' ? '✓' : '✕'}
+                      {a.type === 'IJAZAH_GRANTED'
+                        ? '✦'
+                        : a.type === 'IJAZAH_REVOKED'
+                          ? '✕'
+                          : a.type === 'FRIEND_REQUEST_ACCEPTED'
+                            ? '✓'
+                            : '✕'}
                     </div>
                     <div className={css.body}>
                       <p className={css.text}>
-                        {a.type === 'FRIEND_REQUEST_ACCEPTED'
-                          ? t('notif.accepted', { name: a.senderName })
-                          : t('notif.declined', { name: a.senderName })}
+                        {a.type === 'IJAZAH_GRANTED'
+                          ? t('notif.ijazahGranted')
+                          : a.type === 'IJAZAH_REVOKED'
+                            ? t('notif.ijazahRevoked')
+                            : a.type === 'FRIEND_REQUEST_ACCEPTED'
+                              ? t('notif.accepted', { name: a.senderName })
+                              : t('notif.declined', { name: a.senderName })}
                       </p>
                       <span className={css.time}>{timeAgo(a.createdAt, t)}</span>
                     </div>

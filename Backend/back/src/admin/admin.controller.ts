@@ -40,8 +40,9 @@ export class AdminController {
   setFatihaIjazah(
     @Param('userId') userId: string,
     @Body() dto: SetIjazahDto,
+    @Req() req: AuthRequest,
   ) {
-    return this.adminService.setFatihaIjazah(userId, dto.granted);
+    return this.adminService.setFatihaIjazah(userId, dto.granted, req.user.id);
   }
 
   @Delete('users/:userId')
