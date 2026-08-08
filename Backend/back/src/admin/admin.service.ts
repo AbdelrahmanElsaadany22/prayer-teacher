@@ -26,6 +26,7 @@ export type AdminUserRow = {
   profilePicture?: string | null;
   role: Role;
   isVerified: boolean;
+  fatihaIjazah: boolean;
   accuracy: number;
   totalPrayers: number;
   createdAt: Date;
@@ -116,7 +117,7 @@ export class AdminService implements OnModuleInit {
     const [users, total] = await Promise.all([
       this.userModel
         .find(filter)
-        .select('name email profilePicture role isVerified createdAt')
+        .select('name email profilePicture role isVerified createdAt fatihaIjazah')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
@@ -151,6 +152,7 @@ export class AdminService implements OnModuleInit {
         profilePicture: u.profilePicture ?? null,
         role: u.role,
         isVerified: u.isVerified,
+        fatihaIjazah: u.fatihaIjazah ?? false,
         // A user with no sessions has no average — reported as 0, not hidden.
         accuracy: s ? Math.round((s.avgAccuracy ?? 0) * 10) / 10 : 0,
         totalPrayers: s?.totalPrayers ?? 0,
@@ -178,7 +180,7 @@ export class AdminService implements OnModuleInit {
 
     const user = await this.userModel
       .findById(userId)
-      .select('name email profilePicture role isVerified createdAt friends')
+      .select('name email profilePicture role isVerified createdAt friends fatihaIjazah fatihaIjazahAt')
       .lean()
       .exec();
     if (!user) throw new NotFoundException('User not found');
@@ -235,6 +237,8 @@ export class AdminService implements OnModuleInit {
         isVerified: user.isVerified,
         createdAt: user.createdAt,
         friendsCount: user.friends?.length ?? 0,
+        fatihaIjazah: user.fatihaIjazah ?? false,
+        fatihaIjazahAt: user.fatihaIjazahAt ?? null,
       },
       stats: {
         totalPrayers: overall?.totalPrayers ?? 0,
@@ -250,6 +254,28 @@ export class AdminService implements OnModuleInit {
         totalMistakes: p.totalMistakes,
       })),
       sessions,
+    };
+  }
+
+  /**
+   * Grants or revokes the Al-Fatiha ijazah. The timestamp is set on granting
+   * and cleared on revoking, so a stale date can never outlive the badge.
+   */
+  async setFatihaIjazah(userId: string, granted: boolean) {
+    if (!Types.ObjectId.isValid(userId)) {
+      throw new NotFoundException('User not found');
+    }
+
+    const user = await this.userModel.findById(userId).exec();
+    if (!user) throw new NotFoundException('User not found');
+
+    user.fatihaIjazah = granted;
+    user.fatihaIjazahAt = granted ? new Date() : null;
+    await user.save();
+
+    return {
+      fatihaIjazah: user.fatihaIjazah,
+      fatihaIjazahAt: user.fatihaIjazahAt,
     };
   }
 

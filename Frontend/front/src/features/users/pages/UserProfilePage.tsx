@@ -14,7 +14,7 @@ export default function UserProfilePage() {
   const { userId } = useParams<{ userId: string }>();
   const { user: currentUser } = useAuth();
   const { accept, reject, eventTick } = useNotifications();
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
 
   const [profile, setProfile] = useState<UserProfileWithStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -155,6 +155,23 @@ export default function UserProfilePage() {
             </div>
             <div className={css.identity}>
               <h1 className={css.name}>{profile.name}</h1>
+              {profile.fatihaIjazah && (
+                <span
+                  className={css.ijazahBadge}
+                  title={
+                    profile.fatihaIjazahAt
+                      ? t('ijazah.grantedOn', {
+                          date: new Date(profile.fatihaIjazahAt).toLocaleDateString(
+                            lang === 'ar' ? 'ar-EG' : 'en-GB',
+                            { year: 'numeric', month: 'short', day: 'numeric' },
+                          ),
+                        })
+                      : t('ijazah.certified')
+                  }
+                >
+                  ✦ {t('ijazah.badge')}
+                </span>
+              )}
               <span className={css.email}>{profile.email}</span>
             </div>
             <div className={css.cardAction}>{renderAction()}</div>

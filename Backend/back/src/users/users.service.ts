@@ -32,6 +32,9 @@ export type UserProfileWithStats = {
   name: string;
   email: string;
   profilePicture?: string | null;
+  /** Certified by an admin for their Al-Fatiha recitation. */
+  fatihaIjazah: boolean;
+  fatihaIjazahAt: Date | null;
   totalPrayers: number;
   accuracy: number;
   relationship: Relationship;
@@ -199,6 +202,8 @@ export class UsersService {
       name: user.name,
       email: user.email,
       profilePicture: user.profilePicture,
+      fatihaIjazah: user.fatihaIjazah ?? false,
+      fatihaIjazahAt: user.fatihaIjazahAt ?? null,
       relationship,
       requestId,
       totalPrayers: stats?.totalPrayers ?? 0,

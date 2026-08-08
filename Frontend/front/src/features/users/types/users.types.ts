@@ -13,6 +13,9 @@ export type Relationship =
   | 'none';
 
 export type UserProfileWithStats = {
+  /** Certified by an admin for their Al-Fatiha recitation. */
+  fatihaIjazah?: boolean;
+  fatihaIjazahAt?: string | null;
   _id: string;
   name: string;
   email: string;

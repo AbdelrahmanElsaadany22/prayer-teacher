@@ -45,6 +45,14 @@ export class User {
   @Prop({ type: String, enum: Role, default: Role.USER })
   role!: Role;
 
+  /** Whether an admin has certified this user's recitation of Al-Fatiha. */
+  @Prop({ type: Boolean, default: false })
+  fatihaIjazah!: boolean;
+
+  /** When it was granted — shown on the profile, and cleared if it's revoked. */
+  @Prop({ type: Date, default: null })
+  fatihaIjazahAt?: Date | null;
+
   @Prop({ type: String, select: false, default: null })
   verificationCode?: string | null;
 

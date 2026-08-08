@@ -6,6 +6,8 @@ export type AdminUserRow = {
   profilePicture?: string | null;
   role: 'user' | 'admin';
   isVerified: boolean;
+  /** Certified by an admin for their Al-Fatiha recitation. */
+  fatihaIjazah: boolean;
   /** Average accuracy across every session; 0 when the user has never prayed. */
   accuracy: number;
   totalPrayers: number;
@@ -49,6 +51,8 @@ export type AdminUserDashboard = {
     isVerified: boolean;
     createdAt: string;
     friendsCount: number;
+    fatihaIjazah: boolean;
+    fatihaIjazahAt: string | null;
   };
   stats: {
     totalPrayers: number;

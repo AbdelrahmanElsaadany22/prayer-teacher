@@ -20,6 +20,14 @@ export async function getAdminUserDashboard(
   return res.data;
 }
 
+export async function setFatihaIjazah(userId: string, granted: boolean) {
+  const res = await api.patch<{ fatihaIjazah: boolean; fatihaIjazahAt: string | null }>(
+    `/admin/users/${userId}/ijazah`,
+    { granted },
+  );
+  return res.data;
+}
+
 export async function deleteAdminUser(userId: string) {
   const res = await api.delete<{ message: string; deletedId: string }>(
     `/admin/users/${userId}`,

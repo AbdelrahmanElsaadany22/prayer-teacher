@@ -2,7 +2,9 @@ import {
   Controller,
   Delete,
   Get,
+  Body,
   Param,
+  Patch,
   Query,
   Req,
   UseGuards,
@@ -11,6 +13,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { AdminService } from './admin.service';
 import { AdminGuard } from './admin.guard';
 import { AdminUsersQueryDto } from './dto/admin-users-query.dto';
+import { SetIjazahDto } from './dto/set-ijazah.dto';
 
 interface AuthRequest {
   user: { id: string; email: string };
@@ -31,6 +34,14 @@ export class AdminController {
   @Get('users/:userId')
   getUserDashboard(@Param('userId') userId: string) {
     return this.adminService.getUserDashboard(userId);
+  }
+
+  @Patch('users/:userId/ijazah')
+  setFatihaIjazah(
+    @Param('userId') userId: string,
+    @Body() dto: SetIjazahDto,
+  ) {
+    return this.adminService.setFatihaIjazah(userId, dto.granted);
   }
 
   @Delete('users/:userId')

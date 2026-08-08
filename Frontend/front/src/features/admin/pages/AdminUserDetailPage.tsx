@@ -4,7 +4,7 @@ import { getApiErrorMessage } from '../../../shared/api/axios';
 import { useI18n } from '../../../shared/i18n/LanguageProvider';
 import { localizePrayerName } from '../../../shared/i18n/translations';
 import { avatarUrl } from '../../../shared/utils/avatar';
-import { deleteAdminUser, getAdminUserDashboard } from '../api/admin.api';
+import { deleteAdminUser, getAdminUserDashboard, setFatihaIjazah } from '../api/admin.api';
 import type { AdminUserDashboard } from '../types/admin.types';
 import css from './AdminUserDetailPage.module.css';
 
@@ -19,6 +19,8 @@ export default function AdminUserDetailPage() {
   const [confirming, setConfirming] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [savingIjazah, setSavingIjazah] = useState(false);
+  const [ijazahError, setIjazahError] = useState<string | null>(null);
 
   // Dates follow the active language, not the browser's locale, so the page
   // doesn't end up half Arabic and half English.
@@ -39,6 +41,33 @@ export default function AdminUserDetailPage() {
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, [userId]);
+
+  async function handleIjazahToggle(granted: boolean) {
+    if (!userId) return;
+    setSavingIjazah(true);
+    setIjazahError(null);
+    try {
+      const res = await setFatihaIjazah(userId, granted);
+      // Patch just this field rather than refetching the whole dashboard —
+      // nothing else on the page changed.
+      setData((prev) =>
+        prev
+          ? {
+              ...prev,
+              user: {
+                ...prev.user,
+                fatihaIjazah: res.fatihaIjazah,
+                fatihaIjazahAt: res.fatihaIjazahAt,
+              },
+            }
+          : prev,
+      );
+    } catch (err) {
+      setIjazahError(getApiErrorMessage(err));
+    } finally {
+      setSavingIjazah(false);
+    }
+  }
 
   async function handleDelete() {
     if (!userId) return;
@@ -107,6 +136,44 @@ export default function AdminUserDetailPage() {
           <span className={css.tileLabel}>{t('admin.tileMistakes')}</span>
         </div>
       </section>
+
+      {/* Only learners are certified; an admin grants the ijazah, never holds it. */}
+      {user.role !== 'admin' && (
+        <section className={css.ijazahCard}>
+          <div className={css.ijazahInfo}>
+            <h2 className={css.ijazahTitle}>{t('ijazah.title')}</h2>
+            <p className={css.ijazahStatus}>
+              {user.fatihaIjazah
+                ? t('ijazah.grantedOn', {
+                    date: user.fatihaIjazahAt ? formatDate(user.fatihaIjazahAt) : '—',
+                  })
+                : t('ijazah.notGranted')}
+            </p>
+          </div>
+
+          <label className={css.switchLabel}>
+            <input
+              type="checkbox"
+              className={css.switchInput}
+              checked={user.fatihaIjazah}
+              disabled={savingIjazah}
+              onChange={(e) => void handleIjazahToggle(e.target.checked)}
+            />
+            <span className={css.switchTrack} aria-hidden="true">
+              <span className={css.switchThumb} />
+            </span>
+            <span className={css.switchText}>
+              {savingIjazah
+                ? t('ijazah.saving')
+                : user.fatihaIjazah
+                  ? t('ijazah.certified')
+                  : t('ijazah.markCertified')}
+            </span>
+          </label>
+        </section>
+      )}
+
+      {ijazahError && <div className={css.error}>{ijazahError}</div>}
 
       <section className={css.section}>
         <h2 className={css.sectionTitle}>{t('admin.byPrayer')}</h2>
